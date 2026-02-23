@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwarmSpace — The capability space for personal AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080c0a;
+  --surface: #0d1410;
+  --border: rgba(0, 255, 128, 0.12);
+  --green: #00e676;
+  --green-dim: rgba(0, 230, 118, 0.6);
+  --green-ghost: rgba(0, 230, 118, 0.08);
+  --amber: #ffb300;
+  --amber-dim: rgba(255, 179, 0, 0.6);
+  --text: #e8f0eb;
+  --muted: #5a7060;
+  --dim: rgba(232, 240, 235, 0.5);
+  --red: #ff4444;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* SCANLINE EFFECT */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* CURSOR GLOW */
+.cursor-glow {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,230,118,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  transition: left 0.1s, top 0.1s;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1.2rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(8, 12, 10, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.logo-mark {
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--green);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-mark::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: var(--green);
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--green); }
+
+.nav-cta {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--bg);
+  background: var(--green);
+  padding: 0.5rem 1.2rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.nav-cta:hover { background: #00c853; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  padding: 10rem 3rem 5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  max-width: 1300px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-left { position: relative; z-index: 2; }
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green-dim);
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeIn 0.6s ease 0.1s forwards;
+}
+
+.badge-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s ease infinite;
+}
+
+.hero-title {
+  font-size: clamp(2.8rem, 4.5vw, 5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 0.7s ease 0.2s forwards;
+}
+
+.hero-title .accent { color: var(--green); font-weight: 500; }
+.hero-title .dim { color: var(--muted); }
+
+.hero-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--dim);
+  max-width: 44ch;
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: fadeUp 0.7s ease 0.35s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  opacity: 0;
+  animation: fadeUp 0.7s ease 0.5s forwards;
+}
+
+.btn-primary {
+  background: var(--green);
+  color: var(--bg);
+  padding: 0.8rem 1.8rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+  display: inline-block;
+}
+
+.btn-primary:hover { background: #00c853; transform: translateY(-1px); }
+
+.btn-outline {
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 0.8rem 1.8rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+  display: inline-block;
+}
+
+.btn-outline:hover { border-color: var(--green-dim); color: var(--green-dim); }
+
+/* TERMINAL DEMO */
+.terminal {
+  background: #050807;
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  position: relative;
+  opacity: 0;
+  animation: fadeIn 0.8s ease 0.7s forwards;
+}
+
+.terminal-bar {
+  background: #0d1410;
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.t-dot { width: 10px; height: 10px; border-radius: 50%; }
+.t-dot.red { background: #ff5f57; }
+.t-dot.yellow { background: #febc2e; }
+.t-dot.green { background: #28c840; }
+
+.terminal-title {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.terminal-body { padding: 1.5rem; }
+
+.t-line { display: flex; gap: 0.8rem; margin-bottom: 0.3rem; }
+.t-prompt { color: var(--green); flex-shrink: 0; }
+.t-cmd { color: var(--text); }
+.t-comment { color: var(--muted); }
+.t-out { color: var(--dim); padding-left: 1.5rem; margin-bottom: 0.3rem; }
+.t-key { color: var(--amber); }
+.t-val { color: #7dd3a8; }
+.t-str { color: #a8d8b8; }
+.t-blank { height: 0.6rem; }
+
+.t-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--green);
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* STATS BAR */
+.stats-bar {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 2rem 3rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+
+.stat {
+  padding: 0 2rem;
+  border-right: 1px solid var(--border);
+}
+
+.stat:first-child { padding-left: 0; }
+.stat:last-child { border-right: none; }
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--green);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* HOW IT WORKS */
+.section {
+  padding: 7rem 3rem;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green-dim);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.section-tag::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: var(--green-dim);
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.section-title .g { color: var(--green); }
+.section-title .d { color: var(--muted); }
+
+.section-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--dim);
+  max-width: 52ch;
+  margin-bottom: 4rem;
+}
+
+/* FLOW STEPS */
+.flow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+}
+
+.flow-step {
+  padding: 2.5rem 2rem;
+  border-right: 1px solid var(--border);
+  position: relative;
+  transition: background 0.3s;
+}
+
+.flow-step:last-child { border-right: none; }
+.flow-step:hover { background: var(--green-ghost); }
+
+.step-num {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.step-icon {
+  font-size: 1.4rem;
+  margin-bottom: 1.2rem;
+  display: block;
+}
+
+.step-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.01em;
+}
+
+.step-desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.step-arrow {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: var(--green);
+  z-index: 2;
+}
+
+.flow-step:last-child .step-arrow { display: none; }
+
+/* MANIFEST EXAMPLE */
+.manifest-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.manifest-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 7rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.manifest-explain {
+  position: sticky;
+  top: 8rem;
+}
+
+.manifest-title {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.manifest-title .g { color: var(--green); }
+
+.manifest-body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--dim);
+  margin-bottom: 2rem;
+}
+
+.manifest-callout {
+  border-left: 2px solid var(--green);
+  padding: 1rem 1.5rem;
+  background: var(--green-ghost);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--dim);
+}
+
+.manifest-callout strong { color: var(--green); font-weight: 500; }
+
+.code-block {
+  background: #050807;
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  line-height: 1.65;
+  overflow: hidden;
+}
+
+.code-header {
+  background: #0d1410;
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.code-file {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.code-lang {
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--green-dim);
+  border: 1px solid var(--border);
+  padding: 0.15rem 0.5rem;
+}
+
+.code-body {
+  padding: 1.5rem;
+}
+
+.c-key { color: var(--amber); }
+.c-str { color: #7dd3a8; }
+.c-num { color: #80cbc4; }
+.c-bool { color: #e57373; }
+.c-comment { color: var(--muted); font-style: italic; }
+.c-bracket { color: rgba(232,240,235,0.3); }
+.c-indent { padding-left: 1.2rem; display: block; }
+.c-indent2 { padding-left: 2.4rem; display: block; }
+
+/* TRUST TIERS */
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.tier {
+  border: 1px solid var(--border);
+  padding: 2rem;
+  position: relative;
+  transition: border-color 0.3s;
+}
+
+.tier:hover { border-color: var(--green-dim); }
+
+.tier-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.tier-badge.verified { background: rgba(0,230,118,0.15); color: var(--green); }
+.tier-badge.community { background: rgba(255,179,0,0.12); color: var(--amber); }
+.tier-badge.experimental { background: rgba(255,68,68,0.1); color: var(--red); }
+
+.tier-name {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.01em;
+}
+
+.tier-desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.tier-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tier-features li {
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  color: var(--dim);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.tier-features li::before { content: '›'; color: var(--green); flex-shrink: 0; }
+.tier-features.amber li::before { color: var(--amber); }
+.tier-features.red li::before { color: var(--red); }
+
+/* WHO SECTION */
+.who-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  border: 1px solid var(--border);
+  margin-top: 4rem;
+}
+
+.who-card {
+  background: var(--surface);
+  padding: 3rem;
+  transition: background 0.3s;
+}
+
+.who-card:hover { background: var(--green-ghost); }
+
+.who-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.who-sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green-dim);
+  margin-bottom: 1.5rem;
+}
+
+.who-items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+}
+
+.who-items li {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--dim);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.who-items li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-family: 'IBM Plex Mono'; }
+
+/* WAITLIST */
+.waitlist-section {
+  padding: 8rem 3rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.waitlist-section::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0,230,118,0.05) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.waitlist-inner { position: relative; z-index: 2; }
+
+.waitlist-tag {
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green-dim);
+  margin-bottom: 2rem;
+  display: block;
+}
+
+.waitlist-title {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 1.2rem;
+}
+
+.waitlist-title .g { color: var(--green); }
+
+.waitlist-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--dim);
+  max-width: 46ch;
+  margin: 0 auto 3rem;
+}
+
+.waitlist-form {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  max-width: 520px;
+  margin: 0 auto 1.5rem;
+}
+
+.waitlist-form input {
+  flex: 1;
+  padding: 0.9rem 1.2rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-right: none;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.waitlist-form input::placeholder { color: var(--muted); }
+.waitlist-form input:focus { border-color: var(--green-dim); }
+
+.waitlist-form button {
+  padding: 0.9rem 1.8rem;
+  background: var(--green);
+  color: var(--bg);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.waitlist-form button:hover { background: #00c853; }
+
+.waitlist-options {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 1rem;
+}
+
+.wl-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.wl-opt input[type="checkbox"] { accent-color: var(--green); }
+
+.waitlist-note {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: rgba(90, 112, 96, 0.6);
+}
+
+#wl-success {
+  display: none;
+  font-size: 0.8rem;
+  color: var(--green);
+  letter-spacing: 0.05em;
+  margin-top: 1rem;
+}
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.footer-logo {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.footer-by {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.footer-links a {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--green); }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* RESPONSIVE */
+@media (max-width: 960px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  .hero { grid-template-columns: 1fr; padding: 8rem 1.5rem 4rem; gap: 3rem; }
+  .terminal { font-size: 0.68rem; }
+  .stats-bar { grid-template-columns: 1fr 1fr; padding: 2rem 1.5rem; gap: 1.5rem; }
+  .stat { border-right: none; padding: 0; }
+  .section { padding: 5rem 1.5rem; }
+  .flow { grid-template-columns: 1fr 1fr; }
+  .flow-step { border-bottom: 1px solid var(--border); }
+  .manifest-inner { grid-template-columns: 1fr; padding: 5rem 1.5rem; }
+  .manifest-explain { position: static; }
+  .tiers { grid-template-columns: 1fr; }
+  .who-section { grid-template-columns: 1fr; }
+  .waitlist-section { padding: 5rem 1.5rem; }
+  .waitlist-form { flex-direction: column; }
+  .waitlist-form input { border-right: 1px solid var(--border); border-bottom: none; }
+  footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+  .footer-left { flex-direction: column; gap: 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-mark"></div>
+    SwarmSpace
+  </a>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#manifest">Plugin format</a></li>
+      <li><a href="#tiers">Trust tiers</a></li>
+      <li><a href="#for-who">For who</a></li>
+    </ul>
+    <a href="#waitlist" class="nav-cta">Get early access</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Now open for early access
+    </div>
+    <h1 class="hero-title">
+      <span class="dim">One space.</span><br>
+      Every agent<br>
+      <span class="accent">capability.</span>
+    </h1>
+    <p class="hero-sub">
+      SwarmSpace is the capability space where AI agents discover and acquire capabilities at runtime — not at configuration time. Semantic search. Curated trust tiers. Built for consumer personal AI.
+    </p>
+    <div class="hero-actions">
+      <a href="#waitlist" class="btn-primary">List your capability</a>
+      <a href="#how" class="btn-outline">See how it works</a>
+    </div>
+  </div>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="t-dot red"></div>
+      <div class="t-dot yellow"></div>
+      <div class="t-dot green"></div>
+      <span class="terminal-title">agent-runtime.log</span>
+    </div>
+    <div class="terminal-body">
+      <div class="t-line"><span class="t-prompt">→</span><span class="t-cmd">agent.reason(<span class="t-str">"user wants to track sleep"</span>)</span></div>
+      <div class="t-blank"></div>
+      <div class="t-out t-comment">// capability gap detected: health.sleep_tracking</div>
+      <div class="t-out t-comment">// querying SwarmSpace...</div>
+      <div class="t-blank"></div>
+      <div class="t-line"><span class="t-prompt">→</span><span class="t-cmd">swarmspace.discover(<span class="t-str">"I need a tool that tracks sleep and HRV"</span>)</span></div>
+      <div class="t-blank"></div>
+      <div class="t-out"><span class="t-key">results</span>: [</div>
+      <div class="t-out" style="padding-left:3rem;">{ <span class="t-key">name</span>: <span class="t-str">"OuraSync"</span>, <span class="t-key">trust</span>: <span class="t-val">"verified"</span>, <span class="t-key">score</span>: <span class="t-val">0.94</span> },</div>
+      <div class="t-out" style="padding-left:3rem;">{ <span class="t-key">name</span>: <span class="t-str">"SleepKit"</span>, <span class="t-trust">trust</span>: <span class="t-val">"verified"</span>, <span class="t-key">score</span>: <span class="t-val">0.88</span> }</div>
+      <div class="t-out">]</div>
+      <div class="t-blank"></div>
+      <div class="t-out t-comment">// requesting user authorization...</div>
+      <div class="t-line"><span class="t-prompt">→</span><span class="t-cmd">user.confirm(<span class="t-str">"Allow OuraSync to read sleep data?"</span>)</span></div>
+      <div class="t-blank"></div>
+      <div class="t-out" style="color: var(--green);">✓ plugin activated · context: sleep_only · no PII shared</div>
+      <div class="t-blank"></div>
+      <div class="t-line"><span class="t-prompt">$</span><span class="t-cursor"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar reveal">
+  <div class="stat">
+    <div class="stat-value">3</div>
+    <div class="stat-label">Trust tiers</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">MCP</div>
+    <div class="stat-label">Protocol compatible</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">0</div>
+    <div class="stat-label">Config required</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">∞</div>
+    <div class="stat-label">Capabilities at runtime</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section" id="how">
+  <p class="section-tag reveal">How it works</p>
+  <h2 class="section-title reveal">From capability gap<br>to <span class="g">running plugin</span> in one call.</h2>
+  <p class="section-sub reveal">No pre-configuration. No hardcoded tool lists. The agent identifies what it needs, searches SwarmSpace, and gets authorized to use it — all at runtime, all with your permission.</p>
+
+  <div class="flow reveal">
+    <div class="flow-step">
+      <p class="step-num">01</p>
+      <span class="step-icon">🧠</span>
+      <h3 class="step-title">Agent detects a gap</h3>
+      <p class="step-desc">During reasoning, the agent determines its current capability set can't fulfill the user's need. It articulates the gap in natural language.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="flow-step">
+      <p class="step-num">02</p>
+      <span class="step-icon">🔍</span>
+      <h3 class="step-title">Queries SwarmSpace</h3>
+      <p class="step-desc">The agent sends a natural language query to SwarmSpace's semantic search API. Results are ranked by relevance and trust score, matched to the agent's permission level.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="flow-step">
+      <p class="step-num">03</p>
+      <span class="step-icon">🛡️</span>
+      <h3 class="step-title">User authorizes</h3>
+      <p class="step-desc">Before any plugin executes, the user is asked to authorize. No blanket access. No persistent permissions. Every activation is a new consent event.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="flow-step">
+      <p class="step-num">04</p>
+      <span class="step-icon">⚡</span>
+      <h3 class="step-title">Plugin runs</h3>
+      <p class="step-desc">The plugin executes with minimum necessary context. Your full user data never leaves your agent's trust boundary. Results flow back and the task completes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MANIFEST SECTION -->
+<div class="manifest-section" id="manifest">
+  <div class="manifest-inner">
+    <div class="manifest-explain reveal">
+      <p class="section-tag">Plugin format</p>
+      <h2 class="manifest-title">One manifest.<br><span class="g">Every agent</span> reads it.</h2>
+      <p class="manifest-body">
+        SwarmSpace capabilities use a standardized OpenAPI-style manifest — a JSON/YAML file that describes what your capability does, its trust tier, pricing, auth method, and semantic tags. Any LLM can parse and summarize it without reading full documentation.
+      </p>
+      <p class="manifest-body">
+        Manifests are the contract between your capability and every agent in the SwarmSpace ecosystem. Write it once. Discoverable everywhere.
+      </p>
+      <div class="manifest-callout">
+        <strong>Agent-to-agent compatible.</strong> Each plugin has a stable canonical URL and machine-readable summary. Agents can pass plugin references to each other as structured objects — inter-agent recommendation is a first-class use case.
+      </div>
+    </div>
+
+    <div class="code-block reveal reveal-delay-1">
+      <div class="code-header">
+        <span class="code-file">oura-sync.swarmspace.json</span>
+        <span class="code-lang">SwarmSpace Manifest v1</span>
+      </div>
+      <div class="code-body">
+<pre><span class="c-bracket">{</span>
+  <span class="c-key">"name"</span>: <span class="c-str">"OuraSync"</span>,
+  <span class="c-key">"version"</span>: <span class="c-str">"1.2.0"</span>,
+  <span class="c-key">"capability"</span>: <span class="c-str">"Read and analyze sleep, HRV,
+    and readiness data from Oura Ring"</span>,
+
+  <span class="c-key">"trust_tier"</span>: <span class="c-str">"verified"</span>,
+  <span class="c-key">"latency_class"</span>: <span class="c-str">"realtime"</span>,
+  <span class="c-key">"pricing"</span>: <span class="c-bracket">{</span>
+    <span class="c-key">"model"</span>: <span class="c-str">"free"</span>
+  <span class="c-bracket">}</span>,
+
+  <span class="c-key">"auth"</span>: <span class="c-bracket">{</span>
+    <span class="c-key">"method"</span>: <span class="c-str">"oauth2"</span>,
+    <span class="c-key">"scopes"</span>: <span class="c-bracket">[</span><span class="c-str">"sleep"</span>, <span class="c-str">"heartrate"</span><span class="c-bracket">]</span>
+  <span class="c-bracket">}</span>,
+
+  <span class="c-key">"context_required"</span>: <span class="c-str">"none"</span>, <span class="c-comment">// no PII needed</span>
+
+  <span class="c-key">"tags"</span>: <span class="c-bracket">[</span>
+    <span class="c-str">"health"</span>, <span class="c-str">"sleep"</span>, <span class="c-str">"wearables"</span>, <span class="c-str">"HRV"</span>
+  <span class="c-bracket">]</span>,
+
+  <span class="c-key">"agent_summary"</span>: <span class="c-str">"Reads Oura Ring sleep 
+    and HRV data. No personal context 
+    required. Use for sleep analysis, 
+    recovery scoring, health insights."</span>
+<span class="c-bracket">}</span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRUST TIERS -->
+<div class="section" id="tiers">
+  <p class="section-tag reveal">Trust architecture</p>
+  <h2 class="section-title reveal">Capabilities don't get to<br>decide <span class="g">how much they're trusted.</span></h2>
+  <p class="section-sub reveal">Every plugin sits in a trust tier. Every agent matches its permission level against the tier before execution. Users always know what they're authorizing.</p>
+
+  <div class="tiers reveal">
+    <div class="tier">
+      <span class="tier-badge verified">✓ Verified</span>
+      <h3 class="tier-name">Verified</h3>
+      <p class="tier-desc">Sandboxed, reviewed, and cryptographically signed by SwarmSpace. Eligible for use in privacy-sensitive contexts.</p>
+      <ul class="tier-features">
+        <li>Code review and sandbox testing</li>
+        <li>Cryptographic signing</li>
+        <li>Context minimization enforced</li>
+        <li>Listed in featured discovery</li>
+      </ul>
+    </div>
+    <div class="tier">
+      <span class="tier-badge community">◎ Community</span>
+      <h3 class="tier-name">Community</h3>
+      <p class="tier-desc">Published by developers, reviewed by the community. Good for general-purpose use without sensitive personal data.</p>
+      <ul class="tier-features amber">
+        <li>Community review process</li>
+        <li>Automated security scan</li>
+        <li>Standard context access</li>
+        <li>Open to all developers</li>
+      </ul>
+    </div>
+    <div class="tier">
+      <span class="tier-badge experimental">⚠ Experimental</span>
+      <h3 class="tier-name">Experimental</h3>
+      <p class="tier-desc">Unreviewed plugins for developers testing and iterating. Not eligible for personal data contexts by default.</p>
+      <ul class="tier-features red">
+        <li>No review required</li>
+        <li>User shown explicit warning</li>
+        <li>Isolated execution context</li>
+        <li>Sandbox only — no PII access</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FOR WHO -->
+<div class="section" id="for-who" style="padding-top: 0;">
+  <p class="section-tag reveal">Who it's for</p>
+  <h2 class="section-title reveal">Built for <span class="g">builders</span>.<br><span class="d">Ready for every agent.</span></h2>
+
+  <div class="who-section reveal">
+    <div class="who-card">
+      <p class="who-sub">Capability developers</p>
+      <h3 class="who-title">Build once. Every agent finds you.</h3>
+      <ul class="who-items">
+        <li>One manifest format, discoverable by any SwarmSpace-compatible agent</li>
+        <li>Semantic tagging means your plugin shows up for the right queries, not just keyword matches</li>
+        <li>Monetize via built-in pricing models — free, per-call, subscription</li>
+        <li>Trust tier review process designed for indie developers, not enterprise legal teams</li>
+        <li>Inter-agent recommendation means organic discovery across the ecosystem</li>
+      </ul>
+      <a href="#waitlist" class="btn-primary">List your capability</a>
+    </div>
+    <div class="who-card">
+      <p class="who-sub">AI agent developers</p>
+      <h3 class="who-title">Your agent. Infinite capabilities.</h3>
+      <ul class="who-items">
+        <li>Query SwarmSpace like any other tool call — one API, full semantic search</li>
+        <li>Trust tiers map to your agent's permission model automatically</li>
+        <li>No pre-configured tool lists — agents discover what they need when they need it</li>
+        <li>MCP-compatible — drop into existing protocol stacks without rewriting</li>
+        <li>Privacy enforced at the infrastructure level, not policy</li>
+      </ul>
+      <a href="#waitlist" class="btn-outline">Join the developer beta</a>
+    </div>
+  </div>
+</div>
+
+<!-- WAITLIST -->
+<div class="waitlist-section" id="waitlist">
+  <div class="waitlist-inner">
+    <span class="waitlist-tag">Early access — limited spots</span>
+    <h2 class="waitlist-title">
+      Your capability.<br>
+      <span class="g">Every agent.</span>
+    </h2>
+    <p class="waitlist-sub">
+      We're onboarding the first wave of capability builders and agent integrations. Tell us what you're building — we'll be in touch.
+    </p>
+
+    <div class="waitlist-options">
+      <label class="wl-opt">
+        <input type="checkbox" id="opt-dev" checked> I'm building a plugin
+      </label>
+      <label class="wl-opt">
+        <input type="checkbox" id="opt-agent"> I'm building an agent
+      </label>
+    </div>
+
+    <form class="waitlist-form" onsubmit="handleWaitlist(event)">
+      <input type="email" id="wlEmail" placeholder="you@yourproject.dev" required>
+      <button type="submit">Apply for access</button>
+    </form>
+
+    <p id="wl-success">✓ Got it. We'll reach out when we're ready for you.</p>
+    <p class="waitlist-note">No spam. Your email stays with us.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <span class="footer-logo">SwarmSpace</span>
+    <span class="footer-by">by Orbital AI — 2026</span>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#">Docs</a></li>
+    <li><a href="#">GitHub</a></li>
+    <li><a href="#">Discord</a></li>
+    <li><a href="#">Privacy</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Cursor glow
+  const glow = document.getElementById('cursorGlow');
+  document.addEventListener('mousemove', e => {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // Waitlist
+  function handleWaitlist(e) {
+    e.preventDefault();
+    const email = document.getElementById('wlEmail');
+    const success = document.getElementById('wl-success');
+    if (email.value) {
+      email.closest('form').style.display = 'none';
+      document.querySelector('.waitlist-options').style.display = 'none';
+      success.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

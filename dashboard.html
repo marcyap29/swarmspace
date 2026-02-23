@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwarmSpace — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080c0a; --surface: #0d1410; --surface2: #111a14;
+  --green: #00e676; --green-dim: rgba(0,230,118,0.5); --green-ghost: rgba(0,230,118,0.07);
+  --text: #e8f0eb; --muted: #5a7060; --border: rgba(0,255,128,0.12);
+  --amber: #ffb300; --amber-ghost: rgba(255,179,0,0.08); --red: #ff4444;
+}
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.2rem 3rem; display: flex; justify-content: space-between; align-items: center; background: rgba(8,12,10,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-logo { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; font-weight: 500; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.6rem; }
+.logo-mark { width: 18px; height: 18px; border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; }
+.logo-mark::before { content: ''; width: 7px; height: 7px; background: var(--green); animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+.nav-right { display: flex; align-items: center; gap: 1.5rem; }
+.nav-email { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+.nav-signout { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); background: none; border: none; cursor: pointer; transition: color 0.2s; }
+.nav-signout:hover { color: var(--red); }
+
+/* LAYOUT */
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; padding-top: 57px; }
+
+/* SIDEBAR */
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 2rem 0; position: sticky; top: 57px; height: calc(100vh - 57px); overflow-y: auto; }
+.sidebar-section { padding: 0 1.5rem; margin-bottom: 2rem; }
+.sidebar-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.8rem; }
+.sidebar-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.8rem; font-size: 0.82rem; color: var(--muted); cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s; margin-bottom: 0.2rem; }
+.sidebar-item:hover { background: var(--green-ghost); color: var(--text); }
+.sidebar-item.active { background: var(--green-ghost); color: var(--green); }
+.sidebar-item .icon { font-size: 0.9rem; width: 18px; text-align: center; }
+
+/* PLAN BADGE IN SIDEBAR */
+.plan-box { margin: 0 1.5rem; padding: 1rem; border: 1px solid var(--border); background: var(--bg); }
+.plan-current { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+.plan-name { font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.8rem; }
+.plan-name.free { color: var(--text); }
+.plan-name.verified { color: var(--green); }
+.btn-upgrade { width: 100%; padding: 0.6rem; background: var(--green); color: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.08em; border: none; cursor: pointer; transition: background 0.2s; }
+.btn-upgrade:hover { background: #00c853; }
+.plan-verified-msg { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--green-dim); line-height: 1.5; }
+
+/* MAIN */
+main { padding: 3rem; max-width: 900px; }
+.page { display: none; }
+.page.active { display: block; }
+
+.page-title { font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 500; margin-bottom: 0.4rem; }
+.page-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2.5rem; line-height: 1.6; }
+
+/* OVERVIEW CARDS */
+.overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); margin-bottom: 3rem; }
+.ov-card { background: var(--surface); padding: 1.5rem 2rem; }
+.ov-val { font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; font-weight: 500; color: var(--green); margin-bottom: 0.3rem; }
+.ov-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+/* NOTICE BOX */
+.notice { padding: 1rem 1.2rem; border-left: 2px solid; margin-bottom: 2rem; font-size: 0.83rem; line-height: 1.6; }
+.notice.info { border-color: var(--green); background: var(--green-ghost); color: var(--green-dim); }
+.notice.warn { border-color: var(--amber); background: var(--amber-ghost); color: rgba(255,179,0,0.8); }
+.notice strong { font-weight: 500; color: inherit; }
+
+/* PLUGIN FORM */
+.form-group { margin-bottom: 1.4rem; }
+label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+.label-hint { font-family: 'IBM Plex Sans', sans-serif; font-size: 0.72rem; color: var(--muted); font-weight: 300; letter-spacing: 0; text-transform: none; margin-left: 0.5rem; opacity: 0.7; }
+input, textarea, select { width: 100%; padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; outline: none; transition: border-color 0.2s; }
+input:focus, textarea:focus, select:focus { border-color: var(--green-dim); }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+textarea { resize: vertical; min-height: 100px; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.85rem; line-height: 1.6; }
+select option { background: var(--surface); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.btn { padding: 0.85rem 2rem; background: var(--green); color: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; border: none; cursor: pointer; transition: background 0.2s; }
+.btn:hover { background: #00c853; }
+.btn:disabled { background: var(--muted); cursor: not-allowed; }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.65rem; }
+
+/* PLUGINS LIST */
+.plugins-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); }
+.plugin-row { background: var(--surface); padding: 1.2rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.plugin-row:hover { background: var(--surface2); }
+.plugin-info { flex: 1; }
+.plugin-name { font-size: 0.88rem; font-weight: 500; margin-bottom: 0.25rem; }
+.plugin-desc { font-size: 0.78rem; color: var(--muted); }
+.plugin-meta { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+.tier-chip { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem; }
+.tier-chip.experimental { background: rgba(255,68,68,0.1); color: var(--red); }
+.tier-chip.community { background: rgba(255,179,0,0.1); color: var(--amber); }
+.tier-chip.verified { background: var(--green-ghost); color: var(--green); }
+.status-chip { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--muted); }
+
+.empty-state { padding: 4rem; text-align: center; border: 1px dashed var(--border); }
+.empty-state p { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+/* UPGRADE PAGE */
+.pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin-bottom: 2rem; }
+.pricing-card { background: var(--surface); padding: 2.5rem; }
+.pricing-card.featured { background: var(--surface2); position: relative; }
+.pricing-badge { position: absolute; top: -1px; right: 1.5rem; background: var(--green); color: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; }
+.pricing-plan { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.pricing-price { font-family: 'IBM Plex Mono', monospace; font-size: 2.5rem; font-weight: 500; margin-bottom: 0.3rem; }
+.pricing-price span { font-size: 0.9rem; color: var(--muted); }
+.pricing-desc { font-size: 0.83rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+.pricing-features { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 2rem; }
+.pricing-features li { font-size: 0.82rem; color: var(--muted); display: flex; gap: 0.7rem; }
+.pricing-features li::before { content: '›'; color: var(--green); flex-shrink: 0; }
+.pricing-features li.active { color: var(--text); }
+
+/* MSG */
+.msg { padding: 0.8rem 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; line-height: 1.5; margin-bottom: 1rem; display: none; }
+.msg.error { background: rgba(255,68,68,0.08); border-left: 2px solid var(--red); color: #ff8a80; }
+.msg.success { background: var(--green-ghost); border-left: 2px solid var(--green); color: var(--green); }
+
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  main { padding: 2rem 1.5rem; }
+  .overview-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="logo-mark"></div>
+    SwarmSpace
+  </a>
+  <div class="nav-right">
+    <span class="nav-email" id="nav-email"></span>
+    <button class="nav-signout" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Developer</div>
+      <div class="sidebar-item active" onclick="showPage('overview', this)">
+        <span class="icon">◎</span> Overview
+      </div>
+      <div class="sidebar-item" onclick="showPage('plugins', this)">
+        <span class="icon">⬡</span> My capabilities
+      </div>
+      <div class="sidebar-item" onclick="showPage('submit', this)">
+        <span class="icon">＋</span> Submit capability
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item" onclick="showPage('upgrade', this)">
+        <span class="icon">✦</span> Upgrade
+      </div>
+    </div>
+    <div class="plan-box" id="sidebar-plan">
+      <!-- injected by JS -->
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+    <!-- OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <h1 class="page-title">Overview</h1>
+      <p class="page-sub">Welcome to SwarmSpace. Build plugins, get discovered by AI agents.</p>
+
+      <div class="overview-grid">
+        <div class="ov-card">
+          <div class="ov-val" id="stat-plugins">—</div>
+          <div class="ov-label">Plugins listed</div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-val" id="stat-plan">—</div>
+          <div class="ov-label">Current plan</div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-val" id="stat-status">—</div>
+          <div class="ov-label">Review status</div>
+        </div>
+      </div>
+
+      <div class="notice info" id="launch-notice">
+        <strong>SwarmSpace launches soon.</strong> You're getting in early. Verified plugins submitted now will be prioritized in discovery when we go live.
+      </div>
+    </div>
+
+    <!-- PLUGINS -->
+    <div class="page" id="page-plugins">
+      <h1 class="page-title">My capabilities</h1>
+      <p class="page-sub">Plugins you've submitted to SwarmSpace.</p>
+      <div id="plugins-list-container">
+        <div class="empty-state">
+          <p>No plugins yet. Submit your first one.</p>
+          <button class="btn btn-sm" onclick="showPage('submit', null)">Submit a capability →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT PLUGIN -->
+    <div class="page" id="page-submit">
+      <h1 class="page-title">Submit a capability</h1>
+      <p class="page-sub">Tell us what your plugin does. We'll review it for the SwarmSpace marketplace.</p>
+
+      <div id="submit-msg" class="msg"></div>
+
+      <div id="submit-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Plugin name</label>
+            <input type="text" id="plugin-name" placeholder="e.g. OuraSync">
+          </div>
+          <div class="form-group">
+            <label>Your website / repo URL <span class="label-hint">optional</span></label>
+            <input type="url" id="plugin-website" placeholder="https://github.com/you/plugin">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Capability description <span class="label-hint">plain English — this is what agents search for</span></label>
+          <textarea id="plugin-capability" placeholder="e.g. Read and analyze sleep, HRV, and readiness data from Oura Ring. Returns sleep scores, recovery metrics, and trend analysis."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Manifest URL <span class="label-hint">optional — your OpenAPI/SwarmSpace manifest</span></label>
+          <input type="url" id="plugin-manifest" placeholder="https://yourplugin.dev/.well-known/swarmspace.json">
+        </div>
+
+        <div class="form-group">
+          <label>Trust tier requested</label>
+          <select id="plugin-tier">
+            <option value="experimental">Experimental — no review needed</option>
+            <option value="community">Community — community review</option>
+            <option value="verified" id="verified-option">Verified — full review (requires $29/mo plan)</option>
+          </select>
+        </div>
+
+        <div class="notice warn" id="verified-warning" style="display:none">
+          <strong>Verified tier requires the Verified plan ($29/mo).</strong> Upgrade your plan first, then resubmit for Verified review.
+        </div>
+
+        <button class="btn" onclick="submitPlugin()">Submit for review →</button>
+      </div>
+    </div>
+
+    <!-- UPGRADE -->
+    <div class="page" id="page-upgrade">
+      <h1 class="page-title">Upgrade to Verified</h1>
+      <p class="page-sub">Get your plugin reviewed, verified, and prioritized in SwarmSpace discovery.</p>
+
+      <div id="upgrade-msg" class="msg"></div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-plan">Free</p>
+          <div class="pricing-price">$0<span>/mo</span></div>
+          <p class="pricing-desc">List your capability, get discovered by agents searching for capabilities.</p>
+          <ul class="pricing-features">
+            <li class="active">List up to 3 plugins</li>
+            <li class="active">Experimental & Community tiers</li>
+            <li class="active">Semantic discovery</li>
+            <li>Verified badge</li>
+            <li>Priority review queue</li>
+            <li>Featured placement at launch</li>
+          </ul>
+          <button class="btn" disabled style="background:var(--muted);cursor:default;">Current plan</button>
+        </div>
+        <div class="pricing-card featured" id="upgrade-card">
+          <div class="pricing-badge">Recommended</div>
+          <p class="pricing-plan">Verified</p>
+          <div class="pricing-price">$29<span>/mo</span></div>
+          <p class="pricing-desc">Get reviewed, verified, and trusted by agents and users. First in line when SwarmSpace launches.</p>
+          <ul class="pricing-features">
+            <li class="active">Everything in Free</li>
+            <li class="active">Verified badge on your plugins</li>
+            <li class="active">Priority review queue</li>
+            <li class="active">Featured placement at launch</li>
+            <li class="active">Direct support access</li>
+          </ul>
+          <button class="btn" id="upgrade-btn" onclick="startUpgrade()">Upgrade to Verified →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  // ────────────────────────────────────────────────────────────────
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let currentUser = null;
+  let developerData = null;
+
+  // ── INIT ─────────────────────────────────────────────────────────
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return window.location.href = '/signup.html';
+
+    currentUser = session.user;
+    document.getElementById('nav-email').textContent = currentUser.email;
+
+    await loadDeveloper();
+    await loadPlugins();
+    handleSessionParam();
+  }
+
+  async function loadDeveloper() {
+    const { data } = await sb.from('developers').select('*').eq('id', currentUser.id).single();
+    developerData = data;
+    renderPlanUI();
+  }
+
+  async function loadPlugins() {
+    const { data: plugins } = await sb.from('plugins').select('*').eq('developer_id', currentUser.id).order('created_at', { ascending: false });
+
+    // Stats
+    document.getElementById('stat-plugins').textContent = plugins?.length || 0;
+    document.getElementById('stat-plan').textContent = developerData?.plan === 'verified' ? 'Verified' : 'Free';
+    const pending = plugins?.filter(p => p.review_status === 'pending').length || 0;
+    document.getElementById('stat-status').textContent = pending > 0 ? `${pending} pending` : '—';
+
+    // Plugins list
+    if (plugins && plugins.length > 0) {
+      const container = document.getElementById('plugins-list-container');
+      container.innerHTML = `<div class="plugins-list">${plugins.map(p => `
+        <div class="plugin-row">
+          <div class="plugin-info">
+            <div class="plugin-name">${p.name}</div>
+            <div class="plugin-desc">${p.capability?.substring(0, 80) || 'No description'}${p.capability?.length > 80 ? '...' : ''}</div>
+          </div>
+          <div class="plugin-meta">
+            <span class="tier-chip ${p.trust_tier}">${p.trust_tier}</span>
+            <span class="status-chip">${p.review_status}</span>
+          </div>
+        </div>`).join('')}</div>`;
+    }
+  }
+
+  function renderPlanUI() {
+    const plan = developerData?.plan || 'free';
+    const sidebarPlan = document.getElementById('sidebar-plan');
+    const upgradeCard = document.getElementById('upgrade-card');
+    const upgradeBtn = document.getElementById('upgrade-btn');
+
+    if (plan === 'verified') {
+      sidebarPlan.innerHTML = `
+        <div class="plan-current">Current plan</div>
+        <div class="plan-name verified">✓ Verified</div>
+        <p class="plan-verified-msg">Your plugins are eligible for Verified review. We'll be in touch.</p>`;
+      if (upgradeBtn) {
+        upgradeBtn.textContent = '✓ Already on Verified';
+        upgradeBtn.disabled = true;
+      }
+    } else {
+      sidebarPlan.innerHTML = `
+        <div class="plan-current">Current plan</div>
+        <div class="plan-name free">Free</div>
+        <button class="btn-upgrade" onclick="showPage('upgrade', null)">Upgrade — $29/mo</button>`;
+    }
+  }
+
+  // ── NAVIGATION ───────────────────────────────────────────────────
+  function showPage(pageId, clickedItem) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    document.getElementById(`page-${pageId}`).classList.add('active');
+    if (clickedItem) clickedItem.classList.add('active');
+
+    // Warn on verified tier select
+    if (pageId === 'submit') {
+      document.getElementById('plugin-tier').addEventListener('change', function() {
+        const warn = document.getElementById('verified-warning');
+        warn.style.display = this.value === 'verified' && developerData?.plan !== 'verified' ? 'block' : 'none';
+      });
+    }
+  }
+
+  // ── SUBMIT PLUGIN ─────────────────────────────────────────────────
+  async function submitPlugin() {
+    const name = document.getElementById('plugin-name').value.trim();
+    const capability = document.getElementById('plugin-capability').value.trim();
+    const website = document.getElementById('plugin-website').value.trim();
+    const manifest = document.getElementById('plugin-manifest').value.trim();
+    const tier = document.getElementById('plugin-tier').value;
+
+    if (!name || !capability) return showMsg('submit-msg', 'Please fill in the plugin name and capability description.', 'error');
+
+    if (tier === 'verified' && developerData?.plan !== 'verified') {
+      return showMsg('submit-msg', 'Verified tier requires the Verified plan. Please upgrade first.', 'error');
+    }
+
+    const btn = document.querySelector('#page-submit .btn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    const { error } = await sb.from('plugins').insert({
+      developer_id: currentUser.id,
+      name,
+      capability,
+      website_url: website || null,
+      manifest_url: manifest || null,
+      trust_tier: tier,
+      review_status: 'pending',
+      submitted_at: new Date().toISOString()
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Submit for review →';
+
+    if (error) return showMsg('submit-msg', error.message, 'error');
+
+    showMsg('submit-msg', '✓ Plugin submitted. We\'ll review it and be in touch.', 'success');
+    document.getElementById('submit-form').querySelectorAll('input, textarea').forEach(el => el.value = '');
+    await loadPlugins();
+  }
+
+  // ── UPGRADE ───────────────────────────────────────────────────────
+  async function startUpgrade() {
+    const btn = document.getElementById('upgrade-btn');
+    btn.disabled = true;
+    btn.textContent = 'Redirecting to checkout...';
+
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: developerData?.stripe_customer_id || null,
+          email: currentUser.email,
+          developerName: developerData?.name || currentUser.email
+        })
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Checkout failed');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Upgrade to Verified →';
+      showMsg('upgrade-msg', err.message, 'error');
+    }
+  }
+
+  // ── UTILS ─────────────────────────────────────────────────────────
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `msg ${type}`;
+    el.style.display = 'block';
+  }
+
+  function handleSessionParam() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('session') === 'success') {
+      showPage('overview', document.querySelector('.sidebar-item'));
+      loadDeveloper(); // refresh plan
+      history.replaceState({}, '', '/dashboard.html');
+    }
+  }
+
+  async function signOut() {
+    await sb.auth.signOut();
+    window.location.href = '/signup.html';
+  }
+
+  init();
+</script>
+</body>
+</html>
