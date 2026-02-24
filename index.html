@@ -868,8 +868,159 @@ footer {
   footer { flex-direction: column; gap: 1.5rem; text-align: center; }
   .footer-left { flex-direction: column; gap: 0.5rem; }
 }
+
+/* MARKETPLACE TEASER */
+.teaser-section {
+  padding: 7rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.teaser-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+}
+.teaser-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green-dim);
+  margin-bottom: 1.2rem;
+}
+.teaser-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 300;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+.teaser-title em {
+  font-style: italic;
+  color: rgba(0,230,118,0.7);
+  font-family: 'Cormorant Garamond', serif;
+}
+.teaser-sub {
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 500px;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+}
+.teaser-preview {
+  position: relative;
+  max-width: 960px;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0a0b0d;
+}
+.teaser-preview-bar {
+  background: #0f1115;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.teaser-dots { display: flex; gap: 6px; }
+.teaser-dot { width: 10px; height: 10px; border-radius: 50%; }
+.teaser-url {
+  flex: 1;
+  background: #1a1e27;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: left;
+}
+.teaser-screen {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  height: 380px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.teaser-sidebar {
+  background: #0f1115;
+  border-right: 1px solid var(--border);
+  padding: 16px 0;
+  overflow: hidden;
+}
+.teaser-sidebar-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 14px;
+  margin-bottom: 8px;
+}
+.teaser-sidebar-item {
+  padding: 6px 14px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.teaser-sidebar-item.active { color: #00ff88; background: rgba(0,255,136,0.06); }
+.teaser-sidebar-count { font-size: 0.6rem; background: #1a1e27; padding: 1px 5px; border-radius: 8px; }
+.teaser-main { padding: 16px; overflow: hidden; }
+.teaser-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.teaser-card {
+  background: #0f1115;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+}
+.teaser-card.hi { border-color: rgba(0,255,136,0.25); }
+.teaser-card-icon { font-size: 1.2rem; margin-bottom: 6px; }
+.teaser-card-name { font-size: 0.68rem; font-weight: 600; color: #e8eaf0; margin-bottom: 3px; font-family: 'IBM Plex Sans', sans-serif; }
+.teaser-card-desc { font-size: 0.6rem; color: var(--muted); line-height: 1.4; margin-bottom: 8px; font-family: 'IBM Plex Sans', sans-serif; }
+.teaser-card-footer { display: flex; align-items: center; gap: 4px; }
+.teaser-pill { font-size: 0.52rem; padding: 1px 5px; border-radius: 2px; letter-spacing: 0.05em; }
+.teaser-pill.v { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
+.teaser-pill.c { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+.teaser-price { margin-left: auto; font-size: 0.6rem; color: #00ff88; }
+.teaser-price.paid { color: #e8eaf0; }
+.teaser-price.usage { color: #60a5fa; }
+.teaser-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(8,12,10,0.97) 85%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 3rem;
+  gap: 1rem;
+}
+.teaser-lock {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+.teaser-cta {
+  display: inline-block;
+  background: var(--green);
+  color: var(--bg);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 0.8rem 2rem;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.teaser-cta:hover { background: #00c853; }
+
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -888,9 +1039,7 @@ footer {
       <li><a href="#tiers">Trust tiers</a></li>
       <li><a href="#for-who">For who</a></li>
     </ul>
-    <a href="/signup.html" class="nav-signin" id="nav-signin">Sign in</a>
-    <a href="#waitlist" class="nav-cta" id="nav-cta">Get early access</a>
-    <a href="/marketplace.html" class="nav-cta" id="nav-marketplace" style="display:none">Preview marketplace →</a>
+    <a href="/signup.html" class="nav-cta">Sign up free</a>
   </div>
 </nav>
 
@@ -899,7 +1048,7 @@ footer {
   <div class="hero-left">
     <div class="hero-badge">
       <span class="badge-dot"></span>
-      Now open for early access
+      Now open — sign up free
     </div>
     <h1 class="hero-title">
       <span class="dim">One space.</span><br>
@@ -910,8 +1059,8 @@ footer {
       SwarmSpace is the capability space where AI agents discover and acquire capabilities at runtime — not at configuration time. Semantic search. Curated trust tiers. Built for consumer personal AI.
     </p>
     <div class="hero-actions">
-      <a href="#waitlist" class="btn-primary">List your capability</a>
-      <a href="#how" class="btn-outline">See how it works</a>
+      <a href="/signup.html" class="btn-primary">Get free access →</a>
+      <a href="#marketplace-preview" class="btn-outline">Preview the marketplace</a>
     </div>
   </div>
 
@@ -1117,7 +1266,7 @@ footer {
         <li>Trust tier review process designed for indie developers, not enterprise legal teams</li>
         <li>Inter-agent recommendation means organic discovery across the ecosystem</li>
       </ul>
-      <a href="#waitlist" class="btn-primary">List your capability</a>
+      <a href="/signup.html" class="btn-primary">Get free access →</a>
     </div>
     <div class="who-card">
       <p class="who-sub">AI agent developers</p>
@@ -1135,33 +1284,107 @@ footer {
 </div>
 
 <!-- WAITLIST -->
-<div class="waitlist-section" id="waitlist">
-  <div class="waitlist-inner">
-    <span class="waitlist-tag">Early access — limited spots</span>
-    <h2 class="waitlist-title">
-      Your capability.<br>
-      <span class="g">Every agent.</span>
-    </h2>
-    <p class="waitlist-sub">
-      We're onboarding the first wave of capability builders and agent integrations. Tell us what you're building — we'll be in touch.
-    </p>
 
-    <div class="waitlist-options">
-      <label class="wl-opt">
-        <input type="checkbox" id="opt-dev" checked> I'm building a plugin
-      </label>
-      <label class="wl-opt">
-        <input type="checkbox" id="opt-agent"> I'm building an agent
-      </label>
+<!-- MARKETPLACE TEASER -->
+<div class="teaser-section" id="marketplace-preview">
+  <div class="teaser-label">⬡ SwarmSpace Marketplace — Early Access</div>
+  <h2 class="teaser-title">See what your agent<br>will be able to <em>find.</em></h2>
+  <p class="teaser-sub">The SwarmSpace marketplace launches soon. Join the waitlist to get access — and see exactly what AI agents will discover when they need a capability you haven't thought of yet.</p>
+
+  <div class="teaser-preview">
+    <!-- Fake browser chrome -->
+    <div class="teaser-preview-bar">
+      <div class="teaser-dots">
+        <div class="teaser-dot" style="background:#ff5f57"></div>
+        <div class="teaser-dot" style="background:#febc2e"></div>
+        <div class="teaser-dot" style="background:#28c840"></div>
+      </div>
+      <div class="teaser-url">swarmspace.dev/marketplace</div>
     </div>
 
-    <form class="waitlist-form" onsubmit="handleWaitlist(event)">
-      <input type="email" id="wlEmail" placeholder="you@yourproject.dev" required>
-      <button type="submit">Apply for access</button>
-    </form>
+    <!-- Fake marketplace UI -->
+    <div class="teaser-screen">
+      <div class="teaser-sidebar">
+        <div class="teaser-sidebar-label">Browse</div>
+        <div class="teaser-sidebar-item active">◈ All Capabilities <span class="teaser-sidebar-count" style="color:#00ff88;background:rgba(0,255,136,0.1)">1,247</span></div>
+        <div class="teaser-sidebar-item">✦ New Releases <span class="teaser-sidebar-count">34</span></div>
+        <div class="teaser-sidebar-item">↑ Trending <span class="teaser-sidebar-count">12</span></div>
+        <div class="teaser-sidebar-item">★ Top Rated <span class="teaser-sidebar-count">50</span></div>
+        <div style="height:1px;background:var(--border);margin:10px 0"></div>
+        <div class="teaser-sidebar-label">Categories</div>
+        <div class="teaser-sidebar-item">📧 Communication <span class="teaser-sidebar-count">142</span></div>
+        <div class="teaser-sidebar-item">💰 Finance <span class="teaser-sidebar-count">89</span></div>
+        <div class="teaser-sidebar-item">🏥 Health <span class="teaser-sidebar-count">73</span></div>
+        <div class="teaser-sidebar-item">🎨 Creativity <span class="teaser-sidebar-count">110</span></div>
+        <div class="teaser-sidebar-item">💼 Career <span class="teaser-sidebar-count">95</span></div>
+      </div>
+      <div class="teaser-main">
+        <div style="display:flex;gap:6px;margin-bottom:12px;">
+          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid #00ff88;color:#00ff88;background:rgba(0,255,136,0.06)">All</div>
+          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid var(--border);color:var(--muted)">Most Installed</div>
+          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid var(--border);color:var(--muted)">Highest Rated</div>
+          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid var(--border);color:var(--muted)">Free</div>
+          <div style="margin-left:auto;font-size:0.6rem;color:var(--muted)">1,247 capabilities</div>
+        </div>
+        <div class="teaser-cards">
+          <div class="teaser-card hi">
+            <div class="teaser-card-icon">📋</div>
+            <div class="teaser-card-name">HealthVault Connector</div>
+            <div class="teaser-card-desc">Read-only health data. Oura, Apple Health, Whoop. Anomaly detection.</div>
+            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price">Free</span></div>
+          </div>
+          <div class="teaser-card">
+            <div class="teaser-card-icon">💬</div>
+            <div class="teaser-card-name">EmailBrief</div>
+            <div class="teaser-card-desc">Zero-retention inbox triage. Drafts in your voice. No data stored.</div>
+            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price usage">$0.002/run</span></div>
+          </div>
+          <div class="teaser-card">
+            <div class="teaser-card-icon">💰</div>
+            <div class="teaser-card-name">NetworthTracker</div>
+            <div class="teaser-card-desc">Read-only Plaid. Net worth trends, monthly snapshots. No writes.</div>
+            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price paid">$4.99/mo</span></div>
+          </div>
+          <div class="teaser-card">
+            <div class="teaser-card-icon">🗺️</div>
+            <div class="teaser-card-name">LifeTimeline</div>
+            <div class="teaser-card-desc">Structures personal history into a semantic timeline for your AI.</div>
+            <div class="teaser-card-footer"><span class="teaser-pill c">◉ Community</span><span class="teaser-price">Free</span></div>
+          </div>
+          <div class="teaser-card">
+            <div class="teaser-card-icon">🔔</div>
+            <div class="teaser-card-name">AlertRouter</div>
+            <div class="teaser-card-desc">Cross-platform notifications. 45ms to Telegram, Slack, Signal.</div>
+            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price">Free</span></div>
+          </div>
+          <div class="teaser-card">
+            <div class="teaser-card-icon">📊</div>
+            <div class="teaser-card-name">CareerLens</div>
+            <div class="teaser-card-desc">CV parsing, skills gap analysis, trajectory modeling.</div>
+            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price paid">$2.99/mo</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <p id="wl-success">✓ Got it. We'll reach out when we're ready for you.</p>
-    <p class="waitlist-note">No spam. Your email stays with us.</p>
+    <!-- Frosted overlay with CTA -->
+    <div class="teaser-overlay">
+      <p class="teaser-lock">⬡ Sign up free to explore the full marketplace</p>
+      <a href="/signup.html" class="teaser-cta">Sign up free →</a>
+    </div>
+  </div>
+</div>
+
+<div class="waitlist-section" id="signup-cta">
+  <div class="waitlist-inner">
+    <span class="waitlist-tag">Free — no credit card required</span>
+    <h2 class="waitlist-title">
+      Start building.<br>
+      <span style="opacity:0.5">Join SwarmSpace today.</span>
+    </h2>
+    <p class="waitlist-sub">Sign up free and get access to the marketplace preview. Submit your first capability. Be part of the ecosystem before it goes public.</p>
+    <a href="/signup.html" style="display:inline-block;background:var(--green);color:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:0.82rem;font-weight:500;letter-spacing:0.08em;padding:1rem 2.5rem;text-decoration:none;transition:background 0.2s;margin-top:1rem;">Create free account →</a>
+    <p style="margin-top:1.2rem;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted);">Already have an account? <a href="/signup.html" style="color:var(--green-dim);text-decoration:none;">Sign in →</a></p>
   </div>
 </div>
 
@@ -1241,25 +1464,6 @@ footer {
   }
 </script>
 
-<script>
-  // Check if logged in — swap nav CTAs
-  (function() {
-    const SUPABASE_URL = 'https://hzboqpnmokhllvydknjz.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_s_4jnWqudwyHFv81Y7jmng_jxWnD_6a';
-    const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    sb.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        const signin = document.getElementById('nav-signin');
-        const cta = document.getElementById('nav-cta');
-        const mkt = document.getElementById('nav-marketplace');
-        if (signin) signin.style.display = 'none';
-        if (cta) cta.style.display = 'none';
-        if (mkt) mkt.style.display = 'inline-block';
-      }
-    });
-  })();
-</script>
 </body>
 </html>
 Swarmstore architecture and hosting setup - Claude

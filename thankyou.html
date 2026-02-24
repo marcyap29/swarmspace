@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwarmSpace — Welcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0a0b0d; --bg2: #0f1115; --bg3: #141720; --bg4: #1a1e27;
+    --border: #1e2330; --border-bright: #2a3045;
+    --text: #e8eaf0; --text-dim: #6b7280; --text-mid: #9ca3af;
+    --green: #00ff88; --green-dim: #00cc6a; --green-bg: rgba(0,255,136,0.06);
+    --amber: #f59e0b; --amber-bg: rgba(245,158,11,0.08);
+    --blue: #60a5fa; --red: #f87171; --red-bg: rgba(248,113,113,0.08);
+    --purple: #a78bfa; --purple-bg: rgba(167,139,250,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --display: 'Space Grotesk', sans-serif;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+
+  /* TOPBAR */
+  .topbar { position: sticky; top: 0; z-index: 100; background: rgba(10,11,13,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 24px; padding: 0 24px; height: 52px; }
+  .logo { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--green); letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0; }
+  .logo-icon { width: 22px; height: 22px; display: grid; grid-template: repeat(3,1fr)/repeat(3,1fr); gap: 2px; }
+  .logo-dot { background: var(--green); border-radius: 1px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .nav-user { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+  .nav-signout { font-family: var(--mono); font-size: 11px; color: var(--text-dim); background: none; border: none; cursor: pointer; padding: 6px 12px; transition: color 0.15s; }
+  .nav-signout:hover { color: var(--red); }
+
+  /* WELCOME BANNER */
+  .welcome-banner { background: var(--green-bg); border-bottom: 1px solid rgba(0,255,136,0.15); padding: 1.2rem 2rem; display: flex; align-items: center; justify-content: center; gap: 1rem; position: relative; z-index: 1; }
+  .welcome-inner { text-align: center; }
+  .welcome-inner h2 { font-family: var(--mono); font-size: 0.85rem; font-weight: 600; color: var(--green); margin-bottom: 0.2rem; letter-spacing: 0.05em; }
+  .welcome-inner p { font-size: 0.8rem; color: var(--text-mid); }
+
+  /* PAGE BODY */
+  .page { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+
+  /* LAYOUT */
+  .layout { display: grid; grid-template-columns: 220px 1fr 300px; gap: 0; min-height: 80vh; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 20px 0; }
+  .sidebar-section { padding: 0 16px; margin-bottom: 28px; }
+  .sidebar-label { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; padding: 0 4px; }
+  .sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 8px; border-radius: 5px; cursor: pointer; font-size: 13px; color: var(--text-mid); gap: 8px; transition: all 0.15s; }
+  .sidebar-item:hover { background: var(--bg3); color: var(--text); }
+  .sidebar-item.active { background: var(--green-bg); color: var(--green); }
+  .sidebar-count { font-family: var(--mono); font-size: 10px; background: var(--bg4); padding: 1px 6px; border-radius: 10px; color: var(--text-dim); }
+  .sidebar-item.active .sidebar-count { background: rgba(0,255,136,0.15); color: var(--green); }
+  .trust-filter { display: flex; flex-direction: column; gap: 4px; }
+  .trust-badge-filter { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 5px; cursor: pointer; font-size: 12px; transition: all 0.15s; }
+  .trust-badge-filter:hover { background: var(--bg3); }
+  .trust-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .trust-dot.verified { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .trust-dot.community { background: var(--amber); }
+  .trust-dot.experimental { background: var(--text-dim); }
+
+  /* MAIN */
+  .main { padding: 24px; background: var(--bg); }
+  .sortbar { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .sort-btn { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
+  .sort-btn.active { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+  .sort-spacer { flex: 1; }
+  .filter-count { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+
+  /* PLUGIN GRID */
+  .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .plugin-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .plugin-card:hover { border-color: var(--border-bright); background: var(--bg3); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .plugin-card.featured { border-color: rgba(0,255,136,0.25); background: linear-gradient(135deg, var(--bg3) 0%, rgba(0,255,136,0.03) 100%); }
+  .plugin-card.featured::before { content: 'FEATURED'; position: absolute; top: 10px; right: 10px; font-family: var(--mono); font-size: 8px; font-weight: 600; letter-spacing: 1.5px; color: var(--green); background: var(--green-bg); padding: 2px 6px; border-radius: 3px; }
+  .plugin-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .plugin-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--bg4); border: 1px solid var(--border); }
+  .plugin-meta { flex: 1; min-width: 0; }
+  .plugin-name { font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .plugin-author { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+  .plugin-desc { font-size: 12px; color: var(--text-mid); line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .plugin-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .trust-pill { display: flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; }
+  .trust-pill.verified { background: var(--green-bg); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+  .trust-pill.community { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+  .trust-pill.experimental { background: rgba(107,114,128,0.1); color: var(--text-dim); border: 1px solid var(--border); }
+  .plugin-rating { display: flex; align-items: center; gap: 3px; font-family: var(--mono); font-size: 10px; color: var(--amber); }
+  .plugin-price { margin-left: auto; font-family: var(--mono); font-size: 11px; font-weight: 600; }
+  .plugin-price.free { color: var(--green); }
+  .plugin-price.paid { color: var(--text); }
+  .plugin-price.usage { color: var(--blue); }
+  .latency-badge { font-family: var(--mono); font-size: 9px; padding: 2px 5px; border-radius: 3px; background: var(--bg4); border: 1px solid var(--border); color: var(--text-dim); }
+  .latency-badge.fast { color: var(--green); border-color: rgba(0,255,136,0.2); background: var(--green-bg); }
+
+  /* RIGHT PANEL */
+  .right-panel { background: var(--bg2); border-left: 1px solid var(--border); padding: 20px 16px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+  .panel-section { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .panel-section-header { padding: 12px 14px; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; justify-content: space-between; }
+  .trending-item { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.15s; }
+  .trending-item:last-child { border-bottom: none; }
+  .trending-item:hover { background: var(--bg4); }
+  .trending-rank { font-family: var(--mono); font-size: 11px; color: var(--text-dim); width: 18px; flex-shrink: 0; }
+  .trending-icon { font-size: 18px; flex-shrink: 0; }
+  .trending-body { flex: 1; min-width: 0; }
+  .trending-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trending-meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+  .trending-change { font-family: var(--mono); font-size: 10px; color: var(--green); }
+
+  /* VERIFICATION TEASER */
+  .verification-teaser { border: 1px solid rgba(167,139,250,0.2); border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, var(--bg3) 0%, rgba(167,139,250,0.04) 100%); }
+  .verification-teaser .panel-section-header { border-bottom-color: rgba(167,139,250,0.15); color: var(--purple); }
+  .verify-body { padding: 14px; }
+  .verify-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--purple-bg); border: 1px solid rgba(167,139,250,0.2); padding: 4px 10px; border-radius: 4px; font-family: var(--mono); font-size: 10px; color: var(--purple); margin-bottom: 10px; }
+  .verify-title { font-family: var(--display); font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .verify-desc { font-size: 11px; color: var(--text-mid); line-height: 1.6; margin-bottom: 14px; }
+  .verify-features { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .verify-feature { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: var(--text-mid); }
+  .verify-feature-icon { color: var(--purple); flex-shrink: 0; margin-top: 1px; }
+  .verify-coming-soon { width: 100%; padding: 9px; background: var(--bg4); border: 1px solid rgba(167,139,250,0.2); border-radius: 5px; font-family: var(--mono); font-size: 11px; color: var(--purple); text-align: center; cursor: not-allowed; position: relative; overflow: hidden; }
+  .verify-coming-soon::after { content: 'COMING SOON'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(10,11,13,0.7); font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.15em; color: var(--purple); }
+  .verify-tiers { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .verify-tier { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg4); }
+  .verify-tier-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .verify-tier-name { font-family: var(--mono); font-size: 11px; font-weight: 500; flex: 1; }
+  .verify-tier-desc { font-size: 10px; color: var(--text-dim); }
+
+  /* DEMO NOTE */
+  .demo-note { font-family: var(--mono); font-size: 10px; color: var(--text-dim); text-align: center; padding: 1rem; border-top: 1px solid var(--border); }
+  .demo-note span { color: var(--amber); }
+
+  /* SUBMIT PROMPT */
+  .submit-prompt { background: var(--green-bg); border: 1px solid rgba(0,255,136,0.15); border-radius: 8px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .submit-prompt p { font-size: 13px; color: var(--text-mid); }
+  .submit-prompt p strong { color: var(--text); }
+  .submit-prompt a { flex-shrink: 0; background: var(--green); color: #000; font-family: var(--mono); font-size: 11px; font-weight: 600; padding: 8px 16px; text-decoration: none; border-radius: 4px; transition: background 0.15s; white-space: nowrap; }
+  .submit-prompt a:hover { background: var(--green-dim); }
+
+  @media (max-width: 1100px) { .layout { grid-template-columns: 200px 1fr; } .right-panel { display: none; } }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+</style>
+</head>
+<body>
+
+<script>
+  const SUPABASE_URL = 'https://hzboqpnmokhllvydknjz.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_s_4jnWqudwyHFv81Y7jmng_jxWnD_6a';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (!session) { window.location.href = '/signup.html'; return; }
+    const el = document.getElementById('user-email');
+    if (el) el.textContent = session.user.email;
+  });
+  async function signOut() {
+    await sb.auth.signOut();
+    window.location.href = '/';
+  }
+</script>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <a class="logo" href="/">
+    <div class="logo-icon">
+      <div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div>
+      <div class="logo-dot"></div><div class="logo-dot" style="background:transparent"></div><div class="logo-dot"></div>
+      <div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div>
+    </div>
+    SwarmSpace
+  </a>
+  <div class="topbar-right">
+    <span class="nav-user" id="user-email"></span>
+    <button class="nav-signout" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<!-- WELCOME BANNER -->
+<div class="welcome-banner">
+  <div class="welcome-inner">
+    <h2>✓ You're in. Welcome to SwarmSpace.</h2>
+    <p>This is a preview of the marketplace. Real capabilities coming soon — submit yours below.</p>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- SUBMIT PROMPT -->
+  <div class="submit-prompt">
+    <p><strong>Building something?</strong> Submit your capability now and be first in the index when we launch.</p>
+    <a href="/dashboard.html">Submit a capability →</a>
+  </div>
+
+  <!-- MARKETPLACE PREVIEW -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Browse</div>
+        <div class="sidebar-item active">◈ All Capabilities <span class="sidebar-count">1,247</span></div>
+        <div class="sidebar-item">✦ New Releases <span class="sidebar-count">34</span></div>
+        <div class="sidebar-item">↑ Trending <span class="sidebar-count">12</span></div>
+        <div class="sidebar-item">★ Top Rated <span class="sidebar-count">50</span></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Categories</div>
+        <div class="sidebar-item">📧 Communication <span class="sidebar-count">142</span></div>
+        <div class="sidebar-item">💰 Finance <span class="sidebar-count">89</span></div>
+        <div class="sidebar-item">🏥 Health <span class="sidebar-count">73</span></div>
+        <div class="sidebar-item">🎨 Creativity <span class="sidebar-count">110</span></div>
+        <div class="sidebar-item">💼 Career <span class="sidebar-count">95</span></div>
+        <div class="sidebar-item">🔗 Integrations <span class="sidebar-count">198</span></div>
+        <div class="sidebar-item">🧠 Memory <span class="sidebar-count">45</span></div>
+        <div class="sidebar-item">🔒 Privacy <span class="sidebar-count">28</span></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Trust Tier</div>
+        <div class="trust-filter">
+          <div class="trust-badge-filter"><div class="trust-dot verified"></div><span style="flex:1;font-size:12px">Verified</span><span class="sidebar-count">312</span></div>
+          <div class="trust-badge-filter"><div class="trust-dot community"></div><span style="flex:1;font-size:12px">Community</span><span class="sidebar-count">681</span></div>
+          <div class="trust-badge-filter"><div class="trust-dot experimental"></div><span style="flex:1;font-size:12px">Experimental</span><span class="sidebar-count">254</span></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Pricing</div>
+        <div class="sidebar-item">Free only</div>
+        <div class="sidebar-item">Usage-based</div>
+        <div class="sidebar-item">Subscription</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="sortbar">
+        <button class="sort-btn active">All</button>
+        <button class="sort-btn">Most Installed</button>
+        <button class="sort-btn">Highest Rated</button>
+        <button class="sort-btn">Newest</button>
+        <button class="sort-btn">Free</button>
+        <div class="sort-spacer"></div>
+        <span class="filter-count">1,247 capabilities</span>
+      </div>
+
+      <div class="section-header" style="margin-bottom:14px">
+        <div class="section-title">◈ All Capabilities</div>
+      </div>
+
+      <div class="plugin-grid">
+        <div class="plugin-card featured">
+          <div class="plugin-header"><div class="plugin-icon">📋</div><div class="plugin-meta"><div class="plugin-name">HealthVault Connector</div><div class="plugin-author">by orbital-ai · 12.4k installs</div></div></div>
+          <div class="plugin-desc">Read-only health data bridge. Connects Apple Health, Oura Ring, Whoop, Garmin. Patterns, anomalies, longitudinal trends.</div>
+          <div class="plugin-footer"><span class="trust-pill verified">● Verified</span><span class="plugin-rating">★ 4.9 <span style="color:var(--text-dim)">(412)</span></span><span class="latency-badge fast">⚡ 80ms</span><span class="plugin-price free">Free</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">💬</div><div class="plugin-meta"><div class="plugin-name">EmailBrief</div><div class="plugin-author">by datawave · 8.1k installs</div></div></div>
+          <div class="plugin-desc">Zero-retention email triage and drafting. Processes in-memory, no storage. Learns your voice from examples.</div>
+          <div class="plugin-footer"><span class="trust-pill verified">● Verified</span><span class="plugin-rating">★ 4.7 <span style="color:var(--text-dim)">(287)</span></span><span class="latency-badge fast">⚡ 120ms</span><span class="plugin-price usage">$0.002/run</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">💰</div><div class="plugin-meta"><div class="plugin-name">NetworthTracker</div><div class="plugin-author">by finlabs · 5.9k installs</div></div></div>
+          <div class="plugin-desc">Aggregates accounts via read-only Plaid. Net worth trends, category breakdowns. No writes, ever.</div>
+          <div class="plugin-footer"><span class="trust-pill verified">● Verified</span><span class="plugin-rating">★ 4.6 <span style="color:var(--text-dim)">(194)</span></span><span class="latency-badge">◉ 380ms</span><span class="plugin-price paid">$4.99/mo</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">🗺️</div><div class="plugin-meta"><div class="plugin-name">LifeTimeline</div><div class="plugin-author">by memorycraft · 4.2k installs</div></div></div>
+          <div class="plugin-desc">Structures personal history into a semantic timeline. Cross-references decisions with outcomes.</div>
+          <div class="plugin-footer"><span class="trust-pill community">◉ Community</span><span class="plugin-rating">★ 4.4 <span style="color:var(--text-dim)">(156)</span></span><span class="latency-badge">◉ 250ms</span><span class="plugin-price free">Free</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">🔔</div><div class="plugin-meta"><div class="plugin-name">AlertRouter</div><div class="plugin-author">by notifyco · 6.1k installs</div></div></div>
+          <div class="plugin-desc">Cross-platform notification delivery. Agent sends alerts to your preferred channels based on priority rules.</div>
+          <div class="plugin-footer"><span class="trust-pill verified">● Verified</span><span class="plugin-rating">★ 4.8 <span style="color:var(--text-dim)">(334)</span></span><span class="latency-badge fast">⚡ 45ms</span><span class="plugin-price free">Free</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">📅</div><div class="plugin-meta"><div class="plugin-name">CalSync Pro</div><div class="plugin-author">by timeworks · 7.3k installs</div></div></div>
+          <div class="plugin-desc">Read/write calendar across Google, iCal, Outlook. Smart scheduling, conflict detection.</div>
+          <div class="plugin-footer"><span class="trust-pill verified">● Verified</span><span class="plugin-rating">★ 4.6 <span style="color:var(--text-dim)">(421)</span></span><span class="latency-badge fast">⚡ 110ms</span><span class="plugin-price paid">$3.99/mo</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">📊</div><div class="plugin-meta"><div class="plugin-name">CareerLens</div><div class="plugin-author">by workstream · 2.8k installs</div></div></div>
+          <div class="plugin-desc">Parses your CV and job history. Skills gap analysis, trajectory modeling, market fit scoring.</div>
+          <div class="plugin-footer"><span class="trust-pill verified">● Verified</span><span class="plugin-rating">★ 4.3 <span style="color:var(--text-dim)">(118)</span></span><span class="latency-badge fast">⚡ 95ms</span><span class="plugin-price paid">$2.99/mo</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">🧬</div><div class="plugin-meta"><div class="plugin-name">GeneticContext</div><div class="plugin-author">by biobridge · 1.2k installs</div></div></div>
+          <div class="plugin-desc">23andMe/AncestryDNA reader. Converts raw genetic data to structured health predispositions. Fully local.</div>
+          <div class="plugin-footer"><span class="trust-pill experimental">○ Experimental</span><span class="plugin-rating">★ 3.9 <span style="color:var(--text-dim)">(44)</span></span><span class="latency-badge fast">⚡ 60ms</span><span class="plugin-price free">Free</span></div>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><div class="plugin-icon">🎨</div><div class="plugin-meta"><div class="plugin-name">MoodBoard AI</div><div class="plugin-author">by visualmind · 3.7k installs</div></div></div>
+          <div class="plugin-desc">Visual reference generation for creative projects. Describe aesthetic goals, receive styled image grids.</div>
+          <div class="plugin-footer"><span class="trust-pill community">◉ Community</span><span class="plugin-rating">★ 4.5 <span style="color:var(--text-dim)">(203)</span></span><span class="latency-badge">◉ 900ms</span><span class="plugin-price usage">$0.01/run</span></div>
+        </div>
+      </div>
+
+      <div class="demo-note">
+        <span>⬡ Demo data</span> — This preview shows what the live marketplace will look like. Submit your capability to be part of the real index at launch.
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL -->
+    <aside class="right-panel">
+
+      <!-- TRENDING -->
+      <div class="panel-section">
+        <div class="panel-section-header">Trending Today <span style="font-family:var(--mono);font-size:9px;color:var(--amber)">DEMO</span></div>
+        <div class="trending-item"><span class="trending-rank">01</span><span class="trending-icon">📋</span><div class="trending-body"><div class="trending-name">HealthVault Connector</div><div class="trending-meta">12.4k installs · free</div></div><span class="trending-change">+14%</span></div>
+        <div class="trending-item"><span class="trending-rank">02</span><span class="trending-icon">🔔</span><div class="trending-body"><div class="trending-name">AlertRouter</div><div class="trending-meta">6.1k installs · free</div></div><span class="trending-change">+9%</span></div>
+        <div class="trending-item"><span class="trending-rank">03</span><span class="trending-icon">💬</span><div class="trending-body"><div class="trending-name">EmailBrief</div><div class="trending-meta">8.1k installs · usage</div></div><span class="trending-change">+7%</span></div>
+        <div class="trending-item"><span class="trending-rank">04</span><span class="trending-icon">📅</span><div class="trending-body"><div class="trending-name">CalSync Pro</div><div class="trending-meta">7.3k installs · $3.99/mo</div></div><span class="trending-change">+5%</span></div>
+        <div class="trending-item"><span class="trending-rank">05</span><span class="trending-icon">🗺️</span><div class="trending-body"><div class="trending-name">LifeTimeline</div><div class="trending-meta">4.2k installs · free</div></div><span class="trending-change">+12%</span></div>
+      </div>
+
+      <!-- VERIFICATION TEASER -->
+      <div class="verification-teaser">
+        <div class="panel-section-header">
+          ✦ Verified Tier
+          <span style="font-family:var(--mono);font-size:9px;color:var(--purple);background:var(--purple-bg);padding:2px 6px;border-radius:3px;">COMING SOON</span>
+        </div>
+        <div class="verify-body">
+          <div class="verify-badge">● Verified</div>
+          <div class="verify-title">Stand out. Get trusted.</div>
+          <div class="verify-desc">Verified capabilities go through SwarmSpace's security review — sandboxed, cryptographically signed, and prioritized in agent discovery.</div>
+
+          <div class="verify-tiers">
+            <div class="verify-tier">
+              <div class="verify-tier-dot" style="background:var(--text-dim)"></div>
+              <div class="verify-tier-name" style="color:var(--text-dim)">Experimental</div>
+              <div class="verify-tier-desc">Self-submitted, no review</div>
+            </div>
+            <div class="verify-tier">
+              <div class="verify-tier-dot" style="background:var(--amber)"></div>
+              <div class="verify-tier-name" style="color:var(--amber)">Community</div>
+              <div class="verify-tier-desc">Peer-reviewed, basic checks</div>
+            </div>
+            <div class="verify-tier" style="border-color:rgba(0,255,136,0.2);background:var(--green-bg)">
+              <div class="verify-tier-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+              <div class="verify-tier-name" style="color:var(--green)">Verified</div>
+              <div class="verify-tier-desc">Full security review + signing</div>
+            </div>
+          </div>
+
+          <div class="verify-features">
+            <div class="verify-feature"><span class="verify-feature-icon">→</span> Priority placement in discovery</div>
+            <div class="verify-feature"><span class="verify-feature-icon">→</span> Cryptographic signing</div>
+            <div class="verify-feature"><span class="verify-feature-icon">→</span> Sandbox security review</div>
+            <div class="verify-feature"><span class="verify-feature-icon">→</span> Trust badge on all listings</div>
+          </div>
+
+          <div class="verify-coming-soon">Apply for Verified status</div>
+
+          <p style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:10px;text-align:center;">You'll be notified when verification opens.</p>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
