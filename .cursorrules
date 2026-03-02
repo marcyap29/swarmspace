@@ -1,0 +1,8 @@
+# SwarmSpace — Cursor Rules
+
+When working on SwarmSpace integration, API docs, or LUMARA-related code:
+
+- **API context:** Read `SWARMSPACE_API_CONTEXT.md` for endpoint URLs, plugin registry, request schemas, and tier mapping.
+- **Endpoints:** swarmspaceRouter and swarmspacePluginStatus at `us-central1-arc-epi.cloudfunctions.net`. Auth: Firebase ID token.
+- **Tiers:** Free (7 plugins) | Standard $30/mo (url-reader, tavily-search) | Premium (exa-search, perplexity-sonar).
+- **Never commit API keys** — add them locally or via env vars.

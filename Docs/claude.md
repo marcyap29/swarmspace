@@ -15,6 +15,11 @@
 | **README.md** | Setup guide (Supabase, Stripe, Vercel) | `README.md` |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | `SWARMSPACE_API_CONTEXT.md` |
 | **architecture.md** | SwarmStore architecture & hosting | `architecture.md` |
+| **Docs/CONFIGURATION_MANAGEMENT.md** | Docs inventory and change tracking | `Docs/CONFIGURATION_MANAGEMENT.md` |
+| **Docs/CHANGELOG.md** | Version history | `Docs/CHANGELOG.md` |
+| **Docs/FEATURES.md** | Feature list | `Docs/FEATURES.md` |
+| **Docs/backend.md** | Backend (API, Vercel, Supabase) | `Docs/backend.md` |
+| **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
 | **Documentation, Config & Git Backup** | Universal prompt for docs, config, and backup sync | This file: section below |
 
 ---
@@ -35,7 +40,10 @@ swarmspace/
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── supabase-setup.sql, vercel.json
 ├── SWARMSPACE_API_CONTEXT.md, architecture.md
-└── Docs/claude.md
+└── Docs/
+    ├── claude.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
+    ├── backend.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
+    └── bugtracker/
 ```
 
 ---
@@ -99,7 +107,7 @@ You act as **Documentation & Configuration Manager** for this repository. You:
 
 **Tasks:**
 
-1. Maintain/update an inventory of key docs (README, SWARMSPACE_API_CONTEXT, architecture.md) and their sync status with the codebase.
+1. Maintain/update an inventory of key docs (README, SWARMSPACE_API_CONTEXT, architecture.md, Docs/*) and their sync status with the codebase.
 2. Compare current documentation to the repository: identify repo changes not yet reflected in docs.
 3. Produce a short **drift report**: list of documents that need updates and what changed.
 
@@ -116,7 +124,9 @@ You act as **Documentation & Configuration Manager** for this repository. You:
 1. **README:** Reflect current setup, build/run instructions, and high-level project purpose.
 2. **SWARMSPACE_API_CONTEXT.md:** API changes when relevant.
 3. **architecture.md:** Structural or hosting changes when relevant.
-4. **Key documents list:** Keep entry points and purpose of each doc current.
+4. **Docs/FEATURES.md, Docs/backend.md:** Feature and backend changes when relevant.
+5. **Docs/CONFIGURATION_MANAGEMENT.md:** Inventory and change log.
+6. **Key documents list:** Keep entry points and purpose of each doc current.
 
 **Rules:** Only update where repo changes are relevant; preserve existing formatting; be concise and factual.
 
@@ -156,6 +166,10 @@ For each change, update the appropriate documents (only where relevant):
 | `README.md` | Setup, file structure, project overview |
 | `SWARMSPACE_API_CONTEXT.md` | API endpoints, tiers, schemas |
 | `architecture.md` | Structural or hosting changes |
+| `Docs/CHANGELOG.md` | Version entries |
+| `Docs/CONFIGURATION_MANAGEMENT.md` | Inventory, change log |
+| `Docs/FEATURES.md` | Feature changes |
+| `Docs/backend.md` | Backend changes |
 | `Docs/claude.md` | Context guide updates |
 
 **Step 3 — Commit and push**
@@ -174,6 +188,14 @@ For each change, update the appropriate documents (only where relevant):
 - `SWARMSPACE_API_CONTEXT.md` — API reference for LUMARA integration
 - `architecture.md` — SwarmStore architecture and hosting
 - `Docs/claude.md` — context guide and role definitions
+- `Docs/CONFIGURATION_MANAGEMENT.md` — docs inventory and change log
+- `Docs/CHANGELOG.md` — version history
+- `Docs/FEATURES.md` — feature catalog
+- `Docs/backend.md` — backend services
+- `Docs/git.md` — git workflow
+- `Docs/SECURITY_CHECKLIST.md` — security checklist
+- `Docs/UI_UX.md` — UI/UX patterns
+- `Docs/bugtracker/` — bug records
 
 ---
 
@@ -196,7 +218,7 @@ For each change, update the appropriate documents (only where relevant):
 **Checklist:**
 
 1. **Drift & inventory** — Drift report exists and matches repo state.
-2. **Core artifacts** — README, SWARMSPACE_API_CONTEXT, architecture: only updated where relevant; no invented content.
+2. **Core artifacts** — README, SWARMSPACE_API_CONTEXT, architecture, Docs/*: only updated where relevant; no invented content.
 3. **Git backup sync** — If Git Backup Sync Agent ran: docs updated; commit message is clear; push completed.
 4. **Principles** — Preserve knowledge; single source of truth; traceability; accuracy over volume.
 

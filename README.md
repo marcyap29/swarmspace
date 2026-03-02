@@ -99,7 +99,11 @@ swarmspace/
 ├── thankyou.html       ← Post-signup (marketplace preview)
 ├── faq.html            ← FAQ
 ├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
-├── Docs/claude.md      ← Documentation context guide
+├── .cursorrules        ← Cursor rules (API context, tiers, never commit keys)
+├── Docs/
+│   ├── claude.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
+│   ├── backend.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
+│   └── bugtracker/
 ├── api/
 │   ├── create-checkout.js   ← Stripe checkout session
 │   └── stripe-webhook.js    ← Stripe event handler
