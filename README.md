@@ -2,6 +2,8 @@
 
 Get live in ~20 minutes.
 
+**API integration:** See `SWARMSPACE_API_CONTEXT.md` for the SwarmSpace API (swarmspaceRouter, swarmspacePluginStatus, plugin registry, request schemas). Used by LUMARA and other clients. Auth: Firebase ID token. Add API keys yourself — never commit them.
+
 ---
 
 ## 1. Supabase
@@ -26,7 +28,7 @@ Get live in ~20 minutes.
 1. Go to https://stripe.com → create account
 2. Go to **Products** → Add product:
    - Name: `SwarmSpace Verified`
-   - Price: `$29.00` / month / recurring
+   - Price: `$30.00` / month / recurring (Standard API tier; plugin Verified tier)
    - Copy the **Price ID** (starts with `price_`)
 
 3. Go to **Developers → API keys** → copy **Secret key** (starts with `sk_`)
@@ -89,9 +91,15 @@ vercel --prod
 
 ```
 swarmspace/
-├── index.html          ← Landing page
+├── index.html          ← Landing page (7 free APIs, upgrade CTA)
 ├── signup.html         ← Auth (login + signup)
+├── upgrade.html        ← API tier pricing (Free / Standard $30 / Premium)
 ├── dashboard.html      ← Developer dashboard
+├── marketplace.html    ← Plugin marketplace
+├── thankyou.html       ← Post-signup (marketplace preview)
+├── faq.html            ← FAQ
+├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
+├── Docs/claude.md      ← Documentation context guide
 ├── api/
 │   ├── create-checkout.js   ← Stripe checkout session
 │   └── stripe-webhook.js    ← Stripe event handler
