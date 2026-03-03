@@ -10,11 +10,26 @@ SwarmSpace is a static web app with serverless API endpoints. Auth and database 
 
 ---
 
+## Database (Supabase)
+
+### developers table
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid | FK to auth.users |
+| email | text | |
+| plan | text | `free` \| `verified` |
+| developer_mode | boolean | Default false; API consumer vs Developer mode |
+| developer_accepted_terms_at | timestamptz | When dev mode was enabled |
+| api_key | text | Auto-generated on signup (`ss_` prefix), unique |
+
+---
+
 ## Services
 
 | Service | Purpose | Tech |
 |---------|---------|------|
-| Supabase | Auth, database (developers table) | Supabase |
+| Supabase | Auth, database (developers, plugins) | Supabase |
 | Stripe | Checkout, subscriptions, webhooks | Stripe API |
 | Vercel | Hosting, serverless functions | Vercel |
 | API (external) | swarmspaceRouter, swarmspacePluginStatus | Firebase Cloud Functions |

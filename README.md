@@ -78,12 +78,13 @@ vercel --prod
 ## 5. Test the flow
 
 1. Go to `/signup.html` → create an account
-2. Check Supabase → Authentication → Users (you should see the new user)
-3. Check Supabase → Table Editor → developers (auto-created row)
-4. Go to `/dashboard.html` → submit a plugin
-5. Click Upgrade → Verified → you'll land in Stripe Checkout (test mode)
-6. Use Stripe test card: `4242 4242 4242 4242`, any expiry/CVC
-7. After success, check developers table — plan should update to `verified`
+2. You’ll land on `/dashboard.html` (API key visible)
+3. Check Supabase → Authentication → Users (you should see the new user)
+4. Check Supabase → Table Editor → developers (auto-created row with `api_key`; `developer_mode` for plugin submitters)
+5. Go to `/dashboard.html` → enable developer mode to submit a plugin
+6. Click Upgrade → Verified → you'll land in Stripe Checkout (test mode)
+7. Use Stripe test card: `4242 4242 4242 4242`, any expiry/CVC
+8. After success, check developers table — plan should update to `verified`
 
 ---
 

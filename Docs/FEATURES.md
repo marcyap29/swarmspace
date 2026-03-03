@@ -12,8 +12,9 @@
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Landing page | 7 free APIs, upgrade CTA | ✅ |
-| User auth | Signup/login via Supabase | ✅ |
-| Developer dashboard | Plugin submission, status | ✅ |
+| User auth | Signup/login via Supabase; post-auth → dashboard | ✅ |
+| Unified account model | One account, API key (`ss_` prefix), developer_mode toggle | ✅ |
+| Developer dashboard | Plugin submission, status; API key reveal/copy | ✅ |
 | Upgrade flow | Stripe Checkout for Verified tier ($30/mo) | ✅ |
 | Marketplace | Plugin discovery | ✅ |
 | Thank-you page | Post-signup marketplace preview | ✅ |

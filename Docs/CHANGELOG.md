@@ -20,6 +20,8 @@
 
 - vercel.json: added /upgrade rewrite
 - Doc backup sync: CONFIGURATION_MANAGEMENT, CHANGELOG, backend.md updated for current repo state
+- **Unified account model:** developers table now has `developer_mode`, `developer_accepted_terms_at`, `api_key` (auto-generated on signup with prefix `ss_`)
+- Signup/login redirects: post-auth now goes to `/dashboard.html` instead of `/thankyou.html`
 
 ### Changelog Format
 

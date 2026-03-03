@@ -60,6 +60,17 @@ When running a doc sync or release:
 
 ## Change Log
 
+### 2026-03-01 — Doc backup sync (unified account model)
+
+**Action:** Ran Documentation, Configuration Management and Git Backup workflow.
+
+**Changes:**
+- CHANGELOG: documented unified account model (api_key, developer_mode, signup redirects)
+- CONFIGURATION_MANAGEMENT: this entry
+- backend.md: developers table schema (developer_mode, api_key, developer_accepted_terms_at)
+- FEATURES.md: unified account model, API key, developer mode
+- README: test flow updated (signup → dashboard)
+
 ### 2026-03-01 — Doc backup sync (doc-config-git workflow)
 
 **Action:** Ran Documentation, Configuration Management and Git Backup workflow.
