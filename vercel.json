@@ -4,6 +4,7 @@
     { "source": "/signup", "destination": "/signup.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/marketplace", "destination": "/marketplace.html" },
-    { "source": "/thankyou", "destination": "/thankyou.html" }
+    { "source": "/thankyou", "destination": "/thankyou.html" },
+    { "source": "/upgrade", "destination": "/upgrade.html" }
   ]
 }

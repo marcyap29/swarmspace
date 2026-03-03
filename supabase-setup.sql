@@ -85,3 +85,40 @@ create trigger developers_updated_at before update on public.developers
 
 create trigger plugins_updated_at before update on public.plugins
   for each row execute procedure public.handle_updated_at();
+
+-- ──────────────────────────────────────────────────────────────
+-- Migration: Unified Account Model (append to existing schema)
+-- ──────────────────────────────────────────────────────────────
+
+ALTER TABLE public.developers
+  ADD COLUMN IF NOT EXISTS developer_mode boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS developer_accepted_terms_at timestamptz,
+  ADD COLUMN IF NOT EXISTS api_key text UNIQUE;
+
+-- Generate API keys for existing users
+UPDATE public.developers
+SET api_key = 'ss_' || replace(gen_random_uuid()::text, '-', '')
+WHERE api_key IS NULL;
+
+-- Backfill: set developer_mode = true for users who already submitted plugins
+UPDATE public.developers d
+SET developer_mode = true
+WHERE EXISTS (
+  SELECT 1 FROM public.plugins p WHERE p.developer_id = d.id
+);
+
+-- Update signup trigger to auto-generate API key on new user creation
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.developers (id, email, api_key)
+  VALUES (
+    new.id,
+    new.email,
+    'ss_' || replace(gen_random_uuid()::text, '-', '')
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE INDEX IF NOT EXISTS idx_developers_api_key ON public.developers (api_key);

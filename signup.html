@@ -60,9 +60,9 @@ input::placeholder { color: var(--muted); }
   <p class="card-sub">Free to join. No credit card required.</p>
 
   <div class="perks">
-    <div class="perk"><span class="perk-check">✓</span> Access the full marketplace preview</div>
-    <div class="perk"><span class="perk-check">✓</span> Submit capabilities for AI agent discovery</div>
-    <div class="perk"><span class="perk-check">✓</span> First to know when verification launches</div>
+    <div class="perk"><span class="perk-check">✓</span> Access to 7 free APIs — web search, weather, news, currency, and more</div>
+    <div class="perk"><span class="perk-check">✓</span> Use APIs in your apps, prototypes, or AI agents</div>
+    <div class="perk"><span class="perk-check">✓</span> Submit plugins to the marketplace when you're ready</div>
   </div>
 
   <div id="msg-box" class="msg"></div>
@@ -105,7 +105,7 @@ input::placeholder { color: var(--muted); }
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   sb.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = '/thankyou.html';
+    if (session) window.location.href = '/dashboard.html';
   });
 
   function showMsg(text, type) {
@@ -130,7 +130,7 @@ input::placeholder { color: var(--muted); }
     const { error } = await sb.auth.signUp({ email, password });
     setLoading('signup-btn', false, 'Create account →');
     if (error) return showMsg(error.message, 'error');
-    window.location.href = '/thankyou.html';
+    window.location.href = '/dashboard.html';
   }
 
   async function handleLogin() {
@@ -141,13 +141,13 @@ input::placeholder { color: var(--muted); }
     const { error } = await sb.auth.signInWithPassword({ email, password });
     setLoading('login-btn', false, 'Sign in →');
     if (error) return showMsg(error.message, 'error');
-    window.location.href = '/thankyou.html';
+    window.location.href = '/dashboard.html';
   }
 
   async function handleGithub() {
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'github',
-      options: { redirectTo: `${window.location.origin}/thankyou.html` }
+      options: { redirectTo: `${window.location.origin}/dashboard.html` }
     });
     if (error) showMsg(error.message, 'error');
   }
