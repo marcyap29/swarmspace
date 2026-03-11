@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SwarmSpace — The capability space for personal AI</title>
+<title>SwarmSpace — The first agentic marketplace built on merit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -145,6 +145,8 @@ nav {
 .nav-cta:hover { background: #00c853; }
 .nav-signin { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--border); transition: color 0.2s, border-color 0.2s; }
 .nav-signin:hover { color: var(--text); border-color: var(--green-dim); }
+.nav-signout-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.5rem 1rem; margin-left: 0.5rem; transition: color 0.2s; }
+.nav-signout-btn:hover { color: var(--red); }
 
 /* HERO */
 .hero {
@@ -334,6 +336,81 @@ nav {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* FREE API CARDS */
+.apis-section {
+  padding: 6rem 3rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  border-top: 1px solid var(--border);
+}
+
+.apis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  margin-top: 2.5rem;
+}
+
+.api-card {
+  background: var(--surface);
+  padding: 1.8rem;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.api-card:hover {
+  background: var(--green-ghost);
+}
+
+.api-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.api-card-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.api-card-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  background: var(--green-ghost);
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.api-card-desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.api-card-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--green-dim);
+  margin-top: 0.25rem;
+}
+
+.api-card-example {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 0.6rem;
 }
 
 /* HOW IT WORKS */
@@ -1006,6 +1083,11 @@ footer {
   color: var(--muted);
   letter-spacing: 0.1em;
 }
+
+@media (max-width: 640px) {
+  .apis-section { padding: 4rem 1.5rem; }
+  .apis-grid { grid-template-columns: 1fr; }
+}
 .teaser-cta {
   display: inline-block;
   background: var(--green);
@@ -1021,6 +1103,7 @@ footer {
 .teaser-cta:hover { background: #00c853; }
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -1034,12 +1117,19 @@ footer {
   </a>
   <div class="nav-right">
     <ul class="nav-links">
+      <li><a href="#apis">Free APIs</a></li>
       <li><a href="#how">How it works</a></li>
-      <li><a href="#manifest">Plugin format</a></li>
-      <li><a href="#tiers">Trust tiers</a></li>
       <li><a href="#for-who">For who</a></li>
+      <li><a href="/upgrade.html">Upgrade</a></li>
     </ul>
-    <a href="/signup.html" class="nav-cta">Sign up free</a>
+    <span id="nav-cta-guest">
+      <a href="/signup.html" class="nav-signin" style="margin-right:0.5rem;">Sign in</a>
+      <a href="/signup.html" class="nav-cta">Get API access</a>
+    </span>
+    <span id="nav-cta-auth" style="display:none;">
+      <a href="/dashboard.html" class="nav-cta">Dashboard</a>
+      <button type="button" class="nav-signout-btn" onclick="signOut()">Sign out</button>
+    </span>
   </div>
 </nav>
 
@@ -1048,19 +1138,19 @@ footer {
   <div class="hero-left">
     <div class="hero-badge">
       <span class="badge-dot"></span>
-      Now open — sign up free
+      The first agentic marketplace built on merit
     </div>
     <h1 class="hero-title">
-      <span class="dim">One space.</span><br>
-      Every agent<br>
-      <span class="accent">capability.</span>
+      <span class="dim">Quality.</span><br>
+      Authenticity.<br>
+      <span class="accent">Earned.</span>
     </h1>
     <p class="hero-sub">
-      SwarmSpace is the capability space where AI agents discover and acquire capabilities at runtime — not at configuration time. Semantic search. Curated trust tiers. Built for consumer personal AI.
+      The first agentic plugin marketplace where rankings are earned, not bought. No paid placement. No editorial picks. The community decides what's trusted — and because these plugins act on your behalf, that trust actually means something.
     </p>
     <div class="hero-actions">
-      <a href="/signup.html" class="btn-primary">Get free access →</a>
-      <a href="#marketplace-preview" class="btn-outline">Preview the marketplace</a>
+      <a href="/signup.html" class="btn-primary">Get API access →</a>
+      <a href="#apis" class="btn-outline">See all 7 free APIs</a>
     </div>
   </div>
 
@@ -1094,11 +1184,103 @@ footer {
   </div>
 </div>
 
+<!-- FREE APIs -->
+<div class="apis-section" id="apis">
+  <p class="section-tag reveal">Included in free tier</p>
+  <h2 class="section-title reveal">7 free APIs.<br><span class="g">Ready to use.</span></h2>
+  <p class="section-sub reveal">Sign up and get access to these APIs. Use them in your apps, agents, or prototypes. No credit card required.</p>
+
+  <div class="apis-grid reveal">
+    <div class="api-card">
+      <div class="api-card-header">
+        <div>
+          <span class="api-card-name">Gemini Flash</span>
+          <div class="api-card-id">gemini-flash</div>
+        </div>
+        <span class="api-card-badge">Free</span>
+      </div>
+      <p class="api-card-desc">Fast AI synthesis for writing and drafting</p>
+      <p class="api-card-example">"Draft a LinkedIn post about my latest project"</p>
+    </div>
+    <div class="api-card">
+      <div class="api-card-header">
+        <div>
+          <span class="api-card-name">Brave Search</span>
+          <div class="api-card-id">brave-search</div>
+        </div>
+        <span class="api-card-badge">Free</span>
+      </div>
+      <p class="api-card-desc">Privacy-focused web search</p>
+      <p class="api-card-example">"What are the latest developments in AI?"</p>
+    </div>
+    <div class="api-card">
+      <div class="api-card-header">
+        <div>
+          <span class="api-card-name">Semantic Scholar</span>
+          <div class="api-card-id">semantic-scholar</div>
+        </div>
+        <span class="api-card-badge">Free</span>
+      </div>
+      <p class="api-card-desc">Academic paper and citation search</p>
+      <p class="api-card-example">"Find papers on transformer architectures"</p>
+    </div>
+    <div class="api-card">
+      <div class="api-card-header">
+        <div>
+          <span class="api-card-name">Weather</span>
+          <div class="api-card-id">weather</div>
+        </div>
+        <span class="api-card-badge">Free</span>
+      </div>
+      <p class="api-card-desc">Current weather and forecasts</p>
+      <p class="api-card-example">"What's the weather in San Francisco?"</p>
+    </div>
+    <div class="api-card">
+      <div class="api-card-header">
+        <div>
+          <span class="api-card-name">Wikipedia</span>
+          <div class="api-card-id">wikipedia</div>
+        </div>
+        <span class="api-card-badge">Free</span>
+      </div>
+      <p class="api-card-desc">Wikipedia knowledge base</p>
+      <p class="api-card-example">"Who invented the transistor?"</p>
+    </div>
+    <div class="api-card">
+      <div class="api-card-header">
+        <div>
+          <span class="api-card-name">Currency</span>
+          <div class="api-card-id">currency</div>
+        </div>
+        <span class="api-card-badge">Free</span>
+      </div>
+      <p class="api-card-desc">Currency exchange rates</p>
+      <p class="api-card-example">"What is EUR to USD right now?"</p>
+    </div>
+    <div class="api-card">
+      <div class="api-card-header">
+        <div>
+          <span class="api-card-name">News</span>
+          <div class="api-card-id">news</div>
+        </div>
+        <span class="api-card-badge">Free</span>
+      </div>
+      <p class="api-card-desc">Latest news and headlines (NewsData.io)</p>
+      <p class="api-card-example">"Top tech news today"</p>
+    </div>
+  </div>
+
+  <div id="apis-cta" style="text-align:center;margin-top:2.5rem;">
+    <p id="apis-cta-sub" style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">Sign up to access these APIs and view the full reference in your dashboard.</p>
+    <a id="apis-cta-btn" href="/signup.html" class="btn-primary">Get API access →</a>
+  </div>
+</div>
+
 <!-- STATS -->
 <div class="stats-bar reveal">
   <div class="stat">
-    <div class="stat-value">3</div>
-    <div class="stat-label">Trust tiers</div>
+    <div class="stat-value">7</div>
+    <div class="stat-label">Free APIs</div>
   </div>
   <div class="stat">
     <div class="stat-value">MCP</div>
@@ -1210,30 +1392,31 @@ footer {
 <!-- TRUST TIERS -->
 <div class="section" id="tiers">
   <p class="section-tag reveal">Trust architecture</p>
-  <h2 class="section-title reveal">Capabilities don't get to<br>decide <span class="g">how much they're trusted.</span></h2>
-  <p class="section-sub reveal">Every plugin sits in a trust tier. Every agent matches its permission level against the tier before execution. Users always know what they're authorizing.</p>
+  <h2 class="section-title reveal">No one buys their way<br>to the <span class="g">top.</span></h2>
+  <p class="section-sub reveal">Every plugin earns its place. Rankings are determined by real usage, community upvotes, and developer engagement — reviewed monthly. The best plugins rise because users say so, not because someone paid for placement.</p>
+
 
   <div class="tiers reveal">
     <div class="tier">
       <span class="tier-badge verified">✓ Verified</span>
       <h3 class="tier-name">Verified</h3>
-      <p class="tier-desc">Sandboxed, reviewed, and cryptographically signed by SwarmSpace. Eligible for use in privacy-sensitive contexts.</p>
+      <p class="tier-desc">Earned through consistent performance. Top-ranked plugins in their category, reviewed monthly based on usage, upvotes, and developer engagement.</p>
       <ul class="tier-features">
-        <li>Code review and sandbox testing</li>
-        <li>Cryptographic signing</li>
-        <li>Context minimization enforced</li>
-        <li>Listed in featured discovery</li>
-      </ul>
+          <li>Merit-based — earned not bought</li>
+          <li>Top 5 placement in search category</li>
+          <li>80% revenue share on paid plugins</li>
+          <li>Monthly merit review by SwarmSpace</li>
+        </ul>
     </div>
     <div class="tier">
       <span class="tier-badge community">◎ Community</span>
       <h3 class="tier-name">Community</h3>
       <p class="tier-desc">Published by developers, reviewed by the community. Good for general-purpose use without sensitive personal data.</p>
       <ul class="tier-features amber">
-        <li>Community review process</li>
-        <li>Automated security scan</li>
-        <li>Standard context access</li>
-        <li>Open to all developers</li>
+        <li>Safety review before listing</li>
+        <li>Community upvotes and discussion</li>
+        <li>Standard catalogue placement</li>
+        <li>Path to Verified through performance</li>
       </ul>
     </div>
     <div class="tier">
@@ -1253,34 +1436,36 @@ footer {
 <!-- FOR WHO -->
 <div class="section" id="for-who" style="padding-top: 0;">
   <p class="section-tag reveal">Who it's for</p>
-  <h2 class="section-title reveal">Built for <span class="g">builders</span>.<br><span class="d">Ready for every agent.</span></h2>
+  <h2 class="section-title reveal">Built for everyone<br><span class="g">in the ecosystem.</span></h2>
 
-  <div class="who-section reveal">
+  <div class="who-section reveal" style="grid-template-columns: 1fr 1fr 1fr;">
     <div class="who-card">
-      <p class="who-sub">Capability developers</p>
-      <h3 class="who-title">Build once. Every agent finds you.</h3>
+      <p class="who-sub">Primary</p>
+      <h3 class="who-title">Find and use APIs.</h3>
       <ul class="who-items">
-        <li>One manifest format, discoverable by any SwarmSpace-compatible agent</li>
-        <li>Semantic tagging means your plugin shows up for the right queries, not just keyword matches</li>
-        <li>Monetize via built-in pricing models — free, per-call, subscription</li>
-        <li>Trust tier review process designed for indie developers, not enterprise legal teams</li>
-        <li>Inter-agent recommendation means organic discovery across the ecosystem</li>
+        <li>Browse plugins by category or natural language search</li>
+        <li>Upvote the plugins you trust — one vote per plugin, it counts</li>
+        <li>Join Swarms — communities around plugins and categories</li>
+        <li>Share tips, workflows, and combinations that actually work</li>
       </ul>
-      <a href="/signup.html" class="btn-primary">Get free access →</a>
+      <a href="/signup.html" class="btn-primary">Get API access →</a>
     </div>
     <div class="who-card">
-      <p class="who-sub">AI agent developers</p>
-      <h3 class="who-title">Your agent. Infinite capabilities.</h3>
+      <p class="who-sub">Plugin builders</p>
+      <h3 class="who-title">Build and submit plugins.</h3>
       <ul class="who-items">
-        <li>Query SwarmSpace like any other tool call — one API, full semantic search</li>
-        <li>Trust tiers map to your agent's permission model automatically</li>
-        <li>No pre-configured tool lists — agents discover what they need when they need it</li>
-        <li>MCP-compatible — drop into existing protocol stacks without rewriting</li>
-        <li>Privacy enforced at the infrastructure level, not policy</li>
+        <li>Submit your capability to the SwarmSpace marketplace</li>
+        <li>Agents discover plugins at runtime via semantic search</li>
+        <li>Trust tiers: Experimental, Community, Verified</li>
+        <li>Get your plugin in front of every SwarmSpace-compatible agent</li>
       </ul>
-      <a href="#waitlist" class="btn-outline">Join the developer beta</a>
+      <a href="/signup.html" class="btn-outline">Sign up to submit →</a>
     </div>
   </div>
+
+  <p style="text-align:center;margin-top:2.5rem;font-size:0.82rem;color:var(--muted);">
+    Need more APIs? <a href="/upgrade.html" style="color:var(--green);text-decoration:none;">Upgrade to Standard or Premium</a>
+  </p>
 </div>
 
 <!-- WAITLIST -->
@@ -1379,11 +1564,11 @@ footer {
   <div class="waitlist-inner">
     <span class="waitlist-tag">Free — no credit card required</span>
     <h2 class="waitlist-title">
-      Start building.<br>
-      <span style="opacity:0.5">Join SwarmSpace today.</span>
+      Get API access.<br>
+      <span style="opacity:0.5">Start in seconds.</span>
     </h2>
-    <p class="waitlist-sub">Sign up free and get access to the marketplace preview. Submit your first capability. Be part of the ecosystem before it goes public.</p>
-    <a href="/signup.html" style="display:inline-block;background:var(--green);color:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:0.82rem;font-weight:500;letter-spacing:0.08em;padding:1rem 2.5rem;text-decoration:none;transition:background 0.2s;margin-top:1rem;">Create free account →</a>
+    <p class="waitlist-sub">Sign up free and get access to all 7 APIs. Use them in your apps and agents. Submit your own plugins when you're ready.</p>
+    <a href="/signup.html" style="display:inline-block;background:var(--green);color:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:0.82rem;font-weight:500;letter-spacing:0.08em;padding:1rem 2.5rem;text-decoration:none;transition:background 0.2s;margin-top:1rem;">Get API access →</a>
     <p style="margin-top:1.2rem;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted);">Already have an account? <a href="/signup.html" style="color:var(--green-dim);text-decoration:none;">Sign in →</a></p>
   </div>
 </div>
@@ -1403,6 +1588,35 @@ footer {
 </footer>
 
 <script>
+  // Auth-aware nav
+  const SUPABASE_URL = 'https://hzboqpnmokhllvydknjz.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_s_4jnWqudwyHFv81Y7jmng_jxWnD_6a';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  sb.auth.getSession().then(({ data: { session } }) => {
+    const guest = document.getElementById('nav-cta-guest');
+    const auth = document.getElementById('nav-cta-auth');
+    if (session && guest && auth) {
+      guest.style.display = 'none';
+      auth.style.display = 'inline-flex';
+      auth.style.alignItems = 'center';
+    }
+    // APIs section CTA for logged-in users
+    const apisSub = document.getElementById('apis-cta-sub');
+    const apisBtn = document.getElementById('apis-cta-btn');
+    if (session && apisSub && apisBtn) {
+      apisSub.textContent = 'View the full API reference with plugin IDs and request schemas.';
+      apisBtn.textContent = 'View full API reference →';
+      apisBtn.href = '/dashboard.html';
+    }
+  });
+
+  async function signOut() {
+    await sb.auth.signOut();
+    window.location.href = '/';
+  }
+
   // Cursor glow
   const glow = document.getElementById('cursorGlow');
   document.addEventListener('mousemove', e => {
@@ -1423,9 +1637,6 @@ footer {
   reveals.forEach(el => observer.observe(el));
 
   // Supabase waitlist
-  const SUPABASE_URL = 'https://hzboqpnmokhllvydknjz.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_s_4jnWqudwyHFv81Y7jmng_jxWnD_6a';
-
   async function handleWaitlist(e) {
     e.preventDefault();
     const emailEl = document.getElementById('wlEmail');
