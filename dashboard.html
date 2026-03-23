@@ -104,6 +104,22 @@ select option { background: var(--surface); }
 .empty-state { padding: 4rem; text-align: center; border: 1px dashed var(--border); }
 .empty-state p { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-bottom: 1.5rem; }
 
+/* APIs PAGE */
+.api-section { margin-bottom: 2.5rem; }
+.api-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.api-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); }
+.api-table th, .api-table td { padding: 1rem 1.2rem; text-align: left; border-bottom: 1px solid var(--border); }
+.api-table th { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.api-table tr:last-child td { border-bottom: none; }
+.api-table tr:hover td { background: var(--surface2); }
+.api-id { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--green); }
+.api-desc { font-size: 0.83rem; color: var(--text); }
+.api-example { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+.tier-badge { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; padding: 0.2rem 0.5rem; }
+.tier-badge.free { background: var(--green-ghost); color: var(--green); }
+.tier-badge.standard { background: var(--amber-ghost); color: var(--amber); }
+.tier-badge.premium { background: rgba(0,230,118,0.15); color: var(--green-dim); }
+
 /* UPGRADE PAGE */
 .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin-bottom: 2rem; }
 .pricing-card { background: var(--surface); padding: 2.5rem; }
@@ -123,6 +139,28 @@ select option { background: var(--surface); }
 .msg.error { background: rgba(255,68,68,0.08); border-left: 2px solid var(--red); color: #ff8a80; }
 .msg.success { background: var(--green-ghost); border-left: 2px solid var(--green); color: var(--green); }
 
+/* API key & code examples */
+.api-key-section { margin-bottom: 2.5rem; }
+.api-key-box { background: var(--surface2); border: 1px solid var(--border); padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.api-key-value { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.02em; flex: 1; min-width: 200px; }
+.api-key-value.revealed { color: var(--green); }
+.api-key-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
+.btn-key { padding: 0.4rem 0.8rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; background: var(--green-ghost); color: var(--green); border: 1px solid var(--border); cursor: pointer; transition: background 0.2s, color 0.2s; }
+.btn-key:hover { background: var(--green-ghost); color: var(--text); }
+.btn-key.danger:hover { background: rgba(255,68,68,0.1); color: var(--red); }
+.code-section { margin-bottom: 2rem; }
+.code-section h4 { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+.code-block { background: var(--bg); border: 1px solid var(--border); padding: 1rem 1.2rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; line-height: 1.6; color: var(--muted); overflow-x: auto; white-space: pre; }
+.code-block .str { color: var(--green-dim); }
+.code-block .key { color: var(--amber); }
+.code-block .num { color: var(--green); }
+.example-tabs { display: flex; gap: 2px; margin-bottom: 0.5rem; }
+.example-tab { padding: 0.5rem 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; background: var(--surface); border: 1px solid var(--border); border-bottom: none; cursor: pointer; color: var(--muted); transition: color 0.2s, background 0.2s; }
+.example-tab:hover { color: var(--text); }
+.example-tab.active { background: var(--surface2); color: var(--green); }
+.example-panel { display: none; }
+.example-panel.active { display: block; }
+
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { display: none; }
@@ -130,6 +168,7 @@ select option { background: var(--surface); }
   .overview-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
   .pricing-grid { grid-template-columns: 1fr; }
+  .api-section { overflow-x: auto; }
 }
 </style>
 </head>
@@ -159,6 +198,9 @@ select option { background: var(--surface); }
       </div>
       <div class="sidebar-item" onclick="showPage('submit', this)">
         <span class="icon">＋</span> Submit capability
+      </div>
+      <div class="sidebar-item" onclick="showPage('apis', this)">
+        <span class="icon">◈</span> APIs
       </div>
     </div>
     <div class="sidebar-section">
@@ -194,6 +236,85 @@ select option { background: var(--surface); }
         <div class="ov-card">
           <div class="ov-val" id="stat-status">—</div>
           <div class="ov-label">Review status</div>
+        </div>
+      </div>
+
+      <!-- API key -->
+      <div class="api-key-section">
+        <h4 class="api-section-title">Your API key</h4>
+        <p class="page-sub" style="margin-bottom:0.8rem;">Use this key to authenticate with <code style="font-size:0.75rem;background:var(--surface);padding:0.1rem 0.4rem;">swarmspaceRouter</code> and <code style="font-size:0.75rem;background:var(--surface);padding:0.1rem 0.4rem;">swarmspacePluginStatus</code>. Keep it secret.</p>
+        <div class="api-key-box">
+          <span class="api-key-value" id="api-key-value">••••••••••••••••••••••••••••••••</span>
+          <div class="api-key-actions">
+            <button type="button" class="btn-key" id="api-key-reveal" onclick="toggleApiKeyReveal()">Reveal</button>
+            <button type="button" class="btn-key" id="api-key-copy" onclick="copyApiKey()">Copy</button>
+            <button type="button" class="btn-key danger" id="api-key-regenerate" onclick="regenerateApiKey()">Regenerate</button>
+          </div>
+        </div>
+        <div id="api-key-msg" class="msg"></div>
+      </div>
+
+      <!-- API usage examples -->
+      <div class="api-key-section">
+        <h4 class="api-section-title">How to use the API</h4>
+        <p class="page-sub" style="margin-bottom:1rem;">Authenticate with a Firebase ID token (Bearer). Your tier determines which plugins you can call. Example request/response and code:</p>
+        <div class="example-tabs">
+          <button type="button" class="example-tab active" data-tab="request" onclick="switchExampleTab('request', this)">Request (JSON)</button>
+          <button type="button" class="example-tab" data-tab="response" onclick="switchExampleTab('response', this)">Response (JSON)</button>
+          <button type="button" class="example-tab" data-tab="curl" onclick="switchExampleTab('curl', this)">cURL</button>
+          <button type="button" class="example-tab" data-tab="fetch" onclick="switchExampleTab('fetch', this)">JavaScript</button>
+        </div>
+        <div id="panel-request" class="example-panel active">
+          <div class="code-block"><span class="key">POST</span> https://us-central1-arc-epi.cloudfunctions.net/swarmspaceRouter
+<span class="key">Authorization:</span> Bearer &lt;YOUR_FIREBASE_ID_TOKEN&gt;
+
+<span class="key">Body (data wrapper for callable):</span>
+{
+  <span class="key">"data"</span>: {
+    <span class="key">"plugin_id"</span>: <span class="str">"brave-search"</span>,
+    <span class="key">"params"</span>: {
+      <span class="key">"query"</span>: <span class="str">"What are the latest developments in AI?"</span>,
+      <span class="key">"count"</span>: <span class="num">8</span>
+    }
+  }
+}</div>
+        </div>
+        <div id="panel-response" class="example-panel">
+          <div class="code-block">{
+  <span class="key">"result"</span>: {
+    <span class="key">"quota"</span>: {
+      <span class="key">"limit"</span>: <span class="num">100</span>,
+      <span class="key">"used"</span>: <span class="num">42</span>,
+      <span class="key">"remaining"</span>: <span class="num">58</span>
+    },
+    <span class="key">"results"</span>: [
+      { <span class="key">"title"</span>: <span class="str">"..."</span>, <span class="key">"url"</span>: <span class="str">"..."</span>, <span class="key">"description"</span>: <span class="str">"..."</span> }
+    ]
+  }
+}</div>
+        </div>
+        <div id="panel-curl" class="example-panel">
+          <div class="code-block">curl -X POST https://us-central1-arc-epi.cloudfunctions.net/swarmspaceRouter \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"Authorization: Bearer YOUR_FIREBASE_ID_TOKEN"</span> \
+  -d <span class="str">'{"data":{"plugin_id":"brave-search","params":{"query":"Latest AI news","count":5}}}'</span></div>
+        </div>
+        <div id="panel-fetch" class="example-panel">
+          <div class="code-block">const token = <span class="str">"YOUR_FIREBASE_ID_TOKEN"</span>;
+const res = await fetch(<span class="str">"https://us-central1-arc-epi.cloudfunctions.net/swarmspaceRouter"</span>, {
+  method: <span class="str">"POST"</span>,
+  headers: {
+    <span class="key">"Content-Type"</span>: <span class="str">"application/json"</span>,
+    <span class="key">"Authorization"</span>: <span class="str">`Bearer ${token}`</span>
+  },
+  body: JSON.stringify({
+    <span class="key">data</span>: {
+      <span class="key">plugin_id</span>: <span class="str">"brave-search"</span>,
+      <span class="key">params</span>: { <span class="key">query</span>: <span class="str">"Latest AI news"</span>, <span class="key">count</span>: <span class="num">5</span> }
+    }
+  })
+});
+const json = await res.json();</div>
         </div>
       </div>
 
@@ -248,53 +369,126 @@ select option { background: var(--surface); }
           <select id="plugin-tier">
             <option value="experimental">Experimental — no review needed</option>
             <option value="community">Community — community review</option>
-            <option value="verified" id="verified-option">Verified — full review (requires $29/mo plan)</option>
+            <option value="verified" id="verified-option">Verified — full review (requires Standard plan)</option>
           </select>
         </div>
 
         <div class="notice warn" id="verified-warning" style="display:none">
-          <strong>Verified tier requires the Verified plan ($29/mo).</strong> Upgrade your plan first, then resubmit for Verified review.
+          <strong>Verified tier requires the Standard plan ($30/mo).</strong> Upgrade your plan first, then resubmit for Verified review.
         </div>
 
         <button class="btn" onclick="submitPlugin()">Submit for review →</button>
       </div>
     </div>
 
+    <!-- APIs -->
+    <div class="page" id="page-apis">
+      <h1 class="page-title">APIs</h1>
+      <p class="page-sub">Plugins available through SwarmSpace. Requests go through <code style="font-size:0.75rem;background:var(--surface);padding:0.1rem 0.4rem;">swarmspaceRouter</code>.</p>
+
+      <div class="api-section">
+        <div class="api-section-title">Free tier — 7 plugins</div>
+        <table class="api-table">
+          <thead>
+            <tr><th>Plugin ID</th><th>Description</th><th>Example query</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="api-id">gemini-flash</span><br><span class="tier-badge free">free</span></td>
+              <td class="api-desc">Fast AI synthesis for writing and drafting</td>
+              <td class="api-example">"Draft a LinkedIn post about my latest project"</td>
+            </tr>
+            <tr>
+              <td><span class="api-id">brave-search</span><br><span class="tier-badge free">free</span></td>
+              <td class="api-desc">Privacy-focused web search</td>
+              <td class="api-example">"What are the latest developments in AI?"</td>
+            </tr>
+            <tr>
+              <td><span class="api-id">semantic-scholar</span><br><span class="tier-badge free">free</span></td>
+              <td class="api-desc">Academic paper and citation search</td>
+              <td class="api-example">"Find papers on transformer architectures"</td>
+            </tr>
+            <tr>
+              <td><span class="api-id">weather</span><br><span class="tier-badge free">free</span></td>
+              <td class="api-desc">Current weather and forecasts</td>
+              <td class="api-example">"What's the weather in San Francisco?"</td>
+            </tr>
+            <tr>
+              <td><span class="api-id">wikipedia</span><br><span class="tier-badge free">free</span></td>
+              <td class="api-desc">Wikipedia knowledge base</td>
+              <td class="api-example">"Who invented the transistor?"</td>
+            </tr>
+            <tr>
+              <td><span class="api-id">currency</span><br><span class="tier-badge free">free</span></td>
+              <td class="api-desc">Currency exchange rates</td>
+              <td class="api-example">"What is EUR to USD right now?"</td>
+            </tr>
+            <tr>
+              <td><span class="api-id">news</span><br><span class="tier-badge free">free</span></td>
+              <td class="api-desc">Latest news and headlines (NewsData.io)</td>
+              <td class="api-example">"Top tech news today"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="api-section">
+        <div class="api-section-title">Paid tiers</div>
+        <table class="api-table">
+          <thead>
+            <tr><th>Tier</th><th>Plugins</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tier-badge standard">Standard $30/mo</span></td>
+              <td class="api-desc">url-reader, tavily-search</td>
+            </tr>
+            <tr>
+              <td><span class="tier-badge premium">Premium</span></td>
+              <td class="api-desc">exa-search, perplexity-sonar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- UPGRADE -->
     <div class="page" id="page-upgrade">
-      <h1 class="page-title">Upgrade to Verified</h1>
-      <p class="page-sub">Get your plugin reviewed, verified, and prioritized in SwarmSpace discovery.</p>
+      <h1 class="page-title">Upgrade</h1>
+      <p class="page-sub">Get more API plugins or submit verified plugins to the marketplace.</p>
 
       <div id="upgrade-msg" class="msg"></div>
+
+      <div class="notice info" style="margin-bottom:2rem;">
+        <strong>API plans:</strong> Free (7 plugins) → Standard $30/mo (url-reader, tavily-search) → Premium (exa-search, perplexity-sonar). Requests go through <code style="font-size:0.75rem;background:var(--surface);padding:0.1rem 0.4rem;">swarmspaceRouter</code>. <a href="/upgrade.html" style="color:var(--green);">View full API tiers →</a>
+      </div>
 
       <div class="pricing-grid">
         <div class="pricing-card">
           <p class="pricing-plan">Free</p>
           <div class="pricing-price">$0<span>/mo</span></div>
-          <p class="pricing-desc">List your capability, get discovered by agents searching for capabilities.</p>
+          <p class="pricing-desc">7 free APIs + list capabilities in marketplace. Experimental & Community tiers.</p>
           <ul class="pricing-features">
+            <li class="active">7 free-tier plugins</li>
             <li class="active">List up to 3 plugins</li>
             <li class="active">Experimental & Community tiers</li>
-            <li class="active">Semantic discovery</li>
             <li>Verified badge</li>
-            <li>Priority review queue</li>
-            <li>Featured placement at launch</li>
+            <li>url-reader, tavily, exa, perplexity</li>
           </ul>
           <button class="btn" disabled style="background:var(--muted);cursor:default;">Current plan</button>
         </div>
         <div class="pricing-card featured" id="upgrade-card">
           <div class="pricing-badge">Recommended</div>
-          <p class="pricing-plan">Verified</p>
-          <div class="pricing-price">$29<span>/mo</span></div>
-          <p class="pricing-desc">Get reviewed, verified, and trusted by agents and users. First in line when SwarmSpace launches.</p>
+          <p class="pricing-plan">Standard / Verified</p>
+          <div class="pricing-price">$30<span>/mo</span></div>
+          <p class="pricing-desc">API: url-reader + tavily-search. Or plugin submission: Verified badge, priority review.</p>
           <ul class="pricing-features">
             <li class="active">Everything in Free</li>
-            <li class="active">Verified badge on your plugins</li>
+            <li class="active">url-reader, tavily-search</li>
+            <li class="active">Verified badge on plugins</li>
             <li class="active">Priority review queue</li>
-            <li class="active">Featured placement at launch</li>
-            <li class="active">Direct support access</li>
           </ul>
-          <button class="btn" id="upgrade-btn" onclick="startUpgrade()">Upgrade to Verified →</button>
+          <button class="btn" id="upgrade-btn" onclick="startUpgrade()">Upgrade →</button>
         </div>
       </div>
     </div>
@@ -330,6 +524,52 @@ select option { background: var(--surface); }
     const { data } = await sb.from('developers').select('*').eq('id', currentUser.id).single();
     developerData = data;
     renderPlanUI();
+    renderApiKey();
+  }
+
+  function renderApiKey() {
+    const el = document.getElementById('api-key-value');
+    if (!el) return;
+    const key = developerData?.api_key;
+    const revealed = el.classList.contains('revealed');
+    el.textContent = key && revealed ? key : (key ? '••••••••••••••••••••••••••••••••' : '—');
+    const revealBtn = document.getElementById('api-key-reveal');
+    if (revealBtn) revealBtn.textContent = revealed ? 'Hide' : 'Reveal';
+  }
+
+  function toggleApiKeyReveal() {
+    const el = document.getElementById('api-key-value');
+    if (!el) return;
+    el.classList.toggle('revealed');
+    renderApiKey();
+  }
+
+  function copyApiKey() {
+    const key = developerData?.api_key;
+    if (!key) return;
+    navigator.clipboard.writeText(key).then(() => {
+      showMsg('api-key-msg', 'API key copied to clipboard.', 'success');
+      setTimeout(() => { const m = document.getElementById('api-key-msg'); if (m) m.style.display = 'none'; }, 2500);
+    }).catch(() => showMsg('api-key-msg', 'Copy failed. Please select and copy manually.', 'error'));
+  }
+
+  async function regenerateApiKey() {
+    if (!confirm('Generate a new API key? Your current key will stop working immediately.')) return;
+    const newKey = 'ss_' + crypto.randomUUID().replace(/-/g, '');
+    const { error } = await sb.from('developers').update({ api_key: newKey }).eq('id', currentUser.id);
+    if (error) return showMsg('api-key-msg', error.message, 'error');
+    developerData.api_key = newKey;
+    document.getElementById('api-key-value').classList.add('revealed');
+    renderApiKey();
+    showMsg('api-key-msg', 'New API key generated. Copy it now — we won’t show it again.', 'success');
+  }
+
+  function switchExampleTab(tabId, btn) {
+    document.querySelectorAll('.example-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.example-panel').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const panel = document.getElementById('panel-' + tabId);
+    if (panel) panel.classList.add('active');
   }
 
   async function loadPlugins() {
@@ -377,7 +617,7 @@ select option { background: var(--surface); }
       sidebarPlan.innerHTML = `
         <div class="plan-current">Current plan</div>
         <div class="plan-name free">Free</div>
-        <button class="btn-upgrade" onclick="showPage('upgrade', null)">Upgrade — $29/mo</button>`;
+        <button class="btn-upgrade" onclick="showPage('upgrade', null)">Upgrade — $30/mo</button>`;
     }
   }
 
@@ -408,7 +648,7 @@ select option { background: var(--surface); }
     if (!name || !capability) return showMsg('submit-msg', 'Please fill in the plugin name and capability description.', 'error');
 
     if (tier === 'verified' && developerData?.plan !== 'verified') {
-      return showMsg('submit-msg', 'Verified tier requires the Verified plan. Please upgrade first.', 'error');
+      return showMsg('submit-msg', 'Verified tier requires the Standard plan. Please upgrade first.', 'error');
     }
 
     const btn = document.querySelector('#page-submit .btn');

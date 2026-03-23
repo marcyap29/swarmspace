@@ -11,15 +11,81 @@ Get live in ~20 minutes.
 1. Go to https://supabase.com → New project
 2. Save your **Project URL** and **anon public key** (Settings → API)
 3. Go to **SQL Editor** → paste and run `supabase-setup.sql`
-4. Go to **Authentication → Providers** → enable **GitHub** (optional but recommended)
-   - Create a GitHub OAuth app at https://github.com/settings/developers
-   - Callback URL: `https://YOUR_SUPABASE_PROJECT.supabase.co/auth/v1/callback`
+4. Go to **Authentication → Providers** and enable:
+   - **Google** — Supabase provides a default client; or use your own OAuth 2.0 credentials from [Google Cloud Console](https://console.cloud.google.com/apis/credentials) (Authorized redirect URI: `https://YOUR_SUPABASE_PROJECT.supabase.co/auth/v1/callback`)
+   - **GitHub** (optional) — Create an OAuth app at https://github.com/settings/developers; callback URL: `https://YOUR_SUPABASE_PROJECT.supabase.co/auth/v1/callback`
 
-5. Replace in both `signup.html` and `dashboard.html`:
+5. Replace in `signup.html`, `dashboard.html`, and `reset-password.html`:
    ```
    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
    ```
+
+6. **Password reset:** In Supabase → **Authentication → URL Configuration**, add your app URL to **Redirect URLs**, e.g. `https://your-domain.vercel.app/reset-password.html`, so “Forgot password?” emails point to your site.
+
+---
+
+## 1.5 Firebase (submit/admin flow for `plugin_submissions`)
+
+Use this if you are wiring a Firebase-backed plugin submission flow (submit page + admin review page). Keep this setup in the page script itself (or a shared JS module), and do not commit secrets.
+
+1. In Firebase Console, create/select your project and enable:
+   - **Authentication** (email/password or your provider)
+   - **Cloud Firestore**
+2. In **Project settings → General → Your apps (Web app)**, copy your Firebase web config.
+3. In each Firebase-powered page (for example `submit.html` and `admin-submissions.html`), add the Firebase modular SDK imports and config in a `<script type="module">` block.
+4. Set `ADMIN_EMAIL` in the same script block (or a local env-injected value if you are bundling).
+
+Example pattern (use consistently across pages):
+
+```html
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "REPLACE_ME",
+    authDomain: "REPLACE_ME.firebaseapp.com",
+    projectId: "REPLACE_ME",
+    storageBucket: "REPLACE_ME.appspot.com",
+    messagingSenderId: "REPLACE_ME",
+    appId: "REPLACE_ME"
+  };
+
+  const ADMIN_EMAIL = "admin@example.com";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+</script>
+```
+
+### Minimum Firestore Rules (`plugin_submissions`)
+
+- Authenticated users can **create** their own submission.
+- Only `ADMIN_EMAIL` can **read** or **update** submissions.
+- No client-side delete access by default.
+
+```rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /plugin_submissions/{submissionId} {
+      allow create: if request.auth != null
+        && request.resource.data.submitterUid == request.auth.uid
+        && request.resource.data.submitterEmail == request.auth.token.email;
+
+      allow read, update: if request.auth != null
+        && request.auth.token.email == "admin@example.com";
+
+      allow delete: if false;
+    }
+  }
+}
+```
+
+Replace `"admin@example.com"` in rules to match your `ADMIN_EMAIL` value in code.
 
 ---
 
@@ -92,12 +158,16 @@ vercel --prod
 
 ```
 swarmspace/
+├── overview.md         ← Orientation: purpose, flow, for users and agents
 ├── index.html          ← Landing page (7 free APIs, upgrade CTA)
 ├── signup.html         ← Auth (login + signup)
+├── submit.html         ← Developer plugin submission (Firebase; `/submit`)
+├── admin-submissions.html ← Admin review queue (Firebase; `/admin-submissions`)
 ├── upgrade.html        ← API tier pricing (Free / Standard $30 / Premium)
 ├── dashboard.html      ← Developer dashboard
 ├── marketplace.html    ← Plugin marketplace
 ├── thankyou.html       ← Post-signup (marketplace preview)
+├── reset-password.html ← Complete password reset from Supabase email link
 ├── faq.html            ← FAQ
 ├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
 ├── .cursorrules        ← Cursor rules (API context, tiers, never commit keys)

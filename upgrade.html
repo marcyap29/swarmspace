@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwarmSpace — Upgrade your API plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080c0a; --surface: #0d1410; --surface2: #111a14;
+  --green: #00e676; --green-dim: rgba(0,230,118,0.5); --green-ghost: rgba(0,230,118,0.07);
+  --text: #e8f0eb; --muted: #5a7060; --border: rgba(0,255,128,0.12);
+  --amber: #ffb300; --amber-ghost: rgba(255,179,0,0.08);
+}
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.2rem 3rem; display: flex; justify-content: space-between; align-items: center; background: rgba(8,12,10,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-logo { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; font-weight: 500; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.6rem; }
+.logo-mark { width: 18px; height: 18px; border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; }
+.logo-mark::before { content: ''; width: 7px; height: 7px; background: var(--green); animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-links a { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--green); }
+.nav-cta { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; background: var(--green); color: var(--bg); padding: 0.5rem 1.2rem; text-decoration: none; font-weight: 500; transition: background 0.2s; }
+.nav-cta:hover { background: #00c853; }
+
+main { padding: 8rem 3rem 4rem; max-width: 1100px; margin: 0 auto; }
+.page-header { margin-bottom: 3rem; }
+.page-header h1 { font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; font-weight: 500; margin-bottom: 0.5rem; }
+.page-header p { font-size: 0.95rem; color: var(--muted); line-height: 1.6; }
+
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); }
+.pricing-card { background: var(--surface); padding: 2.5rem; }
+.pricing-card.featured { background: var(--surface2); position: relative; border: 1px solid rgba(0,230,118,0.25); }
+.pricing-badge { position: absolute; top: -1px; right: 1.5rem; background: var(--green); color: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; }
+.pricing-plan { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.pricing-price { font-family: 'IBM Plex Mono', monospace; font-size: 2.5rem; font-weight: 500; margin-bottom: 0.3rem; }
+.pricing-price span { font-size: 0.9rem; color: var(--muted); }
+.pricing-desc { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; min-height: 3.6rem; }
+.pricing-apis { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.8rem; }
+.pricing-features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 2rem; }
+.pricing-features li { font-size: 0.82rem; color: var(--muted); display: flex; gap: 0.7rem; }
+.pricing-features li::before { content: '›'; color: var(--green); flex-shrink: 0; }
+.pricing-features li.active { color: var(--text); }
+.btn { display: inline-block; padding: 0.85rem 2rem; background: var(--green); color: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; border: none; cursor: pointer; text-decoration: none; text-align: center; transition: background 0.2s; width: 100%; }
+.btn:hover { background: #00c853; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-outline:hover { border-color: var(--green-dim); color: var(--green); }
+.btn:disabled { background: var(--muted); cursor: default; }
+
+.api-list { font-size: 0.78rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+.api-list span { display: block; }
+
+.cta-footer { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+.cta-footer p { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+.cta-footer a { color: var(--green); text-decoration: none; }
+
+@media (max-width: 900px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+  main { padding: 6rem 1.5rem 3rem; }
+  nav { padding: 1rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><div class="logo-mark"></div>SwarmSpace</a>
+  <div class="nav-links">
+    <a href="/#apis">Free APIs</a>
+    <a href="/#how">How it works</a>
+    <a href="/signup.html">Sign up</a>
+  </div>
+  <a href="/signup.html" class="nav-cta">Get API access</a>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Upgrade your API plan</h1>
+    <p>Get more plugins. The SwarmSpace router authenticates via Firebase and forwards requests to Cloudflare Workers. Upgrade for URL fetching, AI-optimized search, neural search, and more.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <!-- FREE -->
+    <div class="pricing-card">
+      <p class="pricing-plan">Free</p>
+      <div class="pricing-price">$0<span>/mo</span></div>
+      <p class="pricing-desc">7 APIs. Sign up and start building.</p>
+      <p class="pricing-apis">APIs included</p>
+      <div class="api-list">
+        <span>gemini-flash · brave-search</span>
+        <span>semantic-scholar · weather</span>
+        <span>wikipedia · currency · news</span>
+      </div>
+      <ul class="pricing-features">
+        <li class="active">All 7 free-tier plugins</li>
+        <li class="active">swarmspaceRouter + swarmspacePluginStatus</li>
+        <li class="active">Per-user quota (varies by plugin)</li>
+      </ul>
+      <a href="/signup.html" class="btn btn-outline">Get free access →</a>
+    </div>
+
+    <!-- STANDARD -->
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Recommended</div>
+      <p class="pricing-plan">Standard</p>
+      <div class="pricing-price">$30<span>/mo</span></div>
+      <p class="pricing-desc">Everything in Free, plus URL fetching and AI-optimized search.</p>
+      <p class="pricing-apis">Additional APIs</p>
+      <div class="api-list">
+        <span>url-reader — Fetch & extract web pages</span>
+        <span>tavily-search — AI-optimized search</span>
+      </div>
+      <ul class="pricing-features">
+        <li class="active">Everything in Free</li>
+        <li class="active">url-reader (page content, metadata)</li>
+        <li class="active">tavily-search (answer + results)</li>
+        <li class="active">Higher quotas</li>
+      </ul>
+      <a href="/signup.html" class="btn">Upgrade to Standard →</a>
+    </div>
+
+    <!-- PREMIUM -->
+    <div class="pricing-card">
+      <p class="pricing-plan">Premium</p>
+      <div class="pricing-price">Custom</div>
+      <p class="pricing-desc">Neural search and Perplexity. Contact us for pricing.</p>
+      <p class="pricing-apis">Additional APIs</p>
+      <div class="api-list">
+        <span>exa-search — Neural search</span>
+        <span>perplexity-sonar — Perplexity</span>
+      </div>
+      <ul class="pricing-features">
+        <li class="active">Everything in Standard</li>
+        <li class="active">exa-search (neural search)</li>
+        <li class="active">perplexity-sonar</li>
+        <li class="active">Enterprise support</li>
+      </ul>
+      <a href="mailto:hello@swarmspace.ai?subject=Premium%20API%20plan" class="btn btn-outline">Contact for Premium →</a>
+    </div>
+  </div>
+
+  <div class="cta-footer">
+    <p>Requests go through <code style="font-family:'IBM Plex Mono';font-size:0.75rem;background:var(--surface);padding:0.2rem 0.5rem;border-radius:2px;">swarmspaceRouter</code> with your Firebase ID token. Tier is resolved from Firestore (user.plan + isPremium).</p>
+    <a href="/">← Back to home</a>
+  </div>
+</main>
+
+</body>
+</html>

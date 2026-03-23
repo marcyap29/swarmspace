@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwarmSpace - Admin Submissions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080c0a;
+    --surface: #0d1410;
+    --surface2: #111a14;
+    --green: #00e676;
+    --green-dim: rgba(0,230,118,0.5);
+    --green-ghost: rgba(0,230,118,0.07);
+    --text: #e8f0eb;
+    --muted: #5a7060;
+    --border: rgba(0,255,128,0.12);
+    --amber: #ffb300;
+    --amber-ghost: rgba(255,179,0,0.08);
+    --red: #ff5252;
+    --red-ghost: rgba(255,82,82,0.1);
+    --blue: #64b5f6;
+    --blue-ghost: rgba(100,181,246,0.1);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 1.2rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(8,12,10,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .logo-mark {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    background: var(--green);
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .mono {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .nav-email {
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+
+  .btn {
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: 0.2s background, 0.2s color, 0.2s border-color;
+  }
+
+  .btn:hover { background: var(--surface2); }
+  .btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+  .btn-primary {
+    background: var(--green);
+    color: var(--bg);
+    border-color: transparent;
+  }
+
+  .btn-primary:hover { background: #00c853; }
+
+  .btn-blue {
+    color: var(--blue);
+    background: var(--blue-ghost);
+    border-color: rgba(100,181,246,0.3);
+  }
+
+  .btn-red {
+    color: #ff8a80;
+    background: var(--red-ghost);
+    border-color: rgba(255,82,82,0.35);
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .header {
+    margin-bottom: 1.2rem;
+  }
+
+  .page-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+  }
+
+  .page-sub {
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  .gate {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin-top: 1.2rem;
+  }
+
+  .gate h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.84rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .gate p {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .msg {
+    padding: 0.85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    display: none;
+    border-left: 2px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .msg.error { border-color: var(--red); color: #ff8a80; background: var(--red-ghost); }
+  .msg.success { border-color: var(--green); color: var(--green); background: var(--green-ghost); }
+  .msg.info { border-color: var(--blue); color: var(--blue); background: var(--blue-ghost); }
+
+  .loading-track {
+    width: 100%;
+    height: 3px;
+    background: var(--surface2);
+    overflow: hidden;
+    margin: 0.75rem 0 1rem;
+    display: none;
+  }
+
+  .loading-track.active { display: block; }
+
+  .loading-bar {
+    width: 35%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(0,230,118,0.1), var(--green), rgba(0,230,118,0.1));
+    animation: indeterminate 1.25s linear infinite;
+  }
+
+  @keyframes indeterminate {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(350%); }
+  }
+
+  .admin-shell { display: none; }
+  .admin-shell.active { display: block; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(120px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    padding: 1rem 1.1rem;
+  }
+
+  .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.2rem;
+    color: var(--green);
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: 1fr 220px 150px;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 0.72rem 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    outline: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green-dim);
+  }
+
+  .table-wrap {
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 0.85rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface2);
+  }
+
+  tbody tr.summary-row:hover td {
+    background: rgba(17,26,20,0.9);
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.24rem 0.5rem;
+    border: 1px solid transparent;
+  }
+
+  .badge.pending { color: var(--amber); background: var(--amber-ghost); border-color: rgba(255,179,0,0.24); }
+  .badge.approved { color: var(--green); background: var(--green-ghost); border-color: rgba(0,230,118,0.24); }
+  .badge.rejected { color: #ff8a80; background: var(--red-ghost); border-color: rgba(255,82,82,0.24); }
+  .badge.needs-info { color: var(--blue); background: var(--blue-ghost); border-color: rgba(100,181,246,0.24); }
+  .badge.unknown { color: var(--muted); background: var(--surface2); border-color: var(--border); }
+
+  .muted { color: var(--muted); font-size: 0.72rem; }
+
+  .details-row td {
+    background: #0b110d;
+    padding: 0;
+  }
+
+  .details {
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+  }
+
+  .detail-block {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0.75rem;
+  }
+
+  .detail-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.56rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.45rem;
+  }
+
+  .detail-text {
+    font-size: 0.78rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .detail-code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    max-height: 260px;
+    overflow: auto;
+    white-space: pre;
+    padding: 0.65rem;
+    border: 1px solid var(--border);
+    background: #090d0a;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .empty, .load-error {
+    border: 1px dashed var(--border);
+    padding: 2.1rem;
+    text-align: center;
+    background: var(--surface);
+  }
+
+  .empty p, .load-error p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.9rem;
+  }
+
+  @media (max-width: 980px) {
+    .toolbar { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .details { grid-template-columns: 1fr; }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead { display: none; }
+    tbody tr.summary-row td { border-bottom: none; padding-bottom: 0.25rem; }
+    tbody tr.summary-row { border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    .details-row td { border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="logo-mark"></div>
+    SwarmSpace
+  </a>
+  <div class="nav-right">
+    <span class="nav-email mono" id="nav-email"></span>
+    <button class="btn" id="signout-btn" type="button" style="display:none;">Sign out</button>
+  </div>
+</nav>
+
+<main class="page">
+  <section class="header">
+    <h1 class="page-title">Admin Submissions</h1>
+    <p class="page-sub">Private panel for reviewing plugin submissions in Firestore.</p>
+  </section>
+
+  <div id="global-msg" class="msg"></div>
+
+  <section id="gate-card" class="gate">
+    <h2>Restricted Access</h2>
+    <p>Sign in with Google and use an allowlisted admin email to continue.</p>
+    <button class="btn btn-primary" id="signin-btn" type="button">Sign in with Google</button>
+  </section>
+
+  <section id="admin-shell" class="admin-shell">
+    <div id="loading-track" class="loading-track"><div class="loading-bar"></div></div>
+
+    <div class="stats">
+      <div class="stat-card"><div id="stat-total" class="stat-value">0</div><div class="stat-label">Total</div></div>
+      <div class="stat-card"><div id="stat-pending" class="stat-value">0</div><div class="stat-label">Pending</div></div>
+      <div class="stat-card"><div id="stat-approved" class="stat-value">0</div><div class="stat-label">Approved</div></div>
+      <div class="stat-card"><div id="stat-rejected" class="stat-value">0</div><div class="stat-label">Rejected</div></div>
+      <div class="stat-card"><div id="stat-needs-info" class="stat-value">0</div><div class="stat-label">Needs info</div></div>
+    </div>
+
+    <div class="toolbar">
+      <input id="search-input" type="search" placeholder="Search plugin, submitter email, endpoint, status, notes...">
+      <select id="status-filter">
+        <option value="all">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="needs-info">Needs info</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button id="refresh-btn" class="btn" type="button">Refresh</button>
+    </div>
+
+    <div id="list-area"></div>
+  </section>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    onAuthStateChanged,
+    signInWithPopup,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    orderBy,
+    query,
+    updateDoc,
+    doc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+  // TODO: Replace with your real Firebase config.
+  const FIREBASE_CONFIG = {
+    apiKey: "REPLACE_ME",
+    authDomain: "REPLACE_ME.firebaseapp.com",
+    projectId: "REPLACE_ME",
+    storageBucket: "REPLACE_ME.appspot.com",
+    messagingSenderId: "REPLACE_ME",
+    appId: "REPLACE_ME"
+  };
+
+  // Strict admin email allowlist (lowercase). Keep private.
+  const ADMIN_EMAIL_ALLOWLIST = [
+    "admin@example.com"
+  ];
+  const hasRealFirebaseConfig = Object.values(FIREBASE_CONFIG).every((value) => !String(value).startsWith("REPLACE_ME"));
+  const hasConfiguredAdminEmail = ADMIN_EMAIL_ALLOWLIST.some((email) => String(email).toLowerCase() !== "admin@example.com");
+
+  const app = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  const state = {
+    user: null,
+    all: [],
+    filtered: [],
+    expandedId: null,
+    loading: false
+  };
+
+  const els = {
+    signInBtn: document.getElementById("signin-btn"),
+    signOutBtn: document.getElementById("signout-btn"),
+    navEmail: document.getElementById("nav-email"),
+    gateCard: document.getElementById("gate-card"),
+    adminShell: document.getElementById("admin-shell"),
+    globalMsg: document.getElementById("global-msg"),
+    loadingTrack: document.getElementById("loading-track"),
+    listArea: document.getElementById("list-area"),
+    searchInput: document.getElementById("search-input"),
+    statusFilter: document.getElementById("status-filter"),
+    refreshBtn: document.getElementById("refresh-btn"),
+    statTotal: document.getElementById("stat-total"),
+    statPending: document.getElementById("stat-pending"),
+    statApproved: document.getElementById("stat-approved"),
+    statRejected: document.getElementById("stat-rejected"),
+    statNeedsInfo: document.getElementById("stat-needs-info")
+  };
+
+  function showMsg(text, type) {
+    els.globalMsg.textContent = text;
+    els.globalMsg.className = "msg " + type;
+    els.globalMsg.style.display = "block";
+  }
+
+  function clearMsg() {
+    els.globalMsg.textContent = "";
+    els.globalMsg.style.display = "none";
+    els.globalMsg.className = "msg";
+  }
+
+  function setLoading(isLoading) {
+    state.loading = isLoading;
+    if (isLoading) {
+      els.loadingTrack.classList.add("active");
+    } else {
+      els.loadingTrack.classList.remove("active");
+    }
+    els.refreshBtn.disabled = isLoading;
+  }
+
+  function normalizeStatus(input) {
+    const value = String(input || "").trim().toLowerCase();
+    if (value === "needs_info" || value === "needs info") return "needs-info";
+    if (value === "approved") return "approved";
+    if (value === "rejected") return "rejected";
+    if (value === "pending") return "pending";
+    if (value === "needs-info") return "needs-info";
+    return "unknown";
+  }
+
+  function labelForStatus(status) {
+    if (status === "needs-info") return "needs info";
+    return status;
+  }
+
+  function toIsoOrBlank(value) {
+    if (!value) return "";
+    if (typeof value === "string") return value;
+    if (value && typeof value.toDate === "function") {
+      return value.toDate().toISOString();
+    }
+    return "";
+  }
+
+  function displayDate(value) {
+    const iso = toIsoOrBlank(value);
+    if (!iso) return "-";
+    const dt = new Date(iso);
+    if (Number.isNaN(dt.getTime())) return "-";
+    return dt.toLocaleString();
+  }
+
+  function resolveField(obj, candidates, fallback = "") {
+    for (let i = 0; i < candidates.length; i += 1) {
+      const key = candidates[i];
+      if (obj[key] !== undefined && obj[key] !== null && obj[key] !== "") {
+        return obj[key];
+      }
+    }
+    return fallback;
+  }
+
+  function isAdminUser(user) {
+    if (!user || !user.email) return false;
+    const email = user.email.toLowerCase();
+    return ADMIN_EMAIL_ALLOWLIST.includes(email);
+  }
+
+  function updateAccessUI() {
+    if (!hasRealFirebaseConfig || !hasConfiguredAdminEmail) {
+      els.navEmail.textContent = "";
+      els.signOutBtn.style.display = "none";
+      els.gateCard.style.display = "block";
+      els.adminShell.classList.remove("active");
+      els.signInBtn.disabled = true;
+      showMsg("Firebase config/admin allowlist placeholders detected. Replace them before using this admin page.", "info");
+      return;
+    }
+
+    if (state.user) {
+      els.navEmail.textContent = state.user.email || "";
+      els.signOutBtn.style.display = "inline-block";
+    } else {
+      els.navEmail.textContent = "";
+      els.signOutBtn.style.display = "none";
+    }
+
+    if (isAdminUser(state.user)) {
+      els.gateCard.style.display = "none";
+      els.adminShell.classList.add("active");
+    } else {
+      els.gateCard.style.display = "block";
+      els.adminShell.classList.remove("active");
+    }
+  }
+
+  async function signIn() {
+    clearMsg();
+    if (!hasRealFirebaseConfig || !hasConfiguredAdminEmail) {
+      showMsg("Replace Firebase config and admin allowlist placeholders first.", "error");
+      return;
+    }
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      showMsg("Sign-in failed: " + (error.message || "Unknown error"), "error");
+    }
+  }
+
+  async function signOutNow() {
+    await signOut(auth);
+  }
+
+  async function loadSubmissions() {
+    if (!isAdminUser(state.user)) return;
+    setLoading(true);
+    clearMsg();
+
+    let snapshot = null;
+    try {
+      snapshot = await getDocs(query(collection(db, "plugin_submissions"), orderBy("submitted_at", "desc")));
+    } catch (firstError) {
+      try {
+        snapshot = await getDocs(query(collection(db, "plugin_submissions"), orderBy("created_at", "desc")));
+      } catch (fallbackError) {
+        showMsg("Failed to load submissions. Check Firestore indexes/rules and config.", "error");
+        renderLoadError();
+        setLoading(false);
+        return;
+      }
+    }
+
+    const rows = [];
+    snapshot.forEach((item) => {
+      const data = item.data() || {};
+      const status = normalizeStatus(resolveField(data, ["status", "review_status"], "pending"));
+      rows.push({
+        id: item.id,
+        status,
+        pluginName: resolveField(data, ["plugin_name", "name", "title"], "Untitled Plugin"),
+        submittedBy: resolveField(data, ["submitter_email", "email", "developer_email", "owner_email"], data.submitted_by?.email || data.contact?.email || "-"),
+        endpoint: resolveField(data, ["endpoint", "endpoint_url", "api_endpoint", "url"], "-"),
+        useCase: resolveField(data, ["use_case", "useCase"], ""),
+        description: resolveField(data, ["description", "capability", "summary"], ""),
+        manifest: resolveField(data, ["manifest_json", "manifest", "manifest_text"], ""),
+        notes: resolveField(data, ["notes", "admin_notes", "submitter_notes"], ""),
+        reviewNote: resolveField(data, ["review_note"], ""),
+        reviewedAt: resolveField(data, ["reviewed_at"], ""),
+        reviewedBy: resolveField(data, ["reviewed_by"], ""),
+        submittedAt: resolveField(data, ["submitted_at", "created_at"], ""),
+        raw: data
+      });
+    });
+
+    state.all = rows;
+    applyFilters();
+    setLoading(false);
+  }
+
+  function applyFilters() {
+    const q = els.searchInput.value.trim().toLowerCase();
+    const status = els.statusFilter.value;
+
+    state.filtered = state.all.filter((item) => {
+      const statusMatch = status === "all" || item.status === status;
+      if (!statusMatch) return false;
+      if (!q) return true;
+      const source = [
+        item.pluginName,
+        item.submittedBy,
+        item.endpoint,
+        item.status,
+        item.description,
+        item.useCase,
+        item.notes,
+        item.reviewNote,
+        item.reviewedBy
+      ].join(" ").toLowerCase();
+      return source.includes(q);
+    });
+
+    renderCounts();
+    renderList();
+  }
+
+  function renderCounts() {
+    let pending = 0;
+    let approved = 0;
+    let rejected = 0;
+    let needsInfo = 0;
+
+    for (let i = 0; i < state.all.length; i += 1) {
+      const s = normalizeStatus(state.all[i].status);
+      if (s === "pending") pending += 1;
+      else if (s === "approved") approved += 1;
+      else if (s === "rejected") rejected += 1;
+      else if (s === "needs-info") needsInfo += 1;
+    }
+
+    els.statTotal.textContent = String(state.all.length);
+    els.statPending.textContent = String(pending);
+    els.statApproved.textContent = String(approved);
+    els.statRejected.textContent = String(rejected);
+    els.statNeedsInfo.textContent = String(needsInfo);
+  }
+
+  function renderLoadError() {
+    els.listArea.innerHTML = "";
+    const box = document.createElement("div");
+    box.className = "load-error";
+    const p = document.createElement("p");
+    p.textContent = "Could not load submissions.";
+    box.appendChild(p);
+    const btn = document.createElement("button");
+    btn.className = "btn";
+    btn.type = "button";
+    btn.textContent = "Retry";
+    btn.addEventListener("click", loadSubmissions);
+    box.appendChild(btn);
+    els.listArea.appendChild(box);
+  }
+
+  function renderEmptyState() {
+    els.listArea.innerHTML = "";
+    const box = document.createElement("div");
+    box.className = "empty";
+    const p = document.createElement("p");
+    p.textContent = "No submissions found for current filters.";
+    box.appendChild(p);
+    const btn = document.createElement("button");
+    btn.className = "btn";
+    btn.type = "button";
+    btn.textContent = "Clear filters";
+    btn.addEventListener("click", () => {
+      els.searchInput.value = "";
+      els.statusFilter.value = "all";
+      applyFilters();
+    });
+    box.appendChild(btn);
+    els.listArea.appendChild(box);
+  }
+
+  function createStatusBadge(status) {
+    const s = normalizeStatus(status);
+    const span = document.createElement("span");
+    span.className = "badge " + s;
+    span.textContent = labelForStatus(s);
+    return span;
+  }
+
+  function safeManifestText(value) {
+    if (value === null || value === undefined || value === "") return "-";
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed) return "-";
+      try {
+        const parsed = JSON.parse(trimmed);
+        return JSON.stringify(parsed, null, 2);
+      } catch (_) {
+        return value;
+      }
+    }
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch (_) {
+      return String(value);
+    }
+  }
+
+  function makeDetailBlock(title, text, isCode = false) {
+    const block = document.createElement("div");
+    block.className = "detail-block";
+
+    const h = document.createElement("div");
+    h.className = "detail-title";
+    h.textContent = title;
+    block.appendChild(h);
+
+    const body = document.createElement("div");
+    body.className = isCode ? "detail-code" : "detail-text";
+    body.textContent = text && String(text).trim() ? String(text) : "-";
+    block.appendChild(body);
+    return block;
+  }
+
+  function renderList() {
+    els.listArea.innerHTML = "";
+
+    if (!state.filtered.length) {
+      renderEmptyState();
+      return;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    ["Plugin", "Submitted by", "Submitted", "Status", "Actions"].forEach((label) => {
+      const th = document.createElement("th");
+      th.textContent = label;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    state.filtered.forEach((item) => {
+      const row = document.createElement("tr");
+      row.className = "summary-row";
+
+      const colPlugin = document.createElement("td");
+      const pluginName = document.createElement("div");
+      pluginName.style.fontWeight = "500";
+      pluginName.textContent = item.pluginName;
+      const pluginMeta = document.createElement("div");
+      pluginMeta.className = "muted";
+      pluginMeta.textContent = item.endpoint || "-";
+      colPlugin.appendChild(pluginName);
+      colPlugin.appendChild(pluginMeta);
+      row.appendChild(colPlugin);
+
+      const colBy = document.createElement("td");
+      colBy.textContent = item.submittedBy || "-";
+      row.appendChild(colBy);
+
+      const colDate = document.createElement("td");
+      colDate.textContent = displayDate(item.submittedAt);
+      row.appendChild(colDate);
+
+      const colStatus = document.createElement("td");
+      colStatus.appendChild(createStatusBadge(item.status));
+      row.appendChild(colStatus);
+
+      const colActions = document.createElement("td");
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const expandBtn = document.createElement("button");
+      expandBtn.type = "button";
+      expandBtn.className = "btn";
+      expandBtn.textContent = state.expandedId === item.id ? "Collapse" : "Expand";
+      expandBtn.addEventListener("click", () => {
+        state.expandedId = state.expandedId === item.id ? null : item.id;
+        renderList();
+      });
+      actions.appendChild(expandBtn);
+
+      const approveBtn = document.createElement("button");
+      approveBtn.type = "button";
+      approveBtn.className = "btn btn-primary";
+      approveBtn.textContent = "Approve";
+      approveBtn.addEventListener("click", () => handleReviewAction(item, "approved"));
+      actions.appendChild(approveBtn);
+
+      const needsInfoBtn = document.createElement("button");
+      needsInfoBtn.type = "button";
+      needsInfoBtn.className = "btn btn-blue";
+      needsInfoBtn.textContent = "Needs info";
+      needsInfoBtn.addEventListener("click", () => handleReviewAction(item, "needs-info"));
+      actions.appendChild(needsInfoBtn);
+
+      const rejectBtn = document.createElement("button");
+      rejectBtn.type = "button";
+      rejectBtn.className = "btn btn-red";
+      rejectBtn.textContent = "Reject";
+      rejectBtn.addEventListener("click", () => handleReviewAction(item, "rejected"));
+      actions.appendChild(rejectBtn);
+
+      colActions.appendChild(actions);
+      row.appendChild(colActions);
+      tbody.appendChild(row);
+
+      if (state.expandedId === item.id) {
+        const detailRow = document.createElement("tr");
+        detailRow.className = "details-row";
+        const detailCell = document.createElement("td");
+        detailCell.colSpan = 5;
+        const details = document.createElement("div");
+        details.className = "details";
+
+        details.appendChild(makeDetailBlock("Description", item.description));
+        details.appendChild(makeDetailBlock("Use case", item.useCase));
+        details.appendChild(makeDetailBlock("Endpoint", item.endpoint));
+        details.appendChild(makeDetailBlock("Submitter notes", item.notes));
+        details.appendChild(makeDetailBlock("Review note", item.reviewNote));
+        details.appendChild(makeDetailBlock("Reviewed by", item.reviewedBy));
+        details.appendChild(makeDetailBlock("Reviewed at", displayDate(item.reviewedAt)));
+        details.appendChild(makeDetailBlock("Manifest JSON", safeManifestText(item.manifest), true));
+
+        detailCell.appendChild(details);
+        detailRow.appendChild(detailCell);
+        tbody.appendChild(detailRow);
+      }
+    });
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    els.listArea.appendChild(wrap);
+  }
+
+  async function handleReviewAction(item, status) {
+    if (!isAdminUser(state.user)) return;
+    const readableStatus = labelForStatus(status);
+    const note = window.prompt("Optional review note for '" + readableStatus + "':", item.reviewNote || "");
+    if (note === null) return;
+
+    setLoading(true);
+    clearMsg();
+    try {
+      const ref = doc(db, "plugin_submissions", item.id);
+      await updateDoc(ref, {
+        status,
+        review_note: note.trim(),
+        reviewed_at: serverTimestamp(),
+        reviewed_by: state.user.email || "unknown"
+      });
+      showMsg("Submission updated to '" + readableStatus + "'.", "success");
+      await loadSubmissions();
+    } catch (error) {
+      showMsg("Update failed: " + (error.message || "Unknown error"), "error");
+      setLoading(false);
+    }
+  }
+
+  function bindEvents() {
+    els.signInBtn.addEventListener("click", signIn);
+    els.signOutBtn.addEventListener("click", signOutNow);
+    els.refreshBtn.addEventListener("click", loadSubmissions);
+    els.searchInput.addEventListener("input", applyFilters);
+    els.statusFilter.addEventListener("change", applyFilters);
+  }
+
+  function init() {
+    bindEvents();
+    onAuthStateChanged(auth, async (user) => {
+      state.user = user;
+      updateAccessUI();
+      clearMsg();
+
+      if (!user) return;
+      if (!isAdminUser(user)) {
+        showMsg("Access denied: signed in account is not in admin allowlist.", "error");
+        return;
+      }
+      await loadSubmissions();
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwarmSpace — Submit a Capability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080c0a; --surface: #0d1410; --surface2: #111a14;
+  --green: #00e676; --green-dim: rgba(0,230,118,0.5); --green-ghost: rgba(0,230,118,0.07);
+  --text: #e8f0eb; --muted: #5a7060; --border: rgba(0,255,128,0.12);
+  --amber: #ffb300; --amber-ghost: rgba(255,179,0,0.08); --red: #ff4444;
+}
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.2rem 3rem; display: flex; justify-content: space-between; align-items: center; background: rgba(8,12,10,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-logo { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; font-weight: 500; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.6rem; }
+.logo-mark { width: 18px; height: 18px; border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; }
+.logo-mark::before { content: ''; width: 7px; height: 7px; background: var(--green); animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+.nav-links a, .nav-links button { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); background: none; border: none; text-decoration: none; cursor: pointer; transition: color 0.2s; }
+.nav-links a:hover, .nav-links button:hover { color: var(--text); }
+
+main { max-width: 920px; margin: 0 auto; padding: 7rem 1.5rem 3rem; }
+.page-title { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
+.page-sub { font-size: 0.86rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+
+.panel { background: var(--surface); border: 1px solid var(--border); padding: 1.4rem; margin-bottom: 1rem; }
+.auth-box { display: flex; flex-direction: column; gap: 1rem; }
+.auth-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.auth-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+
+.btn { padding: 0.85rem 1.2rem; background: var(--green); color: var(--bg); font-family: 'IBM Plex Mono', monospace; font-size: 0.74rem; font-weight: 500; letter-spacing: 0.08em; border: none; cursor: pointer; transition: background 0.2s; }
+.btn:hover { background: #00c853; }
+.btn:disabled { background: var(--muted); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--green-dim); background: transparent; }
+.btn-google { min-width: 220px; }
+
+.mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin-bottom: 1.2rem; }
+.mode-btn { padding: 0.9rem; border: none; background: var(--surface2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.08em; cursor: pointer; transition: color 0.2s, background 0.2s; }
+.mode-btn.active { color: var(--green); background: var(--green-ghost); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1rem; }
+label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+.label-hint { font-family: 'IBM Plex Sans', sans-serif; font-size: 0.72rem; letter-spacing: 0; text-transform: none; opacity: 0.8; margin-left: 0.35rem; }
+input, textarea, select { width: 100%; padding: 0.8rem 1rem; background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; outline: none; transition: border-color 0.2s; }
+textarea { resize: vertical; min-height: 110px; line-height: 1.6; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.85rem; }
+input:focus, textarea:focus, select:focus { border-color: var(--green-dim); }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+select option { background: var(--surface); }
+
+.manifest-fields { display: none; }
+.manifest-fields.active { display: block; }
+
+.notice { padding: 1rem 1.2rem; border-left: 2px solid; margin-bottom: 1rem; font-size: 0.82rem; line-height: 1.6; }
+.notice.info { border-color: var(--green); background: var(--green-ghost); color: var(--green-dim); }
+.notice.warn { border-color: var(--amber); background: var(--amber-ghost); color: rgba(255,179,0,0.9); }
+
+.msg { padding: 0.8rem 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; line-height: 1.5; margin-bottom: 1rem; display: none; }
+.msg.error { background: rgba(255,68,68,0.08); border-left: 2px solid var(--red); color: #ff8a80; }
+.msg.success { background: var(--green-ghost); border-left: 2px solid var(--green); color: var(--green); }
+.msg.info { background: rgba(255,255,255,0.03); border-left: 2px solid var(--border); color: var(--muted); }
+
+@media (max-width: 768px) {
+  nav { padding: 1rem 1.2rem; }
+  .nav-links { gap: 1rem; }
+  .nav-links a:nth-child(2) { display: none; }
+  main { padding-top: 6rem; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo"><div class="logo-mark"></div>SwarmSpace</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <button type="button" id="signout-btn" style="display:none;">Sign out</button>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page-title">Submit a capability</h1>
+  <p class="page-sub">Share a plugin idea or submit a full manifest for SwarmSpace review. All submissions enter the pending queue.</p>
+
+  <div class="notice warn">
+    Firebase project values below are placeholders. Replace the `firebaseConfig` object with your real project config before production deploy.
+  </div>
+
+  <div id="auth-panel" class="panel auth-box">
+    <div class="auth-row">
+      <div>
+        <p class="page-title" style="font-size:0.85rem;margin-bottom:0.2rem;">Account required</p>
+        <p class="auth-meta" id="auth-meta">Sign in with Google to continue.</p>
+      </div>
+      <button class="btn btn-google" id="google-signin-btn" type="button">Continue with Google</button>
+    </div>
+    <div id="auth-msg" class="msg"></div>
+  </div>
+
+  <div id="form-panel" class="panel" style="display:none;">
+    <div id="submit-msg" class="msg"></div>
+
+    <div class="mode-switch">
+      <button class="mode-btn active" type="button" id="mode-idea-btn">Plugin idea</button>
+      <button class="mode-btn" type="button" id="mode-manifest-btn">Full manifest</button>
+    </div>
+
+    <form id="submission-form" novalidate>
+      <input type="hidden" id="submission-mode" value="idea">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="plugin-name">Plugin name</label>
+          <input id="plugin-name" name="pluginName" type="text" maxlength="120" required placeholder="e.g. OuraSync">
+        </div>
+        <div class="form-group">
+          <label for="plugin-category">Category</label>
+          <select id="plugin-category" name="category" required>
+            <option value="">Select category</option>
+            <option value="health">Health</option>
+            <option value="finance">Finance</option>
+            <option value="productivity">Productivity</option>
+            <option value="research">Research</option>
+            <option value="communication">Communication</option>
+            <option value="developer-tools">Developer Tools</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="plugin-description">Description</label>
+        <textarea id="plugin-description" name="description" required maxlength="2500" placeholder="Describe what your capability does and how agents should use it."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="plugin-use-case">Primary use case</label>
+        <textarea id="plugin-use-case" name="useCase" required maxlength="1200" placeholder="What problem does this solve for users and agents?"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="plugin-trust-tier">Trust tier requested</label>
+          <select id="plugin-trust-tier" name="trustTier" required>
+            <option value="experimental">Experimental</option>
+            <option value="community">Community</option>
+            <option value="verified">Verified</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="plugin-pricing">Pricing model</label>
+          <select id="plugin-pricing" name="pricing" required>
+            <option value="">Select pricing</option>
+            <option value="free">Free</option>
+            <option value="usage">Usage-based</option>
+            <option value="subscription">Subscription</option>
+            <option value="one-time">One-time</option>
+            <option value="custom">Custom / contact sales</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="contact-name">Contact name</label>
+          <input id="contact-name" name="contactName" type="text" maxlength="120" required placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label for="contact-email">Contact email</label>
+          <input id="contact-email" name="contactEmail" type="email" maxlength="200" required placeholder="you@example.com">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="contact-url">Website / repo URL <span class="label-hint">optional</span></label>
+        <input id="contact-url" name="contactUrl" type="url" maxlength="500" placeholder="https://github.com/you/plugin">
+      </div>
+
+      <div id="manifest-fields" class="manifest-fields">
+        <div class="notice info">
+          Manifest mode enabled. Provide as much structured plugin metadata as possible for faster review.
+        </div>
+
+        <div class="form-group">
+          <label for="manifest-url">Manifest URL</label>
+          <input id="manifest-url" name="manifestUrl" type="url" maxlength="500" placeholder="https://yourplugin.dev/.well-known/swarmspace.json">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="manifest-version">Manifest version <span class="label-hint">optional</span></label>
+            <input id="manifest-version" name="manifestVersion" type="text" maxlength="80" placeholder="e.g. 1.0.0">
+          </div>
+          <div class="form-group">
+            <label for="manifest-auth">Auth method <span class="label-hint">optional</span></label>
+            <select id="manifest-auth" name="manifestAuthMethod">
+              <option value="">Select auth method</option>
+              <option value="none">None</option>
+              <option value="api-key">API key</option>
+              <option value="oauth2">OAuth 2.0</option>
+              <option value="firebase-token">Firebase ID token</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="manifest-tags">Semantic tags <span class="label-hint">optional comma-separated</span></label>
+          <input id="manifest-tags" name="manifestTags" type="text" maxlength="500" placeholder="health, sleep, hrv">
+        </div>
+
+        <div class="form-group">
+          <label for="manifest-notes">Manifest notes <span class="label-hint">optional</span></label>
+          <textarea id="manifest-notes" name="manifestNotes" maxlength="2000" placeholder="Anything else reviewers should know about schema, auth, scopes, or data retention."></textarea>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="submission-notes">Additional notes <span class="label-hint">optional</span></label>
+        <textarea id="submission-notes" name="notes" maxlength="2000" placeholder="Roadmap, launch timeline, known limitations, or review context."></textarea>
+      </div>
+
+      <button class="btn" id="submit-btn" type="submit">Submit for review →</button>
+    </form>
+  </div>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+  // Replace with your real Firebase project config before deployment.
+  const firebaseConfig = {
+    apiKey: "REPLACE_WITH_FIREBASE_API_KEY",
+    authDomain: "REPLACE_WITH_FIREBASE_AUTH_DOMAIN",
+    projectId: "REPLACE_WITH_FIREBASE_PROJECT_ID",
+    storageBucket: "REPLACE_WITH_FIREBASE_STORAGE_BUCKET",
+    messagingSenderId: "REPLACE_WITH_FIREBASE_MESSAGING_SENDER_ID",
+    appId: "REPLACE_WITH_FIREBASE_APP_ID"
+  };
+
+  const hasRealConfig = Object.values(firebaseConfig).every((value) => !String(value).startsWith("REPLACE_WITH_"));
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  let currentUser = null;
+
+  const authPanel = document.getElementById("auth-panel");
+  const formPanel = document.getElementById("form-panel");
+  const authMeta = document.getElementById("auth-meta");
+  const authMsg = document.getElementById("auth-msg");
+  const submitMsg = document.getElementById("submit-msg");
+  const googleSigninBtn = document.getElementById("google-signin-btn");
+  const signoutBtn = document.getElementById("signout-btn");
+  const submitBtn = document.getElementById("submit-btn");
+  const form = document.getElementById("submission-form");
+  const modeIdeaBtn = document.getElementById("mode-idea-btn");
+  const modeManifestBtn = document.getElementById("mode-manifest-btn");
+  const modeInput = document.getElementById("submission-mode");
+  const manifestFields = document.getElementById("manifest-fields");
+
+  function showMsg(el, text, type) {
+    el.textContent = text;
+    el.className = `msg ${type}`;
+    el.style.display = "block";
+  }
+
+  function clearMsg(el) {
+    el.style.display = "none";
+    el.textContent = "";
+  }
+
+  function setSubmitting(loading) {
+    submitBtn.disabled = loading;
+    submitBtn.textContent = loading ? "Submitting..." : "Submit for review →";
+  }
+
+  function setSignInLoading(loading) {
+    googleSigninBtn.disabled = loading || !hasRealConfig;
+    googleSigninBtn.textContent = loading ? "Signing in..." : "Continue with Google";
+  }
+
+  function setMode(mode) {
+    const isManifest = mode === "manifest";
+    modeInput.value = isManifest ? "manifest" : "idea";
+    modeIdeaBtn.classList.toggle("active", !isManifest);
+    modeManifestBtn.classList.toggle("active", isManifest);
+    manifestFields.classList.toggle("active", isManifest);
+    const manifestUrl = document.getElementById("manifest-url");
+    manifestUrl.required = isManifest;
+  }
+
+  function normalizeTags(tagString) {
+    if (!tagString) return [];
+    return tagString.split(",").map((tag) => tag.trim()).filter(Boolean).slice(0, 20);
+  }
+
+  function buildPayload() {
+    const mode = modeInput.value;
+    const payload = {
+      mode,
+      plugin_name: document.getElementById("plugin-name").value.trim(),
+      description: document.getElementById("plugin-description").value.trim(),
+      use_case: document.getElementById("plugin-use-case").value.trim(),
+      category: document.getElementById("plugin-category").value,
+      trust_tier: document.getElementById("plugin-trust-tier").value,
+      pricing: document.getElementById("plugin-pricing").value,
+      contact: {
+        name: document.getElementById("contact-name").value.trim(),
+        email: document.getElementById("contact-email").value.trim(),
+        url: document.getElementById("contact-url").value.trim() || null
+      },
+      notes: document.getElementById("submission-notes").value.trim() || null
+    };
+
+    if (mode === "manifest") {
+      payload.manifest = {
+        url: document.getElementById("manifest-url").value.trim(),
+        version: document.getElementById("manifest-version").value.trim() || null,
+        auth_method: document.getElementById("manifest-auth").value || null,
+        tags: normalizeTags(document.getElementById("manifest-tags").value),
+        notes: document.getElementById("manifest-notes").value.trim() || null
+      };
+    }
+
+    return payload;
+  }
+
+  function validatePayload(payload) {
+    if (!payload.plugin_name || !payload.description || !payload.use_case) {
+      return "Please fill in plugin name, description, and use case.";
+    }
+    if (!payload.category || !payload.pricing) {
+      return "Please select category and pricing.";
+    }
+    if (!payload.contact.name || !payload.contact.email) {
+      return "Please provide contact name and email.";
+    }
+    if (payload.mode === "manifest" && (!payload.manifest || !payload.manifest.url)) {
+      return "Manifest URL is required in full manifest mode.";
+    }
+    return null;
+  }
+
+  async function submitForm(event) {
+    event.preventDefault();
+    clearMsg(submitMsg);
+
+    if (!currentUser) {
+      showMsg(submitMsg, "Please sign in before submitting.", "error");
+      return;
+    }
+    if (!hasRealConfig) {
+      showMsg(submitMsg, "Firebase config placeholders are still set. Update config to enable submissions.", "error");
+      return;
+    }
+
+    const payload = buildPayload();
+    const validationError = validatePayload(payload);
+    if (validationError) {
+      showMsg(submitMsg, validationError, "error");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await addDoc(collection(db, "plugin_submissions"), {
+        ...payload,
+        status: "pending",
+        submitterUid: currentUser.uid,
+        submitterEmail: currentUser.email || null,
+        submitted_by: {
+          uid: currentUser.uid,
+          email: currentUser.email || null,
+          display_name: currentUser.displayName || null
+        },
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+        submitted_at: new Date().toISOString()
+      });
+
+      form.reset();
+      setMode("idea");
+      showMsg(submitMsg, "Submission received. Status set to pending and queued for review.", "success");
+    } catch (error) {
+      showMsg(submitMsg, error?.message || "Submission failed. Please try again.", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    clearMsg(authMsg);
+    if (!hasRealConfig) {
+      showMsg(authMsg, "Firebase config is placeholder-only. Add real config values to enable Google sign-in.", "error");
+      return;
+    }
+    try {
+      setSignInLoading(true);
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      showMsg(authMsg, error?.message || "Google sign-in failed.", "error");
+      setSignInLoading(false);
+    }
+  }
+
+  function updateAuthUI(user) {
+    currentUser = user || null;
+    clearMsg(authMsg);
+    clearMsg(submitMsg);
+
+    if (!hasRealConfig) {
+      showMsg(authMsg, "Placeholder Firebase config detected. Sign-in and Firestore writes are disabled until replaced.", "info");
+      authMeta.textContent = "Configuration required before this page can go live.";
+      formPanel.style.display = "none";
+      authPanel.style.display = "block";
+      signoutBtn.style.display = "none";
+      setSignInLoading(false);
+      return;
+    }
+
+    if (currentUser) {
+      authMeta.textContent = `Signed in as ${currentUser.email || currentUser.displayName || "user"}`;
+      authPanel.style.display = "block";
+      formPanel.style.display = "block";
+      signoutBtn.style.display = "inline-block";
+      googleSigninBtn.style.display = "none";
+      const contactNameEl = document.getElementById("contact-name");
+      const contactEmailEl = document.getElementById("contact-email");
+      if (currentUser.displayName && !contactNameEl.value) contactNameEl.value = currentUser.displayName;
+      if (currentUser.email && !contactEmailEl.value) contactEmailEl.value = currentUser.email;
+    } else {
+      authMeta.textContent = "Sign in with Google to continue.";
+      formPanel.style.display = "none";
+      authPanel.style.display = "block";
+      signoutBtn.style.display = "none";
+      googleSigninBtn.style.display = "inline-block";
+      setSignInLoading(false);
+    }
+  }
+
+  modeIdeaBtn.addEventListener("click", () => setMode("idea"));
+  modeManifestBtn.addEventListener("click", () => setMode("manifest"));
+  googleSigninBtn.addEventListener("click", handleGoogleSignIn);
+  signoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    updateAuthUI(null);
+  });
+  form.addEventListener("submit", submitForm);
+
+  onAuthStateChanged(auth, updateAuthUI);
+</script>
+</body>
+</html>

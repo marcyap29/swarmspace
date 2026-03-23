@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-03-01  
+**Last Updated:** 2026-03-23  
 **Status:** ✅ Synced
 
 ---
@@ -15,7 +15,8 @@ Tracks changes between the repository codebase and documentation, ensuring docs 
 
 | Entry point | Purpose | When to read |
 |-------------|---------|--------------|
-| **README.md** | Setup guide (Supabase, Stripe, Vercel) | First stop; deploy instructions |
+| **overview.md** | Purpose, flow, orientation for users/agents | First read; what is SwarmSpace |
+| **README.md** | Setup guide (Supabase, Stripe, Vercel) | Deploy instructions |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | API integration |
 | **architecture.md** | SwarmStore architecture & hosting | Broader vision; plugin format |
 | **Docs/claude.md** | AI context guide; Documentation & Config Role | Onboarding; doc workflows |
@@ -43,14 +44,17 @@ When running a doc sync or release:
 
 | Document | Location | Last Reviewed | Status | Notes |
 |----------|----------|---------------|--------|-------|
-| README.md | root | 2026-03-01 | ✅ Synced | |
+| overview.md | root | 2026-03-01 | ✅ Synced | |
+| README.md | root | 2026-03-23 | ✅ Synced | Firebase submit/admin; file structure |
 | SWARMSPACE_API_CONTEXT.md | root | — | ✅ Synced | |
 | architecture.md | root | — | ✅ Synced | |
+| submit.html | root | 2026-03-23 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` |
+| admin-submissions.html | root | 2026-03-23 | ✅ Synced | Private `/admin-submissions`; reviewer UI |
 | Docs/claude.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/CHANGELOG.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/FEATURES.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/backend.md | Docs/ | 2026-03-01 | ✅ Synced | |
+| Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-03-23 | ✅ Synced | |
+| Docs/CHANGELOG.md | Docs/ | 2026-03-23 | ✅ Synced | |
+| Docs/FEATURES.md | Docs/ | 2026-03-23 | ✅ Synced | |
+| Docs/backend.md | Docs/ | 2026-03-23 | ✅ Synced | |
 | Docs/git.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/SECURITY_CHECKLIST.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/UI_UX.md | Docs/ | 2026-03-01 | ✅ Synced | |
@@ -59,6 +63,17 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-03-23 — Doc-config-git-backup (submit/admin + inventory sync)
+
+**Action:** Ran **Documentation, Configuration Management and Git Backup** workflow (`Docs/claude.md` § Documentation, Configuration Management and Git Backup).
+
+**Changes:**
+- CHANGELOG **1.1.3:** `submit.html`, `admin-submissions.html`, `/submit` and `/admin-submissions` rewrites
+- FEATURES.md: developer submit portal + admin submissions rows; Firebase web app integration note
+- README.md: file structure includes `submit.html`, `admin-submissions.html`, `reset-password.html`
+- backend.md: rewrite table + admin allowlist note for `admin-submissions.html`
+- CONFIGURATION_MANAGEMENT: this entry; inventory timestamps refreshed
 
 ### 2026-03-01 — Doc backup sync (unified account model)
 
@@ -70,6 +85,14 @@ When running a doc sync or release:
 - backend.md: developers table schema (developer_mode, api_key, developer_accepted_terms_at)
 - FEATURES.md: unified account model, API key, developer mode
 - README: test flow updated (signup → dashboard)
+
+### 2026-03-23 — Firebase submit/admin setup guidance
+
+**Action:** Added Firebase setup guidance for plugin submission + admin review flow.
+
+**Changes:**
+- README: added Firebase setup section with modular SDK pattern (`firebaseConfig`, `ADMIN_EMAIL`) and minimum Firestore rules for `plugin_submissions`
+- backend.md: documented Firebase submit/admin tasking policy and matching Firestore rule requirements
 
 ### 2026-03-01 — Doc backup sync (doc-config-git workflow)
 

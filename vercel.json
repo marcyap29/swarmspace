@@ -2,6 +2,8 @@
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/submit", "destination": "/submit.html" },
+    { "source": "/admin-submissions", "destination": "/admin-submissions.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/marketplace", "destination": "/marketplace.html" },
     { "source": "/thankyou", "destination": "/thankyou.html" },

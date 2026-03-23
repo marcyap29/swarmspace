@@ -12,6 +12,7 @@
 
 | Document | Purpose | Path |
 |----------|---------|------|
+| **overview.md** | SwarmSpace purpose, flow, and orientation for users/agents | `overview.md` |
 | **README.md** | Setup guide (Supabase, Stripe, Vercel) | `README.md` |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | `SWARMSPACE_API_CONTEXT.md` |
 | **architecture.md** | SwarmStore architecture & hosting | `architecture.md` |
@@ -27,6 +28,7 @@
 ## Core Documentation
 
 ### 📖 SwarmSpace Overview
+- **overview.md** — Purpose, user flow, account model, orientation for users and AI agents.
 - **README.md** — Setup, deploy, test flow. Supabase, Stripe, Vercel env vars.
 - **SWARMSPACE_API_CONTEXT.md** — Endpoints (swarmspaceRouter, swarmspacePluginStatus), tiers (Free/Standard/Premium), request schemas. Auth: Firebase ID token. Never commit API keys.
 
@@ -36,6 +38,7 @@
 ### 📁 File Structure
 ```
 swarmspace/
+├── overview.md         ← Orientation for users and agents
 ├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── supabase-setup.sql, vercel.json

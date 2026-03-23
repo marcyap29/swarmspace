@@ -41,6 +41,9 @@ input::placeholder { color: var(--muted); }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .btn-ghost { width: 100%; padding: 0.9rem; background: transparent; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; letter-spacing: 0.08em; border: 1px solid var(--border); cursor: pointer; transition: color 0.2s, border-color 0.2s; }
 .btn-ghost:hover { color: var(--text); border-color: var(--green-dim); }
+.oauth-row { display: flex; gap: 0.75rem; }
+.oauth-row .btn-ghost { flex: 1; }
+.auth-method-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 1.25rem 0 0.75rem; }
 .msg { padding: 0.8rem 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; line-height: 1.5; margin-bottom: 1rem; display: none; }
 .msg.error { background: rgba(255,68,68,0.08); border-left: 2px solid var(--red); color: #ff8a80; }
 .msg.success { background: var(--green-ghost); border-left: 2px solid var(--green); color: var(--green); }
@@ -68,33 +71,52 @@ input::placeholder { color: var(--muted); }
   <div id="msg-box" class="msg"></div>
 
   <div id="signup-form">
+    <div class="auth-method-label">Continue with</div>
+    <div class="oauth-row">
+      <button type="button" class="btn-ghost" onclick="handleOAuth('google')">Google</button>
+      <button type="button" class="btn-ghost" onclick="handleOAuth('github')">GitHub</button>
+    </div>
+    <div class="divider">or sign up with email</div>
     <div class="form-group">
       <label>Email</label>
-      <input type="email" id="email" placeholder="you@yourproject.dev" autocomplete="email">
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
     </div>
     <div class="form-group">
       <label>Password</label>
       <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password">
     </div>
     <button class="btn" id="signup-btn" onclick="handleSignup()">Create account →</button>
-    <div class="divider">or</div>
-    <button class="btn-ghost" onclick="handleGithub()">Continue with GitHub</button>
     <p class="toggle">Already have an account? <a onclick="showLogin()">Sign in</a></p>
   </div>
 
   <div id="login-form" style="display:none">
+    <div class="auth-method-label">Continue with</div>
+    <div class="oauth-row">
+      <button type="button" class="btn-ghost" onclick="handleOAuth('google')">Google</button>
+      <button type="button" class="btn-ghost" onclick="handleOAuth('github')">GitHub</button>
+    </div>
+    <div class="divider">or sign in with email</div>
     <div class="form-group">
       <label>Email</label>
-      <input type="email" id="login-email" placeholder="you@yourproject.dev" autocomplete="email">
+      <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
     </div>
     <div class="form-group">
       <label>Password</label>
       <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password">
     </div>
+    <p class="toggle" style="margin-top:-0.5rem;margin-bottom:0.5rem;text-align:right;"><a onclick="showForgotPassword()">Forgot password?</a></p>
     <button class="btn" id="login-btn" onclick="handleLogin()">Sign in →</button>
-    <div class="divider">or</div>
-    <button class="btn-ghost" onclick="handleGithub()">Continue with GitHub</button>
     <p class="toggle">No account yet? <a onclick="showSignup()">Sign up free</a></p>
+  </div>
+
+  <div id="forgot-form" style="display:none">
+    <p class="card-sub" style="margin-bottom:1rem;">Enter your email and we’ll send a link to reset your password.</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="forgot-email" placeholder="you@yourproject.dev" autocomplete="email">
+    </div>
+    <button class="btn" id="forgot-btn" onclick="handleForgotPassword()">Send reset link →</button>
+    <p class="toggle" style="margin-top:1.5rem;">Remember it? <a onclick="showLogin()">Sign in</a></p>
   </div>
 </div>
 
@@ -144,9 +166,10 @@ input::placeholder { color: var(--muted); }
     window.location.href = '/dashboard.html';
   }
 
-  async function handleGithub() {
+  async function handleOAuth(provider) {
+    if (provider !== 'google' && provider !== 'github') return;
     const { error } = await sb.auth.signInWithOAuth({
-      provider: 'github',
+      provider: provider,
       options: { redirectTo: `${window.location.origin}/dashboard.html` }
     });
     if (error) showMsg(error.message, 'error');
@@ -155,13 +178,35 @@ input::placeholder { color: var(--muted); }
   function showLogin() {
     document.getElementById('signup-form').style.display = 'none';
     document.getElementById('login-form').style.display = 'block';
+    if (document.getElementById('forgot-form')) document.getElementById('forgot-form').style.display = 'none';
     document.getElementById('msg-box').style.display = 'none';
   }
 
   function showSignup() {
     document.getElementById('login-form').style.display = 'none';
+    if (document.getElementById('forgot-form')) document.getElementById('forgot-form').style.display = 'none';
     document.getElementById('signup-form').style.display = 'block';
     document.getElementById('msg-box').style.display = 'none';
+  }
+
+  function showForgotPassword() {
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'block';
+    document.getElementById('msg-box').style.display = 'none';
+    var emailEl = document.getElementById('login-email');
+    if (emailEl && emailEl.value) document.getElementById('forgot-email').value = emailEl.value;
+  }
+
+  async function handleForgotPassword() {
+    var email = document.getElementById('forgot-email').value.trim();
+    if (!email) return showMsg('Please enter your email.', 'error');
+    setLoading('forgot-btn', true, 'Send reset link →');
+    var redirectTo = window.location.origin + '/reset-password.html';
+    var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    setLoading('forgot-btn', false, 'Send reset link →');
+    if (error) return showMsg(error.message, 'error');
+    showMsg('Check your email for a link to reset your password. The link may take a few minutes to arrive.', 'success');
   }
 </script>
 </body>
