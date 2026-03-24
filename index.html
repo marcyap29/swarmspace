@@ -946,7 +946,150 @@ footer {
   .footer-left { flex-direction: column; gap: 0.5rem; }
 }
 
-/* MARKETPLACE TEASER */
+/* DEV STATUS + MARKETPLACE WAITLIST */
+.dev-status-section {
+  border-top: 1px solid var(--border);
+  padding: 7rem 3rem;
+}
+
+.dev-status-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.dev-status-divider {
+  background: var(--border);
+  align-self: stretch;
+}
+
+.dev-status-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.dev-status-title .g { color: var(--green); }
+
+.dev-status-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--dim);
+  margin-bottom: 2rem;
+}
+
+.api-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.api-status-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.api-status-row:last-child { border-bottom: none; }
+
+.api-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(0,230,118,0.6);
+  flex-shrink: 0;
+  animation: pulse 2s ease infinite;
+}
+
+.api-status-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text);
+  flex: 1;
+}
+
+.api-live-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--green);
+}
+
+.dev-waitlist-form {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0.75rem;
+}
+
+.dev-waitlist-form input {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-right: none;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dev-waitlist-form input::placeholder { color: var(--muted); }
+.dev-waitlist-form input:focus { border-color: var(--green-dim); }
+
+.dev-waitlist-form button {
+  padding: 0.85rem 1.4rem;
+  background: var(--green);
+  color: var(--bg);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.dev-waitlist-form button:hover { background: #00c853; }
+.dev-waitlist-form button:disabled { background: var(--muted); cursor: not-allowed; }
+
+.dev-wl-note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.dev-wl-confirmed {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 960px) {
+  .dev-status-section { padding: 5rem 1.5rem; }
+  .dev-status-inner { grid-template-columns: 1fr; gap: 3rem; }
+  .dev-status-divider { display: none; }
+  .dev-waitlist-form { flex-direction: column; }
+  .dev-waitlist-form input { border-right: 1px solid var(--border); border-bottom: none; }
+}
+
+/* MARKETPLACE TEASER (legacy CSS kept for compatibility) */
 .teaser-section {
   padding: 7rem 3rem;
   text-align: center;
@@ -1139,7 +1282,7 @@ footer {
   <div class="hero-left">
     <div class="hero-badge">
       <span class="badge-dot"></span>
-      The first agentic marketplace built on merit
+      7 APIs live now · free · no credit card
     </div>
     <h1 class="hero-title">
       <span class="dim">Quality.</span><br>
@@ -1147,7 +1290,7 @@ footer {
       <span class="accent">Earned.</span>
     </h1>
     <p class="hero-sub">
-      The first agentic plugin marketplace where rankings are earned, not bought. No paid placement. No editorial picks. The community decides what's trusted — and because these plugins act on your behalf, that trust actually means something.
+      The first agentic plugin marketplace where rankings are earned, not bought. No paid placement. No editorial picks. Seven APIs are live now — web search, weather, news, currency, and more. The marketplace opens Q2 2026.
     </p>
     <div class="hero-actions">
       <a href="/signup.html" class="btn-primary">Get API access →</a>
@@ -1187,7 +1330,7 @@ footer {
 
 <!-- FREE APIs -->
 <div class="apis-section" id="apis">
-  <p class="section-tag reveal">Included in free tier</p>
+  <p class="section-tag reveal">Live now — free tier</p>
   <h2 class="section-title reveal">7 free APIs.<br><span class="g">Ready to use.</span></h2>
   <p class="section-sub reveal">Sign up and get access to these APIs. Use them in your apps, agents, or prototypes. No credit card required.</p>
 
@@ -1281,7 +1424,7 @@ footer {
 <div class="stats-bar reveal">
   <div class="stat">
     <div class="stat-value">7</div>
-    <div class="stat-label">Free APIs</div>
+    <div class="stat-label">Live APIs</div>
   </div>
   <div class="stat">
     <div class="stat-value">MCP</div>
@@ -1469,95 +1612,50 @@ footer {
   </p>
 </div>
 
-<!-- WAITLIST -->
+<!-- DEVELOPER STATUS + WAITLIST -->
+<div class="dev-status-section" id="developer-status">
+  <div class="dev-status-inner">
 
-<!-- MARKETPLACE TEASER -->
-<div class="teaser-section" id="marketplace-preview">
-  <div class="teaser-label">⬡ SwarmSpace Marketplace — Early Access</div>
-  <h2 class="teaser-title">See what your agent<br>will be able to <em>find.</em></h2>
-  <p class="teaser-sub">The SwarmSpace marketplace launches soon. Join the waitlist to get access — and see exactly what AI agents will discover when they need a capability you haven't thought of yet.</p>
+    <!-- LEFT: Live API status -->
+    <div class="dev-status-left reveal">
+      <p class="section-tag" style="margin-bottom:1.2rem;">System status</p>
+      <h2 class="dev-status-title">The APIs are <span class="g">live.</span></h2>
+      <p class="dev-status-sub">Seven plugins running in production on Cloudflare Workers. Authenticate via Firebase ID token, call <code style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;background:rgba(0,255,128,0.07);padding:0.15rem 0.4rem;">swarmspaceRouter</code>, and start building.</p>
 
-  <div class="teaser-preview">
-    <!-- Fake browser chrome -->
-    <div class="teaser-preview-bar">
-      <div class="teaser-dots">
-        <div class="teaser-dot" style="background:#ff5f57"></div>
-        <div class="teaser-dot" style="background:#febc2e"></div>
-        <div class="teaser-dot" style="background:#28c840"></div>
+      <div class="api-status-list">
+        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">gemini-flash</span><span class="api-live-tag">● live</span></div>
+        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">brave-search</span><span class="api-live-tag">● live</span></div>
+        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">semantic-scholar</span><span class="api-live-tag">● live</span></div>
+        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">weather</span><span class="api-live-tag">● live</span></div>
+        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">wikipedia</span><span class="api-live-tag">● live</span></div>
+        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">currency</span><span class="api-live-tag">● live</span></div>
+        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">news</span><span class="api-live-tag">● live</span></div>
       </div>
-      <div class="teaser-url">swarmspace.dev/marketplace</div>
+
+      <a href="/signup.html" class="btn-primary" style="display:inline-block;margin-top:2rem;">Get API access →</a>
     </div>
 
-    <!-- Fake marketplace UI -->
-    <div class="teaser-screen">
-      <div class="teaser-sidebar">
-        <div class="teaser-sidebar-label">Browse</div>
-        <div class="teaser-sidebar-item active">◈ All Capabilities <span class="teaser-sidebar-count" style="color:#00ff88;background:rgba(0,255,136,0.1)">1,247</span></div>
-        <div class="teaser-sidebar-item">✦ New Releases <span class="teaser-sidebar-count">34</span></div>
-        <div class="teaser-sidebar-item">↑ Trending <span class="teaser-sidebar-count">12</span></div>
-        <div class="teaser-sidebar-item">★ Top Rated <span class="teaser-sidebar-count">50</span></div>
-        <div style="height:1px;background:var(--border);margin:10px 0"></div>
-        <div class="teaser-sidebar-label">Categories</div>
-        <div class="teaser-sidebar-item">📧 Communication <span class="teaser-sidebar-count">142</span></div>
-        <div class="teaser-sidebar-item">💰 Finance <span class="teaser-sidebar-count">89</span></div>
-        <div class="teaser-sidebar-item">🏥 Health <span class="teaser-sidebar-count">73</span></div>
-        <div class="teaser-sidebar-item">🎨 Creativity <span class="teaser-sidebar-count">110</span></div>
-        <div class="teaser-sidebar-item">💼 Career <span class="teaser-sidebar-count">95</span></div>
+    <div class="dev-status-divider"></div>
+
+    <!-- RIGHT: Marketplace waitlist -->
+    <div class="dev-status-right reveal reveal-delay-2">
+      <p class="section-tag" style="margin-bottom:1.2rem;">What's next</p>
+      <h2 class="dev-status-title">Marketplace opens <span style="color:var(--muted);">Q2 2026.</span></h2>
+      <p class="dev-status-sub">Plugin submission, runtime discovery, trust tiers, and the Verified program. If you're building on the API or planning to submit plugins, get on the list.</p>
+
+      <div id="dev-wl-form-wrap">
+        <form class="dev-waitlist-form" onsubmit="handleDevWaitlist(event)" novalidate>
+          <input type="email" id="devWlEmail" placeholder="you@company.dev" autocomplete="email" required>
+          <button type="submit" id="dev-wl-btn">Notify me →</button>
+        </form>
+        <p class="dev-wl-note">No spam. One email when the marketplace opens.</p>
       </div>
-      <div class="teaser-main">
-        <div style="display:flex;gap:6px;margin-bottom:12px;">
-          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid #00ff88;color:#00ff88;background:rgba(0,255,136,0.06)">All</div>
-          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid var(--border);color:var(--muted)">Most Installed</div>
-          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid var(--border);color:var(--muted)">Highest Rated</div>
-          <div style="padding:3px 8px;border-radius:3px;font-size:0.65rem;border:1px solid var(--border);color:var(--muted)">Free</div>
-          <div style="margin-left:auto;font-size:0.6rem;color:var(--muted)">1,247 capabilities</div>
-        </div>
-        <div class="teaser-cards">
-          <div class="teaser-card hi">
-            <div class="teaser-card-icon">📋</div>
-            <div class="teaser-card-name">HealthVault Connector</div>
-            <div class="teaser-card-desc">Read-only health data. Oura, Apple Health, Whoop. Anomaly detection.</div>
-            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price">Free</span></div>
-          </div>
-          <div class="teaser-card">
-            <div class="teaser-card-icon">💬</div>
-            <div class="teaser-card-name">EmailBrief</div>
-            <div class="teaser-card-desc">Zero-retention inbox triage. Drafts in your voice. No data stored.</div>
-            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price usage">$0.002/run</span></div>
-          </div>
-          <div class="teaser-card">
-            <div class="teaser-card-icon">💰</div>
-            <div class="teaser-card-name">NetworthTracker</div>
-            <div class="teaser-card-desc">Read-only Plaid. Net worth trends, monthly snapshots. No writes.</div>
-            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price paid">$4.99/mo</span></div>
-          </div>
-          <div class="teaser-card">
-            <div class="teaser-card-icon">🗺️</div>
-            <div class="teaser-card-name">LifeTimeline</div>
-            <div class="teaser-card-desc">Structures personal history into a semantic timeline for your AI.</div>
-            <div class="teaser-card-footer"><span class="teaser-pill c">◉ Community</span><span class="teaser-price">Free</span></div>
-          </div>
-          <div class="teaser-card">
-            <div class="teaser-card-icon">🔔</div>
-            <div class="teaser-card-name">AlertRouter</div>
-            <div class="teaser-card-desc">Cross-platform notifications. 45ms to Telegram, Slack, Signal.</div>
-            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price">Free</span></div>
-          </div>
-          <div class="teaser-card">
-            <div class="teaser-card-icon">📊</div>
-            <div class="teaser-card-name">CareerLens</div>
-            <div class="teaser-card-desc">CV parsing, skills gap analysis, trajectory modeling.</div>
-            <div class="teaser-card-footer"><span class="teaser-pill v">● Verified</span><span class="teaser-price paid">$2.99/mo</span></div>
-          </div>
-        </div>
+      <div id="dev-wl-success" style="display:none;">
+        <p class="dev-wl-confirmed">✓ You're on the list.</p>
+        <p class="dev-wl-note">We'll reach out before launch. In the meantime — <a href="/signup.html" style="color:var(--green-dim);text-decoration:none;">the API is live.</a></p>
       </div>
     </div>
 
-    <!-- Frosted overlay with CTA -->
-    <div class="teaser-overlay">
-      <p class="teaser-lock">⬡ Sign up free to explore the full marketplace</p>
-      <a href="/signup.html" class="teaser-cta">Sign up free →</a>
-    </div>
   </div>
 </div>
 
@@ -1637,7 +1735,9 @@ footer {
   }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
   reveals.forEach(el => observer.observe(el));
 
-  // Supabase waitlist
+  // Email capture via Resend Worker (same as LUMARA)
+  const RESEND_WORKER = 'https://resend-email-lumara.orbitalai.workers.dev';
+
   async function handleWaitlist(e) {
     e.preventDefault();
     const emailEl = document.getElementById('wlEmail');
@@ -1647,26 +1747,22 @@ footer {
     if (!email) return;
 
     btn.disabled = true;
-    btn.textContent = 'Joining...';
+    btn.textContent = 'Sending…';
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ email, source: 'landing' })
-    });
-
-    if (res.ok || res.status === 409) {
-      // 409 = already on waitlist, still show success
-      emailEl.closest('form').style.display = 'none';
-      const opts = document.querySelector('.waitlist-options');
-      if (opts) opts.style.display = 'none';
-      success.style.display = 'block';
-    } else {
+    try {
+      const res = await fetch(RESEND_WORKER, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'swarmspace-landing' })
+      });
+      if (res.ok) {
+        emailEl.closest('form').style.display = 'none';
+        success.textContent = '✓ You\'re on the list.';
+        success.style.display = 'block';
+      } else {
+        throw new Error('Failed');
+      }
+    } catch (err) {
       btn.disabled = false;
       btn.textContent = 'Get early access';
       success.textContent = '✗ Something went wrong. Try again.';
@@ -1674,8 +1770,36 @@ footer {
       success.style.display = 'block';
     }
   }
+
+  async function handleDevWaitlist(e) {
+    e.preventDefault();
+    const emailEl = document.getElementById('devWlEmail');
+    const btn = document.getElementById('dev-wl-btn');
+    const email = emailEl.value.trim();
+    if (!email) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch(RESEND_WORKER, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'swarmspace-developer' })
+      });
+      if (res.ok) {
+        document.getElementById('dev-wl-form-wrap').style.display = 'none';
+        document.getElementById('dev-wl-success').style.display = 'block';
+      } else {
+        throw new Error('Failed');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Notify me →';
+    }
+  }
+
 </script>
 
 </body>
 </html>
-Swarmstore architecture and hosting setup - Claude
