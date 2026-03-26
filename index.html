@@ -1,1805 +1,633 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SwarmSpace — The first agentic marketplace built on merit</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg: #080c0a;
-  --surface: #0d1410;
-  --border: rgba(0, 255, 128, 0.12);
-  --green: #00e676;
-  --green-dim: rgba(0, 230, 118, 0.6);
-  --green-ghost: rgba(0, 230, 118, 0.08);
-  --amber: #ffb300;
-  --amber-dim: rgba(255, 179, 0, 0.6);
-  --text: #e8f0eb;
-  --muted: #5a7060;
-  --dim: rgba(232, 240, 235, 0.5);
-  --red: #ff4444;
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: 300;
-  overflow-x: hidden;
-}
-
-/* SCANLINE EFFECT */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.03) 2px,
-    rgba(0,0,0,0.03) 4px
-  );
-  pointer-events: none;
-  z-index: 9998;
-}
-
-/* CURSOR GLOW */
-.cursor-glow {
-  position: fixed;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,230,118,0.04) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 1;
-  transform: translate(-50%, -50%);
-  transition: left 0.1s, top 0.1s;
-}
-
-/* NAV */
-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-  padding: 1.2rem 3rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(8, 12, 10, 0.9);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  color: var(--text);
-  text-decoration: none;
-}
-
-.logo-mark {
-  width: 20px; height: 20px;
-  border: 1.5px solid var(--green);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-mark::before {
-  content: '';
-  width: 8px; height: 8px;
-  background: var(--green);
-  animation: pulse 2s ease infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.7); }
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;
-}
-
-.nav-links {
-  display: flex;
-  gap: 2rem;
-  list-style: none;
-}
-
-.nav-links a {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.nav-links a:hover { color: var(--green); }
-
-.nav-cta {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  color: var(--bg);
-  background: var(--green);
-  padding: 0.5rem 1.2rem;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-.nav-cta:hover { background: #00c853; }
-.nav-signin { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--border); transition: color 0.2s, border-color 0.2s; }
-.nav-signin:hover { color: var(--text); border-color: var(--green-dim); }
-.nav-signout-btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.5rem 1rem; margin-left: 0.5rem; transition: color 0.2s; }
-.nav-signout-btn:hover { color: var(--red); }
-
-/* HERO */
-.hero {
-  min-height: 100vh;
-  padding: 10rem 3rem 5rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-  max-width: 1300px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.hero-left { position: relative; z-index: 2; }
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  border: 1px solid var(--border);
-  padding: 0.4rem 0.9rem;
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--green-dim);
-  margin-bottom: 2.5rem;
-  opacity: 0;
-  animation: fadeIn 0.6s ease 0.1s forwards;
-}
-
-.badge-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: pulse 1.5s ease infinite;
-}
-
-.hero-title {
-  font-size: clamp(2.8rem, 4.5vw, 5rem);
-  font-weight: 300;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  margin-bottom: 2rem;
-  opacity: 0;
-  animation: fadeUp 0.7s ease 0.2s forwards;
-}
-
-.hero-title .accent { color: var(--green); font-weight: 500; }
-.hero-title .dim { color: var(--muted); }
-
-.hero-sub {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 1rem;
-  line-height: 1.75;
-  color: var(--dim);
-  max-width: 44ch;
-  margin-bottom: 3rem;
-  opacity: 0;
-  animation: fadeUp 0.7s ease 0.35s forwards;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  opacity: 0;
-  animation: fadeUp 0.7s ease 0.5s forwards;
-}
-
-.btn-primary {
-  background: var(--green);
-  color: var(--bg);
-  padding: 0.8rem 1.8rem;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s, transform 0.15s;
-  display: inline-block;
-}
-
-.btn-primary:hover { background: #00c853; transform: translateY(-1px); }
-
-.btn-outline {
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: 0.8rem 1.8rem;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  transition: border-color 0.2s, color 0.2s;
-  display: inline-block;
-}
-
-.btn-outline:hover { border-color: var(--green-dim); color: var(--green-dim); }
-
-/* TERMINAL DEMO */
-.terminal {
-  background: #050807;
-  border: 1px solid var(--border);
-  font-size: 0.78rem;
-  line-height: 1.7;
-  position: relative;
-  opacity: 0;
-  animation: fadeIn 0.8s ease 0.7s forwards;
-}
-
-.terminal-bar {
-  background: #0d1410;
-  border-bottom: 1px solid var(--border);
-  padding: 0.6rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.t-dot { width: 10px; height: 10px; border-radius: 50%; }
-.t-dot.red { background: #ff5f57; }
-.t-dot.yellow { background: #febc2e; }
-.t-dot.green { background: #28c840; }
-
-.terminal-title {
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.terminal-body { padding: 1.5rem; }
-
-.t-line { display: flex; gap: 0.8rem; margin-bottom: 0.3rem; }
-.t-prompt { color: var(--green); flex-shrink: 0; }
-.t-cmd { color: var(--text); }
-.t-comment { color: var(--muted); }
-.t-out { color: var(--dim); padding-left: 1.5rem; margin-bottom: 0.3rem; }
-.t-key { color: var(--amber); }
-.t-val { color: #7dd3a8; }
-.t-str { color: #a8d8b8; }
-.t-blank { height: 0.6rem; }
-
-.t-cursor {
-  display: inline-block;
-  width: 8px; height: 14px;
-  background: var(--green);
-  margin-left: 2px;
-  animation: blink 1s step-end infinite;
-  vertical-align: middle;
-}
-
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-/* STATS BAR */
-.stats-bar {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 2rem 3rem;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-}
-
-.stat {
-  padding: 0 2rem;
-  border-right: 1px solid var(--border);
-}
-
-.stat:first-child { padding-left: 0; }
-.stat:last-child { border-right: none; }
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 500;
-  color: var(--green);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  margin-bottom: 0.4rem;
-}
-
-.stat-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* FREE API CARDS */
-.apis-section {
-  padding: 6rem 3rem;
-  max-width: 1300px;
-  margin: 0 auto;
-  border-top: 1px solid var(--border);
-}
-
-.apis-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1px;
-  background: var(--border);
-  margin-top: 2.5rem;
-}
-
-.api-card {
-  background: var(--surface);
-  padding: 1.8rem;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.api-card:hover {
-  background: var(--green-ghost);
-}
-
-.api-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.8rem;
-  margin-bottom: 0.6rem;
-}
-
-.api-card-name {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-
-.api-card-badge {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.5rem;
-  background: var(--green-ghost);
-  color: var(--green);
-  flex-shrink: 0;
-}
-
-.api-card-desc {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.85rem;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.api-card-id {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--green-dim);
-  margin-top: 0.25rem;
-}
-
-.api-card-example {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: var(--muted);
-  font-style: italic;
-  margin-top: 0.6rem;
-}
-
-/* HOW IT WORKS */
-.section {
-  padding: 7rem 3rem;
-  max-width: 1300px;
-  margin: 0 auto;
-}
-
-.section-tag {
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--green-dim);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.section-tag::before {
-  content: '';
-  display: block;
-  width: 20px;
-  height: 1px;
-  background: var(--green-dim);
-}
-
-.section-title {
-  font-size: clamp(1.8rem, 3vw, 2.8rem);
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 1rem;
-}
-
-.section-title .g { color: var(--green); }
-.section-title .d { color: var(--muted); }
-
-.section-sub {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: var(--dim);
-  max-width: 52ch;
-  margin-bottom: 4rem;
-}
-
-/* FLOW STEPS */
-.flow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  border: 1px solid var(--border);
-}
-
-.flow-step {
-  padding: 2.5rem 2rem;
-  border-right: 1px solid var(--border);
-  position: relative;
-  transition: background 0.3s;
-}
-
-.flow-step:last-child { border-right: none; }
-.flow-step:hover { background: var(--green-ghost); }
-
-.step-num {
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  color: var(--muted);
-  margin-bottom: 1.5rem;
-}
-
-.step-icon {
-  font-size: 1.4rem;
-  margin-bottom: 1.2rem;
-  display: block;
-}
-
-.step-title {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 0.8rem;
-  letter-spacing: -0.01em;
-}
-
-.step-desc {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.82rem;
-  line-height: 1.65;
-  color: var(--muted);
-}
-
-.step-arrow {
-  position: absolute;
-  right: -12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 22px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.65rem;
-  color: var(--green);
-  z-index: 2;
-}
-
-.flow-step:last-child .step-arrow { display: none; }
-
-/* MANIFEST EXAMPLE */
-.manifest-section {
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.manifest-inner {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 7rem 3rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
-  align-items: start;
-}
-
-.manifest-explain {
-  position: sticky;
-  top: 8rem;
-}
-
-.manifest-title {
-  font-size: 2rem;
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 1.5rem;
-}
-
-.manifest-title .g { color: var(--green); }
-
-.manifest-body {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.9rem;
-  line-height: 1.75;
-  color: var(--dim);
-  margin-bottom: 2rem;
-}
-
-.manifest-callout {
-  border-left: 2px solid var(--green);
-  padding: 1rem 1.5rem;
-  background: var(--green-ghost);
-  font-size: 0.78rem;
-  line-height: 1.6;
-  color: var(--dim);
-}
-
-.manifest-callout strong { color: var(--green); font-weight: 500; }
-
-.code-block {
-  background: #050807;
-  border: 1px solid var(--border);
-  font-size: 0.72rem;
-  line-height: 1.65;
-  overflow: hidden;
-}
-
-.code-header {
-  background: #0d1410;
-  border-bottom: 1px solid var(--border);
-  padding: 0.6rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.code-file {
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
-.code-lang {
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--green-dim);
-  border: 1px solid var(--border);
-  padding: 0.15rem 0.5rem;
-}
-
-.code-body {
-  padding: 1.5rem;
-}
-
-.c-key { color: var(--amber); }
-.c-str { color: #7dd3a8; }
-.c-num { color: #80cbc4; }
-.c-bool { color: #e57373; }
-.c-comment { color: var(--muted); font-style: italic; }
-.c-bracket { color: rgba(232,240,235,0.3); }
-.c-indent { padding-left: 1.2rem; display: block; }
-.c-indent2 { padding-left: 2.4rem; display: block; }
-
-/* TRUST TIERS */
-.tiers {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-top: 3rem;
-}
-
-.tier {
-  border: 1px solid var(--border);
-  padding: 2rem;
-  position: relative;
-  transition: border-color 0.3s;
-}
-
-.tier:hover { border-color: var(--green-dim); }
-
-.tier-badge {
-  display: inline-block;
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  padding: 0.25rem 0.6rem;
-  margin-bottom: 1.2rem;
-}
-
-.tier-badge.verified { background: rgba(0,230,118,0.15); color: var(--green); }
-.tier-badge.community { background: rgba(255,179,0,0.12); color: var(--amber); }
-.tier-badge.experimental { background: rgba(255,68,68,0.1); color: var(--red); }
-
-.tier-name {
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.8rem;
-  letter-spacing: -0.01em;
-}
-
-.tier-desc {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 1.5rem;
-}
-
-.tier-features {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.tier-features li {
-  font-size: 0.68rem;
-  letter-spacing: 0.03em;
-  color: var(--dim);
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-}
-
-.tier-features li::before { content: '›'; color: var(--green); flex-shrink: 0; }
-.tier-features.amber li::before { color: var(--amber); }
-.tier-features.red li::before { color: var(--red); }
-
-/* WHO SECTION */
-.who-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  border: 1px solid var(--border);
-  margin-top: 4rem;
-}
-
-.who-card {
-  background: var(--surface);
-  padding: 3rem;
-  transition: background 0.3s;
-}
-
-.who-card:hover { background: var(--green-ghost); }
-
-.who-title {
-  font-size: 1.1rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.01em;
-}
-
-.who-sub {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--green-dim);
-  margin-bottom: 1.5rem;
-}
-
-.who-items {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  margin-bottom: 2rem;
-}
-
-.who-items li {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: var(--dim);
-  display: flex;
-  align-items: flex-start;
-  gap: 0.8rem;
-}
-
-.who-items li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-family: 'IBM Plex Mono'; }
-
-/* WAITLIST */
-.waitlist-section {
-  padding: 8rem 3rem;
-  border-top: 1px solid var(--border);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.waitlist-section::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(0,230,118,0.05) 0%, transparent 65%);
-  pointer-events: none;
-}
-
-.waitlist-inner { position: relative; z-index: 2; }
-
-.waitlist-tag {
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--green-dim);
-  margin-bottom: 2rem;
-  display: block;
-}
-
-.waitlist-title {
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-bottom: 1.2rem;
-}
-
-.waitlist-title .g { color: var(--green); }
-
-.waitlist-sub {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: var(--dim);
-  max-width: 46ch;
-  margin: 0 auto 3rem;
-}
-
-.waitlist-form {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  max-width: 520px;
-  margin: 0 auto 1.5rem;
-}
-
-.waitlist-form input {
-  flex: 1;
-  padding: 0.9rem 1.2rem;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.8rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-right: none;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.waitlist-form input::placeholder { color: var(--muted); }
-.waitlist-form input:focus { border-color: var(--green-dim); }
-
-.waitlist-form button {
-  padding: 0.9rem 1.8rem;
-  background: var(--green);
-  color: var(--bg);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s;
-}
-
-.waitlist-form button:hover { background: #00c853; }
-
-.waitlist-options {
-  display: flex;
-  justify-content: center;
-  gap: 3rem;
-  margin-bottom: 1rem;
-}
-
-.wl-opt {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
-.wl-opt input[type="checkbox"] { accent-color: var(--green); }
-
-.waitlist-note {
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  color: rgba(90, 112, 96, 0.6);
-}
-
-#wl-success {
-  display: none;
-  font-size: 0.8rem;
-  color: var(--green);
-  letter-spacing: 0.05em;
-  margin-top: 1rem;
-}
-
-/* FOOTER */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 2rem 3rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer-left {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.footer-logo {
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-}
-
-.footer-by {
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
-.footer-links {
-  display: flex;
-  gap: 2rem;
-  list-style: none;
-}
-
-.footer-links a {
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover { color: var(--green); }
-
-/* ANIMATIONS */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.reveal.visible { opacity: 1; transform: none; }
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-
-/* RESPONSIVE */
-@media (max-width: 960px) {
-  nav { padding: 1rem 1.5rem; }
-  .nav-links { display: none; }
-  .hero { grid-template-columns: 1fr; padding: 8rem 1.5rem 4rem; gap: 3rem; }
-  .terminal { font-size: 0.68rem; }
-  .stats-bar { grid-template-columns: 1fr 1fr; padding: 2rem 1.5rem; gap: 1.5rem; }
-  .stat { border-right: none; padding: 0; }
-  .section { padding: 5rem 1.5rem; }
-  .flow { grid-template-columns: 1fr 1fr; }
-  .flow-step { border-bottom: 1px solid var(--border); }
-  .manifest-inner { grid-template-columns: 1fr; padding: 5rem 1.5rem; }
-  .manifest-explain { position: static; }
-  .tiers { grid-template-columns: 1fr; }
-  .who-section { grid-template-columns: 1fr; }
-  .waitlist-section { padding: 5rem 1.5rem; }
-  .waitlist-form { flex-direction: column; }
-  .waitlist-form input { border-right: 1px solid var(--border); border-bottom: none; }
-  footer { flex-direction: column; gap: 1.5rem; text-align: center; }
-  .footer-left { flex-direction: column; gap: 0.5rem; }
-}
-
-/* DEV STATUS + MARKETPLACE WAITLIST */
-.dev-status-section {
-  border-top: 1px solid var(--border);
-  padding: 7rem 3rem;
-}
-
-.dev-status-inner {
-  max-width: 1300px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 5rem;
-  align-items: start;
-}
-
-.dev-status-divider {
-  background: var(--border);
-  align-self: stretch;
-}
-
-.dev-status-title {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin-bottom: 1rem;
-}
-
-.dev-status-title .g { color: var(--green); }
-
-.dev-status-sub {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.9rem;
-  line-height: 1.75;
-  color: var(--dim);
-  margin-bottom: 2rem;
-}
-
-.api-status-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.api-status-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.api-status-row:last-child { border-bottom: none; }
-
-.api-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px rgba(0,230,118,0.6);
-  flex-shrink: 0;
-  animation: pulse 2s ease infinite;
-}
-
-.api-status-id {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.78rem;
-  color: var(--text);
-  flex: 1;
-}
-
-.api-live-tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  color: var(--green);
-}
-
-.dev-waitlist-form {
-  display: flex;
-  gap: 0;
-  margin-bottom: 0.75rem;
-}
-
-.dev-waitlist-form input {
-  flex: 1;
-  padding: 0.85rem 1rem;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.8rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-right: none;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.dev-waitlist-form input::placeholder { color: var(--muted); }
-.dev-waitlist-form input:focus { border-color: var(--green-dim); }
-
-.dev-waitlist-form button {
-  padding: 0.85rem 1.4rem;
-  background: var(--green);
-  color: var(--bg);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s;
-}
-
-.dev-waitlist-form button:hover { background: #00c853; }
-.dev-waitlist-form button:disabled { background: var(--muted); cursor: not-allowed; }
-
-.dev-wl-note {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.dev-wl-confirmed {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.9rem;
-  color: var(--green);
-  margin-bottom: 0.5rem;
-}
-
-@media (max-width: 960px) {
-  .dev-status-section { padding: 5rem 1.5rem; }
-  .dev-status-inner { grid-template-columns: 1fr; gap: 3rem; }
-  .dev-status-divider { display: none; }
-  .dev-waitlist-form { flex-direction: column; }
-  .dev-waitlist-form input { border-right: 1px solid var(--border); border-bottom: none; }
-}
-
-/* MARKETPLACE TEASER (legacy CSS kept for compatibility) */
-.teaser-section {
-  padding: 7rem 3rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.teaser-section::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%; transform: translateX(-50%);
-  width: 600px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
-}
-.teaser-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--green-dim);
-  margin-bottom: 1.2rem;
-}
-.teaser-title {
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: 300;
-  line-height: 1.2;
-  margin-bottom: 1rem;
-  color: var(--text);
-}
-.teaser-title em {
-  font-style: italic;
-  color: rgba(0,230,118,0.7);
-  font-family: 'Cormorant Garamond', serif;
-}
-.teaser-sub {
-  font-size: 0.95rem;
-  color: var(--muted);
-  max-width: 500px;
-  margin: 0 auto 3rem;
-  line-height: 1.7;
-}
-.teaser-preview {
-  position: relative;
-  max-width: 960px;
-  margin: 0 auto;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  background: #0a0b0d;
-}
-.teaser-preview-bar {
-  background: #0f1115;
-  border-bottom: 1px solid var(--border);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.teaser-dots { display: flex; gap: 6px; }
-.teaser-dot { width: 10px; height: 10px; border-radius: 50%; }
-.teaser-url {
-  flex: 1;
-  background: #1a1e27;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 12px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--muted);
-  text-align: left;
-}
-.teaser-screen {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  height: 380px;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.teaser-sidebar {
-  background: #0f1115;
-  border-right: 1px solid var(--border);
-  padding: 16px 0;
-  overflow: hidden;
-}
-.teaser-sidebar-label {
-  font-size: 0.55rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 0 14px;
-  margin-bottom: 8px;
-}
-.teaser-sidebar-item {
-  padding: 6px 14px;
-  font-size: 0.72rem;
-  color: var(--muted);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.teaser-sidebar-item.active { color: #00ff88; background: rgba(0,255,136,0.06); }
-.teaser-sidebar-count { font-size: 0.6rem; background: #1a1e27; padding: 1px 5px; border-radius: 8px; }
-.teaser-main { padding: 16px; overflow: hidden; }
-.teaser-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.teaser-card {
-  background: #0f1115;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px;
-}
-.teaser-card.hi { border-color: rgba(0,255,136,0.25); }
-.teaser-card-icon { font-size: 1.2rem; margin-bottom: 6px; }
-.teaser-card-name { font-size: 0.68rem; font-weight: 600; color: #e8eaf0; margin-bottom: 3px; font-family: 'IBM Plex Sans', sans-serif; }
-.teaser-card-desc { font-size: 0.6rem; color: var(--muted); line-height: 1.4; margin-bottom: 8px; font-family: 'IBM Plex Sans', sans-serif; }
-.teaser-card-footer { display: flex; align-items: center; gap: 4px; }
-.teaser-pill { font-size: 0.52rem; padding: 1px 5px; border-radius: 2px; letter-spacing: 0.05em; }
-.teaser-pill.v { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
-.teaser-pill.c { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
-.teaser-price { margin-left: auto; font-size: 0.6rem; color: #00ff88; }
-.teaser-price.paid { color: #e8eaf0; }
-.teaser-price.usage { color: #60a5fa; }
-.teaser-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(8,12,10,0.97) 85%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 3rem;
-  gap: 1rem;
-}
-.teaser-lock {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  color: var(--muted);
-  letter-spacing: 0.1em;
-}
-
-@media (max-width: 640px) {
-  .apis-section { padding: 4rem 1.5rem; }
-  .apis-grid { grid-template-columns: 1fr; }
-}
-.teaser-cta {
-  display: inline-block;
-  background: var(--green);
-  color: var(--bg);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  padding: 0.8rem 2rem;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-.teaser-cta:hover { background: #00c853; }
-
-</style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — The consumer plugin marketplace for AI agents</title>
+  <meta name="description" content="SwarmSpace is the first consumer-grade plugin marketplace for AI agents. Curated, verified, and accessible without technical knowledge." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
+      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
+      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
+      --orange:#fb923c; --purple:#9b6dff;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --mono:'SF Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.6; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-links { display:flex; align-items:center; gap:28px; }
+    .nav-links a { font-size:14px; color:var(--muted); }
+    .nav-links a:hover { color:var(--text); text-decoration:none; }
+    .nav-actions { display:flex; gap:12px; }
+    .btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px; font-size:13px; color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
+
+    .hero { padding:120px 40px 96px; max-width:1100px; margin:0 auto; }
+    .hero-grid { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
+    .section-label {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
+      text-transform:uppercase; background:rgba(91,91,214,.08);
+      border:1px solid rgba(91,91,214,.2); border-radius:20px;
+      padding:4px 12px; margin-bottom:20px;
+    }
+    h1 { font-size:clamp(36px,6vw,62px); font-weight:800; letter-spacing:-1.5px; line-height:1.1; margin-bottom:24px; }
+    h2 { font-size:clamp(28px,4vw,40px); font-weight:800; letter-spacing:-1px; line-height:1.2; }
+    h3 { font-size:20px; font-weight:700; margin-bottom:10px; }
+    .hero-left p { font-size:17px; color:var(--muted); line-height:1.7; margin-bottom:32px; max-width:480px; }
+    .hero-actions { display:flex; gap:12px; flex-wrap:wrap; }
+    .hero-cta { padding:14px 28px; background:var(--accent); border-radius:10px; font-size:15px; font-weight:700; color:#fff; }
+    .hero-cta:hover { opacity:.9; text-decoration:none; }
+    .hero-secondary { padding:14px 28px; border:1px solid var(--border2); border-radius:10px; font-size:15px; font-weight:600; color:var(--muted); }
+    .hero-secondary:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+    .hero-stats { margin-top:40px; display:flex; gap:32px; }
+    .stat-num { font-size:24px; font-weight:800; }
+    .stat-label { font-size:12px; color:var(--muted); margin-top:2px; }
+
+    .terminal { background:#0d0d14; border:1px solid var(--border); border-radius:14px; overflow:hidden; font-family:var(--mono); }
+    .terminal-bar { display:flex; align-items:center; gap:6px; padding:12px 16px; border-bottom:1px solid var(--border); background:#111118; }
+    .tdot { width:10px; height:10px; border-radius:50%; }
+    .ttitle { font-size:11px; color:var(--dim); margin-left:8px; }
+    .terminal-body { padding:20px; font-size:12px; line-height:2; }
+    .td { color:var(--dim); } .tg { color:var(--green); } .tb { color:var(--accent2); }
+    .to { color:var(--orange); } .tw { color:var(--text); }
+
+    .lumara-banner {
+      max-width:1100px; margin:0 auto; padding:0 40px 0;
+    }
+    .lumara-inner {
+      padding:28px 40px;
+      background:linear-gradient(135deg,rgba(91,91,214,.08),rgba(124,158,255,.04));
+      border:1px solid rgba(91,91,214,.2); border-radius:16px;
+      display:flex; align-items:center; justify-content:space-between; gap:24px;
+    }
+    .lumara-left { display:flex; align-items:center; gap:20px; }
+    .lumara-inner h3 { font-size:16px; margin-bottom:4px; }
+    .lumara-inner p { font-size:13px; color:var(--muted); line-height:1.5; }
+    .lumara-inner a { white-space:nowrap; padding:10px 20px; border:1px solid var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:var(--accent2); }
+    .lumara-inner a:hover { background:rgba(91,91,214,.1); text-decoration:none; }
+
+    section { padding:96px 40px; max-width:1100px; margin:0 auto; }
+
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-top:56px; position:relative; }
+    .step-num { font-size:11px; font-weight:700; color:var(--accent); font-family:var(--mono); margin-bottom:14px; }
+    .step-icon { font-size:28px; margin-bottom:14px; }
+    .step-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+    .step-body { font-size:13px; color:var(--muted); line-height:1.6; }
+
+    .progression { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:56px; }
+    .prog-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+    .prog-card.active { border-color:var(--accent); }
+    .prog-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.08em; padding:3px 10px; border-radius:20px; margin-bottom:16px; }
+    .prog-tag.now { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.25); }
+    .prog-tag.next { background:rgba(91,91,214,.12); color:var(--accent2); border:1px solid rgba(91,91,214,.25); }
+    .prog-tag.later { background:rgba(155,109,255,.12); color:var(--purple); border:1px solid rgba(155,109,255,.25); }
+    .prog-card p { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+    .prog-card ul { list-style:none; }
+    .prog-card li { font-size:13px; color:var(--muted); padding:5px 0; border-bottom:1px solid var(--border); }
+    .prog-card li:last-child { border-bottom:none; }
+    .prog-card li::before { content:"→ "; color:var(--accent2); }
+
+    .apis-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:48px; }
+    .api-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; }
+    .api-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    .api-name { font-size:14px; font-weight:700; }
+    .api-slug { font-size:10px; font-family:var(--mono); color:var(--accent2); background:rgba(91,91,214,.1); padding:2px 8px; border-radius:4px; margin-bottom:8px; display:inline-block; }
+    .api-free { font-size:10px; font-weight:700; color:var(--green); }
+    .api-desc { font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:8px; }
+    .api-ex { font-size:11px; color:var(--dim); font-style:italic; }
+
+    .tiers { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:56px; }
+    .tier-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+    .tier-icon { font-size:28px; margin-bottom:16px; }
+    .tier-name { font-size:18px; font-weight:700; margin-bottom:8px; }
+    .tier-desc { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
+    .tier-features { list-style:none; }
+    .tier-features li { font-size:13px; color:var(--muted); padding:6px 0; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:8px; }
+    .tier-features li:last-child { border-bottom:none; }
+    .tier-features li::before { content:"✓"; color:var(--green); font-weight:700; flex-shrink:0; }
+
+    .manifest-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; margin-top:56px; }
+    .manifest-left p { font-size:15px; color:var(--muted); line-height:1.8; margin-bottom:16px; }
+    .mf { display:flex; gap:12px; margin-bottom:16px; }
+    .mf-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+    .mf-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+    .mf-desc { font-size:13px; color:var(--muted); line-height:1.5; }
+    .code-block { background:#0d0d14; border:1px solid var(--border); border-radius:12px; padding:24px; font-family:var(--mono); font-size:12px; line-height:1.8; overflow-x:auto; }
+    .ck { color:var(--accent2); } .cv { color:var(--green); } .cc { color:var(--dim); } .cs { color:var(--orange); }
+
+    .for-who { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:48px; }
+    .who-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+    .who-icon { font-size:32px; margin-bottom:16px; }
+    .who-title { font-size:17px; font-weight:700; margin-bottom:8px; }
+    .who-desc { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
+    .who-list { list-style:none; }
+    .who-list li { font-size:13px; color:var(--muted); padding:5px 0; border-bottom:1px solid var(--border); }
+    .who-list li:last-child { border-bottom:none; }
+    .who-list li::before { content:"→ "; color:var(--dim); }
+
+    .status-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:40px; }
+    .status-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; align-items:center; gap:10px; }
+    .status-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; }
+    .status-name { font-size:12px; font-weight:600; font-family:var(--mono); color:var(--muted); }
+
+    .cta-block { background:linear-gradient(135deg,rgba(91,91,214,.08),rgba(124,158,255,.04)); border:1px solid rgba(91,91,214,.2); border-radius:20px; padding:72px 40px; text-align:center; }
+    .cta-block h2 { margin-bottom:16px; }
+    .cta-block p { font-size:16px; color:var(--muted); margin-bottom:32px; }
+    .cta-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+    footer { border-top:1px solid var(--border); padding:40px; display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; gap:24px; }
+    .footer-links a { font-size:13px; color:var(--dim); }
+
+    @media(max-width:900px){
+      nav{padding:14px 20px;} .nav-links{display:none;}
+      .hero{padding:72px 20px 64px;} .hero-grid{grid-template-columns:1fr;}
+      section{padding:64px 20px;} .steps{grid-template-columns:1fr 1fr;}
+      .progression{grid-template-columns:1fr;} .apis-grid{grid-template-columns:1fr 1fr;}
+      .tiers{grid-template-columns:1fr;} .manifest-grid{grid-template-columns:1fr;}
+      .for-who{grid-template-columns:1fr;} .status-grid{grid-template-columns:repeat(3,1fr);}
+      .lumara-inner{flex-direction:column;} .lumara-banner{padding:0 20px;}
+      footer{flex-direction:column;gap:16px;padding:32px 20px;}
+    }
+    @media(max-width:600px){
+      h1{font-size:32px;} h2{font-size:26px;}
+      .apis-grid{grid-template-columns:1fr;} .steps{grid-template-columns:1fr;}
+      .status-grid{grid-template-columns:repeat(2,1fr);}
+    }
+  </style>
 </head>
 <body>
 
-<div class="cursor-glow" id="cursorGlow"></div>
-
-<!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">
-    <div class="logo-mark"></div>
-    SwarmSpace
-  </a>
-  <div class="nav-right">
-    <ul class="nav-links">
-      <li><a href="#apis">Free APIs</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#for-who">For who</a></li>
-      <li><a href="/submit">Submit</a></li>
-      <li><a href="/upgrade.html">Upgrade</a></li>
-    </ul>
-    <span id="nav-cta-guest">
-      <a href="/signup.html" class="nav-signin" style="margin-right:0.5rem;">Sign in</a>
-      <a href="/signup.html" class="nav-cta">Get API access</a>
-    </span>
-    <span id="nav-cta-auth" style="display:none;">
-      <a href="/dashboard.html" class="nav-cta">Dashboard</a>
-      <button type="button" class="nav-signout-btn" onclick="signOut()">Sign out</button>
-    </span>
+  <a href="/" class="nav-logo">SwarmSpace</a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#apis">Free APIs</a>
+    <a href="#platform">Platform</a>
+    <a href="#trust">Trust</a>
+    <a href="#for-who">For who</a>
+    <a href="/submit">Submit a plugin</a>
+  </div>
+  <div class="nav-actions">
+    <a href="/upgrade.html" class="btn-ghost">Pricing</a>
+    <a href="/signup.html" class="btn-primary">Get API access →</a>
   </div>
 </nav>
 
-<!-- HERO -->
 <div class="hero">
-  <div class="hero-left">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      7 APIs live now · free · no credit card
-    </div>
-    <h1 class="hero-title">
-      <span class="dim">Quality.</span><br>
-      Authenticity.<br>
-      <span class="accent">Earned.</span>
-    </h1>
-    <p class="hero-sub">
-      The first agentic plugin marketplace where rankings are earned, not bought. No paid placement. No editorial picks. Seven APIs are live now — web search, weather, news, currency, and more. The marketplace opens Q2 2026.
-    </p>
-    <div class="hero-actions">
-      <a href="/signup.html" class="btn-primary">Get API access →</a>
-      <a href="#apis" class="btn-outline">See all 7 free APIs</a>
-    </div>
-  </div>
-
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="t-dot red"></div>
-      <div class="t-dot yellow"></div>
-      <div class="t-dot green"></div>
-      <span class="terminal-title">agent-runtime.log</span>
-    </div>
-    <div class="terminal-body">
-      <div class="t-line"><span class="t-prompt">→</span><span class="t-cmd">agent.reason(<span class="t-str">"user wants to track sleep"</span>)</span></div>
-      <div class="t-blank"></div>
-      <div class="t-out t-comment">// capability gap detected: health.sleep_tracking</div>
-      <div class="t-out t-comment">// querying SwarmSpace...</div>
-      <div class="t-blank"></div>
-      <div class="t-line"><span class="t-prompt">→</span><span class="t-cmd">swarmspace.discover(<span class="t-str">"I need a tool that tracks sleep and HRV"</span>)</span></div>
-      <div class="t-blank"></div>
-      <div class="t-out"><span class="t-key">results</span>: [</div>
-      <div class="t-out" style="padding-left:3rem;">{ <span class="t-key">name</span>: <span class="t-str">"OuraSync"</span>, <span class="t-key">trust</span>: <span class="t-val">"verified"</span>, <span class="t-key">score</span>: <span class="t-val">0.94</span> },</div>
-      <div class="t-out" style="padding-left:3rem;">{ <span class="t-key">name</span>: <span class="t-str">"SleepKit"</span>, <span class="t-trust">trust</span>: <span class="t-val">"verified"</span>, <span class="t-key">score</span>: <span class="t-val">0.88</span> }</div>
-      <div class="t-out">]</div>
-      <div class="t-blank"></div>
-      <div class="t-out t-comment">// requesting user authorization...</div>
-      <div class="t-line"><span class="t-prompt">→</span><span class="t-cmd">user.confirm(<span class="t-str">"Allow OuraSync to read sleep data?"</span>)</span></div>
-      <div class="t-blank"></div>
-      <div class="t-out" style="color: var(--green);">✓ plugin activated · context: sleep_only · no PII shared</div>
-      <div class="t-blank"></div>
-      <div class="t-line"><span class="t-prompt">$</span><span class="t-cursor"></span></div>
-    </div>
-  </div>
-</div>
-
-<!-- FREE APIs -->
-<div class="apis-section" id="apis">
-  <p class="section-tag reveal">Live now — free tier</p>
-  <h2 class="section-title reveal">7 free APIs.<br><span class="g">Ready to use.</span></h2>
-  <p class="section-sub reveal">Sign up and get access to these APIs. Use them in your apps, agents, or prototypes. No credit card required.</p>
-
-  <div class="apis-grid reveal">
-    <div class="api-card">
-      <div class="api-card-header">
-        <div>
-          <span class="api-card-name">Gemini Flash</span>
-          <div class="api-card-id">gemini-flash</div>
-        </div>
-        <span class="api-card-badge">Free</span>
+  <div class="hero-grid">
+    <div class="hero-left">
+      <div class="section-label">✦ Now open — free tier</div>
+      <h1>The plugin marketplace built for AI agents.</h1>
+      <p>SwarmSpace is where AI agents discover, trust, and call capabilities at runtime. No pre-configuration. No hardcoded tool lists. Rankings are earned, not bought.</p>
+      <div class="hero-actions">
+        <a href="/signup.html" class="hero-cta">Get API access — free →</a>
+        <a href="/upgrade.html" class="hero-secondary">See pricing</a>
       </div>
-      <p class="api-card-desc">Fast AI synthesis for writing and drafting</p>
-      <p class="api-card-example">"Draft a LinkedIn post about my latest project"</p>
-    </div>
-    <div class="api-card">
-      <div class="api-card-header">
-        <div>
-          <span class="api-card-name">Brave Search</span>
-          <div class="api-card-id">brave-search</div>
-        </div>
-        <span class="api-card-badge">Free</span>
-      </div>
-      <p class="api-card-desc">Privacy-focused web search</p>
-      <p class="api-card-example">"What are the latest developments in AI?"</p>
-    </div>
-    <div class="api-card">
-      <div class="api-card-header">
-        <div>
-          <span class="api-card-name">Semantic Scholar</span>
-          <div class="api-card-id">semantic-scholar</div>
-        </div>
-        <span class="api-card-badge">Free</span>
-      </div>
-      <p class="api-card-desc">Academic paper and citation search</p>
-      <p class="api-card-example">"Find papers on transformer architectures"</p>
-    </div>
-    <div class="api-card">
-      <div class="api-card-header">
-        <div>
-          <span class="api-card-name">Weather</span>
-          <div class="api-card-id">weather</div>
-        </div>
-        <span class="api-card-badge">Free</span>
-      </div>
-      <p class="api-card-desc">Current weather and forecasts</p>
-      <p class="api-card-example">"What's the weather in San Francisco?"</p>
-    </div>
-    <div class="api-card">
-      <div class="api-card-header">
-        <div>
-          <span class="api-card-name">Wikipedia</span>
-          <div class="api-card-id">wikipedia</div>
-        </div>
-        <span class="api-card-badge">Free</span>
-      </div>
-      <p class="api-card-desc">Wikipedia knowledge base</p>
-      <p class="api-card-example">"Who invented the transistor?"</p>
-    </div>
-    <div class="api-card">
-      <div class="api-card-header">
-        <div>
-          <span class="api-card-name">Currency</span>
-          <div class="api-card-id">currency</div>
-        </div>
-        <span class="api-card-badge">Free</span>
-      </div>
-      <p class="api-card-desc">Currency exchange rates</p>
-      <p class="api-card-example">"What is EUR to USD right now?"</p>
-    </div>
-    <div class="api-card">
-      <div class="api-card-header">
-        <div>
-          <span class="api-card-name">News</span>
-          <div class="api-card-id">news</div>
-        </div>
-        <span class="api-card-badge">Free</span>
-      </div>
-      <p class="api-card-desc">Latest news and headlines (NewsData.io)</p>
-      <p class="api-card-example">"Top tech news today"</p>
-    </div>
-  </div>
-
-  <div id="apis-cta" style="text-align:center;margin-top:2.5rem;">
-    <p id="apis-cta-sub" style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">Sign up to access these APIs and view the full reference in your dashboard.</p>
-    <a id="apis-cta-btn" href="/signup.html" class="btn-primary">Get API access →</a>
-  </div>
-</div>
-
-<!-- STATS -->
-<div class="stats-bar reveal">
-  <div class="stat">
-    <div class="stat-value">7</div>
-    <div class="stat-label">Live APIs</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">MCP</div>
-    <div class="stat-label">Protocol compatible</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">0</div>
-    <div class="stat-label">Config required</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">∞</div>
-    <div class="stat-label">Capabilities at runtime</div>
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<div class="section" id="how">
-  <p class="section-tag reveal">How it works</p>
-  <h2 class="section-title reveal">From capability gap<br>to <span class="g">running plugin</span> in one call.</h2>
-  <p class="section-sub reveal">No pre-configuration. No hardcoded tool lists. The agent identifies what it needs, searches SwarmSpace, and gets authorized to use it — all at runtime, all with your permission.</p>
-
-  <div class="flow reveal">
-    <div class="flow-step">
-      <p class="step-num">01</p>
-      <span class="step-icon">🧠</span>
-      <h3 class="step-title">Agent detects a gap</h3>
-      <p class="step-desc">During reasoning, the agent determines its current capability set can't fulfill the user's need. It articulates the gap in natural language.</p>
-      <div class="step-arrow">›</div>
-    </div>
-    <div class="flow-step">
-      <p class="step-num">02</p>
-      <span class="step-icon">🔍</span>
-      <h3 class="step-title">Queries SwarmSpace</h3>
-      <p class="step-desc">The agent sends a natural language query to SwarmSpace's semantic search API. Results are ranked by relevance and trust score, matched to the agent's permission level.</p>
-      <div class="step-arrow">›</div>
-    </div>
-    <div class="flow-step">
-      <p class="step-num">03</p>
-      <span class="step-icon">🛡️</span>
-      <h3 class="step-title">User authorizes</h3>
-      <p class="step-desc">Before any plugin executes, the user is asked to authorize. No blanket access. No persistent permissions. Every activation is a new consent event.</p>
-      <div class="step-arrow">›</div>
-    </div>
-    <div class="flow-step">
-      <p class="step-num">04</p>
-      <span class="step-icon">⚡</span>
-      <h3 class="step-title">Plugin runs</h3>
-      <p class="step-desc">The plugin executes with minimum necessary context. Your full user data never leaves your agent's trust boundary. Results flow back and the task completes.</p>
-    </div>
-  </div>
-</div>
-
-<!-- MANIFEST SECTION -->
-<div class="manifest-section" id="manifest">
-  <div class="manifest-inner">
-    <div class="manifest-explain reveal">
-      <p class="section-tag">Plugin format</p>
-      <h2 class="manifest-title">One manifest.<br><span class="g">Every agent</span> reads it.</h2>
-      <p class="manifest-body">
-        SwarmSpace capabilities use a standardized OpenAPI-style manifest — a JSON/YAML file that describes what your capability does, its trust tier, pricing, auth method, and semantic tags. Any LLM can parse and summarize it without reading full documentation.
-      </p>
-      <p class="manifest-body">
-        Manifests are the contract between your capability and every agent in the SwarmSpace ecosystem. Write it once. Discoverable everywhere.
-      </p>
-      <div class="manifest-callout">
-        <strong>Agent-to-agent compatible.</strong> Each plugin has a stable canonical URL and machine-readable summary. Agents can pass plugin references to each other as structured objects — inter-agent recommendation is a first-class use case.
+      <div class="hero-stats">
+        <div><div class="stat-num">15</div><div class="stat-label">Free APIs</div></div>
+        <div><div class="stat-num">MCP</div><div class="stat-label">Compatible</div></div>
+        <div><div class="stat-num">0</div><div class="stat-label">Config required</div></div>
+        <div><div class="stat-num">∞</div><div class="stat-label">Runtime capabilities</div></div>
       </div>
     </div>
-
-    <div class="code-block reveal reveal-delay-1">
-      <div class="code-header">
-        <span class="code-file">oura-sync.swarmspace.json</span>
-        <span class="code-lang">SwarmSpace Manifest v1</span>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="tdot" style="background:#ff5f57"></div>
+        <div class="tdot" style="background:#febc2e"></div>
+        <div class="tdot" style="background:#28c840"></div>
+        <span class="ttitle">agent-runtime.log</span>
       </div>
-      <div class="code-body">
-<pre><span class="c-bracket">{</span>
-  <span class="c-key">"name"</span>: <span class="c-str">"OuraSync"</span>,
-  <span class="c-key">"version"</span>: <span class="c-str">"1.2.0"</span>,
-  <span class="c-key">"capability"</span>: <span class="c-str">"Read and analyze sleep, HRV,
-    and readiness data from Oura Ring"</span>,
-
-  <span class="c-key">"trust_tier"</span>: <span class="c-str">"verified"</span>,
-  <span class="c-key">"latency_class"</span>: <span class="c-str">"realtime"</span>,
-  <span class="c-key">"pricing"</span>: <span class="c-bracket">{</span>
-    <span class="c-key">"model"</span>: <span class="c-str">"free"</span>
-  <span class="c-bracket">}</span>,
-
-  <span class="c-key">"auth"</span>: <span class="c-bracket">{</span>
-    <span class="c-key">"method"</span>: <span class="c-str">"oauth2"</span>,
-    <span class="c-key">"scopes"</span>: <span class="c-bracket">[</span><span class="c-str">"sleep"</span>, <span class="c-str">"heartrate"</span><span class="c-bracket">]</span>
-  <span class="c-bracket">}</span>,
-
-  <span class="c-key">"context_required"</span>: <span class="c-str">"none"</span>, <span class="c-comment">// no PII needed</span>
-
-  <span class="c-key">"tags"</span>: <span class="c-bracket">[</span>
-    <span class="c-str">"health"</span>, <span class="c-str">"sleep"</span>, <span class="c-str">"wearables"</span>, <span class="c-str">"HRV"</span>
-  <span class="c-bracket">]</span>,
-
-  <span class="c-key">"agent_summary"</span>: <span class="c-str">"Reads Oura Ring sleep 
-    and HRV data. No personal context 
-    required. Use for sleep analysis, 
-    recovery scoring, health insights."</span>
-<span class="c-bracket">}</span></pre>
+      <div class="terminal-body">
+        <div class="td">→ agent.reason("prep investor meeting")</div>
+        <br>
+        <div class="td">// capability gap detected</div>
+        <div class="td">// needs: research + competitor intel</div>
+        <br>
+        <div class="tb">→ swarmspace.discover(</div>
+        <div class="tb">&nbsp;&nbsp;"research and competitor brief"</div>
+        <div class="tb">)</div>
+        <br>
+        <div class="tw">results: [</div>
+        <div class="tg">&nbsp;&nbsp;{ name: "Research", trust: "verified" },</div>
+        <div class="tg">&nbsp;&nbsp;{ name: "CompetitorIntel", trust: "verified" },</div>
+        <div class="tg">&nbsp;&nbsp;{ name: "Writing", trust: "verified" }</div>
+        <div class="tw">]</div>
+        <br>
+        <div class="to">→ user.confirm("Run 3-step chain?")</div>
+        <div class="tg">✓ chain authorized · CHRONICLE context on</div>
+        <div class="tg">✓ streaming results to LUMARA...</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- TRUST TIERS -->
-<div class="section" id="tiers">
-  <p class="section-tag reveal">Trust architecture</p>
-  <h2 class="section-title reveal">No one buys their way<br>to the <span class="g">top.</span></h2>
-  <p class="section-sub reveal">Every plugin earns its place. Rankings are determined by real usage, community upvotes, and developer engagement — reviewed monthly. The best plugins rise because users say so, not because someone paid for placement.</p>
+<div class="lumara-banner">
+  <div class="lumara-inner">
+    <div class="lumara-left">
+      <div style="font-size:28px">📱</div>
+      <div>
+        <h3>LUMARA is the reference integration</h3>
+        <p>LUMARA is Orbital AI's personal AI companion for iOS and SwarmSpace's first customer. Every workflow in LUMARA calls SwarmSpace plugins in real time — this is what building on SwarmSpace looks like in production.</p>
+      </div>
+    </div>
+    <a href="https://lumara.ai">Learn about LUMARA →</a>
+  </div>
+</div>
 
+<section id="how">
+  <div class="section-label">How it works</div>
+  <h2>From capability gap to running plugin in one call.</h2>
+  <p style="font-size:16px;color:var(--muted);margin-top:12px;max-width:600px">No pre-configuration. No hardcoded tool lists. The agent identifies what it needs, searches SwarmSpace, and gets authorised to use it — all at runtime, all with your permission.</p>
+  <div class="steps">
+    <div>
+      <div class="step-num">01</div>
+      <div class="step-icon">🧠</div>
+      <div class="step-title">Agent detects a gap</div>
+      <div class="step-body">During reasoning, the agent determines its current capability set can't fulfil the user's need. It articulates the gap in natural language.</div>
+    </div>
+    <div>
+      <div class="step-num">02</div>
+      <div class="step-icon">🔍</div>
+      <div class="step-title">Queries SwarmSpace</div>
+      <div class="step-body">The agent sends a natural language query to SwarmSpace's semantic search. Results are ranked by relevance and trust score, matched to the agent's permission level.</div>
+    </div>
+    <div>
+      <div class="step-num">03</div>
+      <div class="step-icon">🛡️</div>
+      <div class="step-title">User authorises</div>
+      <div class="step-body">Before any plugin executes, the user is asked to authorise. No blanket access. No persistent permissions. Every activation is a new consent event.</div>
+    </div>
+    <div>
+      <div class="step-num">04</div>
+      <div class="step-icon">⚡</div>
+      <div class="step-title">Plugin runs</div>
+      <div class="step-body">The plugin executes with minimum necessary context. Your full user data never leaves your agent's trust boundary. Results flow back and the task completes.</div>
+    </div>
+  </div>
+</section>
 
-  <div class="tiers reveal">
-    <div class="tier">
-      <span class="tier-badge verified">✓ Verified</span>
-      <h3 class="tier-name">Verified</h3>
-      <p class="tier-desc">Earned through consistent performance. Top-ranked plugins in their category, reviewed monthly based on usage, upvotes, and developer engagement.</p>
+<section id="platform">
+  <div class="section-label">Platform progression</div>
+  <h2>Three layers. Each one compounds the last.</h2>
+  <p style="font-size:16px;color:var(--muted);margin-top:12px;max-width:640px">SwarmSpace is not a static API catalogue. Developers who build for Layer 1 automatically participate in Layers 2 and 3 as those capabilities activate. No migration, no resubmission.</p>
+  <div class="progression">
+    <div class="prog-card active">
+      <div class="prog-tag now">✓ Active now</div>
+      <h3>Plugin Marketplace</h3>
+      <p>Atomic capabilities. Individual plugins agents can discover and call at runtime. 15 free APIs live today.</p>
+      <ul>
+        <li>Standardised JSON manifests</li>
+        <li>Natural language semantic search</li>
+        <li>Trust tier filtering at runtime</li>
+        <li>20 free calls/day on free tier</li>
+        <li>80% revenue share for Verified developers</li>
+      </ul>
+    </div>
+    <div class="prog-card">
+      <div class="prog-tag next">Q3 2026</div>
+      <h3>Workflow Marketplace</h3>
+      <p>Chains of plugins that compose into reusable workflows. One user intent, multiple API calls, one synthesised result.</p>
+      <ul>
+        <li>Publish ordered plugin chains</li>
+        <li>Revenue compounds per execution</li>
+        <li>A 3-plugin workflow earns on 4 transactions</li>
+        <li>Save personal chains from LUMARA</li>
+        <li>Community workflow sharing and Swarms</li>
+      </ul>
+    </div>
+    <div class="prog-card">
+      <div class="prog-tag later">Later</div>
+      <h3>Agent Marketplace</h3>
+      <p>Persistent agents with autonomous behaviour. Scheduled runs, event-triggered actions, background monitoring.</p>
+      <ul>
+        <li>Scheduled execution (daily, weekly)</li>
+        <li>Event-triggered alerts and actions</li>
+        <li>Persistent memory across sessions</li>
+        <li>Subscription-based agent revenue</li>
+        <li>Verified agent trust tier</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="apis">
+  <div class="section-label">Free APIs</div>
+  <h2>15 free APIs. Ready now.</h2>
+  <p style="font-size:16px;color:var(--muted);margin-top:12px;max-width:600px">Sign up and get 20 calls/day across all free-tier capabilities. No credit card required.</p>
+  <div class="apis-grid">
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Brave Search</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">brave-search</div>
+      <div class="api-desc">Privacy-first web search on an independent index.</div>
+      <div class="api-ex">"Latest developments in AI agents?"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Semantic Scholar</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">semantic-scholar</div>
+      <div class="api-desc">200M+ academic papers. No key required.</div>
+      <div class="api-ex">"Find papers on transformer architectures"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Jina Reader</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">jina-reader</div>
+      <div class="api-desc">Fetch any URL and extract clean text. No auth.</div>
+      <div class="api-ex">"Read and summarise this article"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Wikipedia</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">wikipedia</div>
+      <div class="api-desc">Encyclopaedic knowledge base. Unlimited.</div>
+      <div class="api-ex">"Who invented the transistor?"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Open-Meteo</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">open-meteo</div>
+      <div class="api-desc">Weather, forecasts, and historical data. No key.</div>
+      <div class="api-ex">"Forecast for San Diego this week"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">NewsAPI</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">news-api</div>
+      <div class="api-desc">Headlines from 70+ sources. 100 req/day.</div>
+      <div class="api-ex">"Top AI headlines today"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">arXiv</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">arxiv</div>
+      <div class="api-desc">Scientific preprints. CS, physics, biology.</div>
+      <div class="api-ex">"Latest preprints on multimodal LLMs"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">PubMed</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">pubmed</div>
+      <div class="api-desc">Biomedical literature. National Library of Medicine.</div>
+      <div class="api-ex">"Studies on sleep and cognition"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">HackerNews</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">hacker-news</div>
+      <div class="api-desc">Tech community stories and discussions.</div>
+      <div class="api-ex">"What is HN saying about MCP?"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Reddit (read)</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">reddit</div>
+      <div class="api-desc">Community discussions. 60 req/min free.</div>
+      <div class="api-ex">"r/LocalLLaMA on agent frameworks"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">GitHub Public</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">github-public</div>
+      <div class="api-desc">Public repo and developer data.</div>
+      <div class="api-ex">"How active is this open source project?"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Exchange Rates</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">exchange-rates</div>
+      <div class="api-desc">Currency conversion. 1,500 req/month.</div>
+      <div class="api-ex">"EUR to USD right now"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">REST Countries</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">rest-countries</div>
+      <div class="api-desc">Country data, geography, flags. Unlimited.</div>
+      <div class="api-ex">"Languages spoken in Switzerland"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Nominatim</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">nominatim</div>
+      <div class="api-desc">Geocoding via OpenStreetMap. 1 req/sec.</div>
+      <div class="api-ex">"What neighbourhood is this address?"</div>
+    </div>
+    <div class="api-card">
+      <div class="api-header"><span class="api-name">Gemini Flash</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">gemini-flash</div>
+      <div class="api-desc">Fast AI synthesis. 10 queries/day free.</div>
+      <div class="api-ex">"Draft a LinkedIn post about my launch"</div>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:28px;font-size:14px;color:var(--muted)">
+    <a href="/signup.html">Get free access →</a> &nbsp;·&nbsp; <a href="/upgrade.html">See premium APIs (Exa, Perplexity, Gemini 3.1 Pro)</a>
+  </p>
+</section>
+
+<section id="manifest">
+  <div class="section-label">Plugin format</div>
+  <h2>One manifest. Every agent reads it.</h2>
+  <div class="manifest-grid">
+    <div class="manifest-left">
+      <p>SwarmSpace capabilities use a standardised JSON manifest — a file that describes what your capability does, its trust tier, pricing, auth method, and semantic tags. Any LLM can parse and summarise it without reading full documentation.</p>
+      <p>Write it once. Discoverable everywhere.</p>
+      <div class="mf">
+        <div class="mf-icon">🤖</div>
+        <div>
+          <div class="mf-title">Agent-to-agent compatible</div>
+          <div class="mf-desc">Each plugin has a stable canonical URL and machine-readable summary. Agents pass plugin references to each other as structured objects — inter-agent recommendation is a first-class use case.</div>
+        </div>
+      </div>
+      <div class="mf">
+        <div class="mf-icon">🔗</div>
+        <div>
+          <div class="mf-title">Chain-ready</div>
+          <div class="mf-desc">Workflows compose plugins into ordered chains. The output of each step feeds the next. Developers earn on every execution of every step.</div>
+        </div>
+      </div>
+      <div class="mf">
+        <div class="mf-icon">🛡️</div>
+        <div>
+          <div class="mf-title">Privacy by design</div>
+          <div class="mf-desc">privacy_data_required declares the minimum context your plugin needs. PRISM enforces this — plugins never receive more context than declared in the manifest.</div>
+        </div>
+      </div>
+    </div>
+    <div class="code-block">
+      <div style="color:var(--dim);margin-bottom:10px;font-size:11px">competitor-intel.swarmspace.json</div>
+      {<br>
+      &nbsp;&nbsp;<span class="ck">"name"</span>: <span class="cs">"Competitor Intel"</span>,<br>
+      &nbsp;&nbsp;<span class="ck">"version"</span>: <span class="cs">"1.0.0"</span>,<br>
+      &nbsp;&nbsp;<span class="ck">"description"</span>: <span class="cs">"Research a competitor and return a structured competitive card with strengths, weaknesses, and a positioning brief."</span>,<br>
+      <br>
+      &nbsp;&nbsp;<span class="ck">"trust_tier"</span>: <span class="cs">"verified"</span>,<br>
+      &nbsp;&nbsp;<span class="ck">"access_tier"</span>: <span class="cs">"standard"</span>,<br>
+      &nbsp;&nbsp;<span class="ck">"credit_cost_per_call"</span>: <span class="cv">30</span>,<br>
+      &nbsp;&nbsp;<span class="ck">"latency_class"</span>: <span class="cs">"standard"</span>,<br>
+      <br>
+      &nbsp;&nbsp;<span class="ck">"auth_method"</span>: <span class="cs">"none"</span>,<br>
+      &nbsp;&nbsp;<span class="ck">"privacy_data_required"</span>: [],<br>
+      <br>
+      &nbsp;&nbsp;<span class="ck">"semantic_tags"</span>: [<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="cs">"competitor"</span>, <span class="cs">"research"</span>,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="cs">"strategy"</span>, <span class="cs">"intelligence"</span><br>
+      &nbsp;&nbsp;],<br>
+      <br>
+      &nbsp;&nbsp;<span class="ck">"agent_guidance"</span>: <span class="cs">"Use when a user asks about a competitor or rival product. Pass the competitor name. Returns a structured card and strategic brief with a SwarmSpace positioning angle."</span><br>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="section-label">Trust architecture</div>
+  <h2>No one buys their way to the top.</h2>
+  <p style="font-size:16px;color:var(--muted);margin-top:12px;max-width:640px">Every plugin earns its place. Verified status cannot be purchased. Rankings are determined by real usage, community upvotes, and developer engagement — reviewed monthly.</p>
+  <div class="tiers">
+    <div class="tier-card" style="border-color:var(--green)">
+      <div class="tier-icon">✓</div>
+      <div class="tier-name" style="color:var(--green)">Verified</div>
+      <div class="tier-desc">Earned through consistent performance. Top-ranked plugins, reviewed monthly. Merit-based — cannot be purchased.</div>
       <ul class="tier-features">
-          <li>Merit-based — earned not bought</li>
-          <li>Top 5 placement in search category</li>
-          <li>80% revenue share on paid plugins</li>
-          <li>Monthly merit review by SwarmSpace</li>
-        </ul>
+        <li>Performance-based — not payment-based</li>
+        <li>Top 5 placement in search results</li>
+        <li>80% revenue share on paid calls</li>
+        <li>Monthly merit review by SwarmSpace</li>
+        <li>Eligible for personal data contexts</li>
+        <li>Cryptographically signed execution</li>
+      </ul>
     </div>
-    <div class="tier">
-      <span class="tier-badge community">◎ Community</span>
-      <h3 class="tier-name">Community</h3>
-      <p class="tier-desc">Published by developers, reviewed by the community. Good for general-purpose use without sensitive personal data.</p>
-      <ul class="tier-features amber">
+    <div class="tier-card">
+      <div class="tier-icon">◎</div>
+      <div class="tier-name">Community</div>
+      <div class="tier-desc">Published by developers, reviewed by the community. Always free to users — no credit charging permitted at this tier.</div>
+      <ul class="tier-features">
         <li>Safety review before listing</li>
         <li>Community upvotes and discussion</li>
         <li>Standard catalogue placement</li>
-        <li>Path to Verified through performance</li>
+        <li>Free APIs only in Community workflows</li>
+        <li>Clear path to Verified through merit</li>
+        <li>Free to publish — no subscription needed</li>
       </ul>
     </div>
-    <div class="tier">
-      <span class="tier-badge experimental">⚠ Experimental</span>
-      <h3 class="tier-name">Experimental</h3>
-      <p class="tier-desc">Unreviewed plugins for developers testing and iterating. Not eligible for personal data contexts by default.</p>
-      <ul class="tier-features red">
+    <div class="tier-card">
+      <div class="tier-icon">⚠</div>
+      <div class="tier-name" style="color:var(--orange)">Experimental</div>
+      <div class="tier-desc">For developers prototyping and iterating. No review required. Not eligible for personal data contexts by default.</div>
+      <ul class="tier-features">
         <li>No review required</li>
         <li>User shown explicit warning</li>
         <li>Isolated execution context</li>
         <li>Sandbox only — no PII access</li>
+        <li>Ideal for early-stage builds</li>
       </ul>
     </div>
   </div>
-</div>
 
-<!-- FOR WHO -->
-<div class="section" id="for-who" style="padding-top: 0;">
-  <p class="section-tag reveal">Who it's for</p>
-  <h2 class="section-title reveal">Built for everyone<br><span class="g">in the ecosystem.</span></h2>
+  <div style="margin-top:36px;padding:24px 32px;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;gap:20px;align-items:flex-start">
+    <div style="font-size:24px">📊</div>
+    <div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">The merit algorithm</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">Monthly Verified review uses a composite score: <strong style="color:var(--text)">upvotes</strong> (weighted by usage history), <strong style="color:var(--text)">call volume</strong>, <strong style="color:var(--text)">retention</strong> (returning users), <strong style="color:var(--text)">developer activity</strong> in Swarms, <strong style="color:var(--text)">update frequency</strong>, and <strong style="color:var(--text)">error rate</strong>. No single signal can be gamed. High failure rates disqualify regardless of other scores.</div>
+    </div>
+  </div>
+</section>
 
-  <div class="who-section reveal" style="grid-template-columns: 1fr 1fr 1fr;">
+<section id="for-who">
+  <div class="section-label">Built for everyone</div>
+  <h2>Three ways to participate.</h2>
+  <div class="for-who">
     <div class="who-card">
-      <p class="who-sub">Primary</p>
-      <h3 class="who-title">Find and use APIs.</h3>
-      <ul class="who-items">
-        <li>Browse plugins by category or natural language search</li>
-        <li>Upvote the plugins you trust — one vote per plugin, it counts</li>
-        <li>Join Swarms — communities around plugins and categories</li>
-        <li>Share tips, workflows, and combinations that actually work</li>
+      <div class="who-icon">👤</div>
+      <div class="who-title">Users</div>
+      <div class="who-desc">Access AI agent capabilities without technical knowledge. SwarmSpace is mostly invisible — your agent handles discovery. You just authorise.</div>
+      <ul class="who-list">
+        <li>20 free calls/day, no card required</li>
+        <li>Browse plugins by category or natural language</li>
+        <li>One permanent upvote per plugin</li>
+        <li>Join Swarms around plugins you use</li>
+        <li>LUMARA Premium includes full access</li>
       </ul>
-      <a href="/signup.html" class="btn-primary">Get API access →</a>
     </div>
     <div class="who-card">
-      <p class="who-sub">Plugin builders</p>
-      <h3 class="who-title">Build and submit plugins.</h3>
-      <ul class="who-items">
-        <li>Submit your capability to the SwarmSpace marketplace</li>
-        <li>Agents discover plugins at runtime via semantic search</li>
-        <li>Trust tiers: Experimental, Community, Verified</li>
-        <li>Get your plugin in front of every SwarmSpace-compatible agent</li>
+      <div class="who-icon">🔧</div>
+      <div class="who-title">Developers</div>
+      <div class="who-desc">Build plugins and workflows once. Get discovered by every SwarmSpace-compatible agent. Earn on every execution — not just installs.</div>
+      <ul class="who-list">
+        <li>Publish Community plugins for free</li>
+        <li>80% revenue share on Verified calls</li>
+        <li>Developer Pro: $0 for active publishers</li>
+        <li>First 100 Founding Developers: 85% share, permanent</li>
+        <li>Public developer profile and merit score</li>
       </ul>
-      <a href="/submit" class="btn-outline">Submit a capability →</a>
+    </div>
+    <div class="who-card">
+      <div class="who-icon">🤖</div>
+      <div class="who-title">AI Agents</div>
+      <div class="who-desc">SwarmSpace is agent-native. The primary customer is the agent, not the human. Manifests are written for LLMs — no documentation required.</div>
+      <ul class="who-list">
+        <li>Natural language capability discovery</li>
+        <li>Trust tier matching at runtime</li>
+        <li>Inter-agent plugin references</li>
+        <li>MCP-compatible protocol</li>
+        <li>Minimum-context privacy enforcement</li>
+      </ul>
     </div>
   </div>
+</section>
 
-  <p style="text-align:center;margin-top:2.5rem;font-size:0.82rem;color:var(--muted);">
-    Need more APIs? <a href="/upgrade.html" style="color:var(--green);text-decoration:none;">Upgrade to Standard or Premium</a>
-  </p>
-</div>
-
-<!-- DEVELOPER STATUS + WAITLIST -->
-<div class="dev-status-section" id="developer-status">
-  <div class="dev-status-inner">
-
-    <!-- LEFT: Live API status -->
-    <div class="dev-status-left reveal">
-      <p class="section-tag" style="margin-bottom:1.2rem;">System status</p>
-      <h2 class="dev-status-title">The APIs are <span class="g">live.</span></h2>
-      <p class="dev-status-sub">Seven plugins running in production on Cloudflare Workers. Authenticate via Firebase ID token, call <code style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;background:rgba(0,255,128,0.07);padding:0.15rem 0.4rem;">swarmspaceRouter</code>, and start building.</p>
-
-      <div class="api-status-list">
-        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">gemini-flash</span><span class="api-live-tag">● live</span></div>
-        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">brave-search</span><span class="api-live-tag">● live</span></div>
-        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">semantic-scholar</span><span class="api-live-tag">● live</span></div>
-        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">weather</span><span class="api-live-tag">● live</span></div>
-        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">wikipedia</span><span class="api-live-tag">● live</span></div>
-        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">currency</span><span class="api-live-tag">● live</span></div>
-        <div class="api-status-row"><span class="api-live-dot"></span><span class="api-status-id">news</span><span class="api-live-tag">● live</span></div>
-      </div>
-
-      <a href="/signup.html" class="btn-primary" style="display:inline-block;margin-top:2rem;">Get API access →</a>
-    </div>
-
-    <div class="dev-status-divider"></div>
-
-    <!-- RIGHT: Marketplace waitlist -->
-    <div class="dev-status-right reveal reveal-delay-2">
-      <p class="section-tag" style="margin-bottom:1.2rem;">What's next</p>
-      <h2 class="dev-status-title">Marketplace opens <span style="color:var(--muted);">Q2 2026.</span></h2>
-      <p class="dev-status-sub">Plugin submission, runtime discovery, trust tiers, and the Verified program. If you're building on the API or planning to submit plugins, get on the list.</p>
-
-      <div id="dev-wl-form-wrap">
-        <form class="dev-waitlist-form" onsubmit="handleDevWaitlist(event)" novalidate>
-          <input type="email" id="devWlEmail" placeholder="you@company.dev" autocomplete="email" required>
-          <button type="submit" id="dev-wl-btn">Notify me →</button>
-        </form>
-        <p class="dev-wl-note">No spam. One email when the marketplace opens.</p>
-      </div>
-      <div id="dev-wl-success" style="display:none;">
-        <p class="dev-wl-confirmed">✓ You're on the list.</p>
-        <p class="dev-wl-note">We'll reach out before launch. In the meantime — <a href="/signup.html" style="color:var(--green-dim);text-decoration:none;">the API is live.</a></p>
-      </div>
-    </div>
-
+<section id="status">
+  <div class="section-label">System status</div>
+  <h2>The APIs are live.</h2>
+  <p style="font-size:16px;color:var(--muted);margin-top:12px;max-width:560px">All free-tier plugins running in production. Authenticate via Firebase ID token, call <code style="font-family:var(--mono);color:var(--accent2);font-size:14px">swarmspaceRouter</code>, and start building.</p>
+  <div class="status-grid">
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">brave-search</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">semantic-scholar</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">jina-reader</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">wikipedia</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">open-meteo</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">news-api</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">arxiv</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">pubmed</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">hacker-news</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">reddit</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">github-public</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">exchange-rates</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">rest-countries</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">nominatim</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">gemini-flash</span></div>
   </div>
-</div>
+  <p style="margin-top:20px;font-size:13px;color:var(--muted)">Workflow marketplace opens Q3 2026. Plugin submission, runtime discovery, trust tiers, and the Verified programme.</p>
+</section>
 
-<div class="waitlist-section" id="signup-cta">
-  <div class="waitlist-inner">
-    <span class="waitlist-tag">Free — no credit card required</span>
-    <h2 class="waitlist-title">
-      Get API access.<br>
-      <span style="opacity:0.5">Start in seconds.</span>
-    </h2>
-    <p class="waitlist-sub">Sign up free and get access to all 7 APIs. Use them in your apps and agents. Submit your own plugins when you're ready.</p>
-    <a href="/signup.html" style="display:inline-block;background:var(--green);color:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:0.82rem;font-weight:500;letter-spacing:0.08em;padding:1rem 2.5rem;text-decoration:none;transition:background 0.2s;margin-top:1rem;">Get API access →</a>
-    <p style="margin-top:1.2rem;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted);">Already have an account? <a href="/signup.html" style="color:var(--green-dim);text-decoration:none;">Sign in →</a></p>
+<section>
+  <div class="cta-block">
+    <div class="section-label" style="margin:0 auto 20px">✦ Free to start</div>
+    <h2>Get API access.<br>Start in seconds.</h2>
+    <p>Sign up free. 20 calls/day across 15 APIs. No credit card.<br>Submit your own plugins when you're ready.</p>
+    <div class="cta-actions">
+      <a href="/signup.html" class="hero-cta">Get API access →</a>
+      <a href="/submit" class="hero-secondary">Submit a plugin</a>
+    </div>
+    <p style="margin-top:20px;font-size:13px;color:var(--dim)">Already have an account? <a href="/signup.html">Sign in →</a></p>
   </div>
-</div>
+</section>
 
-<!-- FOOTER -->
 <footer>
-  <div class="footer-left">
-    <span class="footer-logo">SwarmSpace</span>
-    <span class="footer-by">by Orbital AI — 2026</span>
+  <p>SwarmSpace by Orbital AI — 2026</p>
+  <div class="footer-links">
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/upgrade.html">Pricing</a>
+    <a href="/submit">Submit plugin</a>
+    <a href="#">Docs</a>
+    <a href="#">Privacy</a>
   </div>
-  <ul class="footer-links">
-    <li><a href="#">Docs</a></li>
-    <li><a href="#">GitHub</a></li>
-    <li><a href="#">Discord</a></li>
-    <li><a href="#">Privacy</a></li>
-  </ul>
 </footer>
-
-<script>
-  // Auth-aware nav
-  const SUPABASE_URL = 'https://hzboqpnmokhllvydknjz.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_s_4jnWqudwyHFv81Y7jmng_jxWnD_6a';
-  const { createClient } = supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  sb.auth.getSession().then(({ data: { session } }) => {
-    const guest = document.getElementById('nav-cta-guest');
-    const auth = document.getElementById('nav-cta-auth');
-    if (session && guest && auth) {
-      guest.style.display = 'none';
-      auth.style.display = 'inline-flex';
-      auth.style.alignItems = 'center';
-    }
-    // APIs section CTA for logged-in users
-    const apisSub = document.getElementById('apis-cta-sub');
-    const apisBtn = document.getElementById('apis-cta-btn');
-    if (session && apisSub && apisBtn) {
-      apisSub.textContent = 'View the full API reference with plugin IDs and request schemas.';
-      apisBtn.textContent = 'View full API reference →';
-      apisBtn.href = '/dashboard.html';
-    }
-  });
-
-  async function signOut() {
-    await sb.auth.signOut();
-    window.location.href = '/';
-  }
-
-  // Cursor glow
-  const glow = document.getElementById('cursorGlow');
-  document.addEventListener('mousemove', e => {
-    glow.style.left = e.clientX + 'px';
-    glow.style.top = e.clientY + 'px';
-  });
-
-  // Scroll reveal
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-  reveals.forEach(el => observer.observe(el));
-
-  // Email capture via Resend Worker (same as LUMARA)
-  const RESEND_WORKER = 'https://resend-email-lumara.orbitalai.workers.dev';
-
-  async function handleWaitlist(e) {
-    e.preventDefault();
-    const emailEl = document.getElementById('wlEmail');
-    const btn = e.target.querySelector('button');
-    const success = document.getElementById('wl-success');
-    const email = emailEl.value.trim();
-    if (!email) return;
-
-    btn.disabled = true;
-    btn.textContent = 'Sending…';
-
-    try {
-      const res = await fetch(RESEND_WORKER, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'swarmspace-landing' })
-      });
-      if (res.ok) {
-        emailEl.closest('form').style.display = 'none';
-        success.textContent = '✓ You\'re on the list.';
-        success.style.display = 'block';
-      } else {
-        throw new Error('Failed');
-      }
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Get early access';
-      success.textContent = '✗ Something went wrong. Try again.';
-      success.style.color = '#ff8a80';
-      success.style.display = 'block';
-    }
-  }
-
-  async function handleDevWaitlist(e) {
-    e.preventDefault();
-    const emailEl = document.getElementById('devWlEmail');
-    const btn = document.getElementById('dev-wl-btn');
-    const email = emailEl.value.trim();
-    if (!email) return;
-
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
-
-    try {
-      const res = await fetch(RESEND_WORKER, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'swarmspace-developer' })
-      });
-      if (res.ok) {
-        document.getElementById('dev-wl-form-wrap').style.display = 'none';
-        document.getElementById('dev-wl-success').style.display = 'block';
-      } else {
-        throw new Error('Failed');
-      }
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Notify me →';
-    }
-  }
-
-</script>
 
 </body>
 </html>
