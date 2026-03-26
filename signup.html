@@ -6,18 +6,11 @@
   <title>SwarmSpace — Get API access</title>
   <style>
     :root {
-      --bg:      #0A0A0F;
-      --surface: #13131E;
-      --border:  #1E1E35;
-      --border2: #2A2A3E;
-      --purple:  #5B5BD6;
-      --green:   #34D399;
-      --orange:  #FB923C;
-      --text:    #E8E8F0;
-      --muted:   #7A7A9A;
-      --dim:     #44445A;
-      --mono:    'JetBrains Mono','Fira Code',monospace;
-      --font:    -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --bg:#0A0A0F; --surface:#13131E; --border:#1E1E35; --border2:#2A2A3E;
+      --purple:#5B5BD6; --green:#34D399; --orange:#FB923C; --red:#FF6B6B;
+      --text:#E8E8F0; --muted:#7A7A9A; --dim:#44445A;
+      --mono:'JetBrains Mono','Fira Code',monospace;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     }
     * { box-sizing:border-box; margin:0; padding:0; }
     html { scroll-behavior:smooth; }
@@ -26,8 +19,6 @@
       font-family:var(--font); line-height:1.6;
       min-height:100vh; display:flex; flex-direction:column;
     }
-
-    /* ── NAV ── */
     nav {
       display:flex; align-items:center; justify-content:space-between;
       padding:0 32px; height:56px;
@@ -36,39 +27,25 @@
       position:sticky; top:0; z-index:100;
     }
     .nav-logo { font-weight:800; font-size:17px; color:var(--text); text-decoration:none; }
-    .nav-back { font-size:13px; color:var(--muted); text-decoration:none; display:flex; align-items:center; gap:6px; }
+    .nav-back { font-size:13px; color:var(--muted); text-decoration:none; }
     .nav-back:hover { color:var(--text); }
-
-    /* ── LAYOUT ── */
     .page {
-      flex:1; display:grid;
-      grid-template-columns:1fr 420px;
-      max-width:1000px; margin:0 auto;
-      padding:60px 32px; gap:60px;
-      width:100%;
+      flex:1; display:grid; grid-template-columns:1fr 420px;
+      max-width:1000px; margin:0 auto; padding:60px 32px; gap:60px; width:100%;
     }
     @media(max-width:760px) {
       .page { grid-template-columns:1fr; padding:32px 20px; gap:40px; }
-      .value-col { order:2; }
-      .form-col { order:1; }
+      .value-col { order:2; } .form-col { order:1; }
     }
-
-    /* ── VALUE COLUMN ── */
-    .value-col {}
     .value-label {
       font-family:var(--mono); font-size:10px; font-weight:700;
-      color:var(--purple); letter-spacing:0.1em; text-transform:uppercase;
-      margin-bottom:16px;
+      color:var(--purple); letter-spacing:.1em; text-transform:uppercase; margin-bottom:16px;
     }
     .value-col h1 {
       font-size:clamp(26px,3.5vw,36px); font-weight:800;
-      letter-spacing:-0.03em; line-height:1.15; margin-bottom:16px;
+      letter-spacing:-.03em; line-height:1.15; margin-bottom:16px;
     }
-    .value-col p {
-      font-size:15px; color:var(--muted); line-height:1.7; margin-bottom:32px;
-    }
-
-    /* benefit list */
+    .value-col > p { font-size:15px; color:var(--muted); line-height:1.7; margin-bottom:32px; }
     .benefits { list-style:none; margin-bottom:32px; }
     .benefits li {
       display:flex; gap:12px; align-items:flex-start;
@@ -78,94 +55,82 @@
     .benefits li:last-child { border-bottom:none; }
     .benefits .check { color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px; }
     .benefits strong { color:var(--text); }
-
-    /* tier pills */
     .tier-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:32px; }
     .tier-pill {
-      display:flex; align-items:center; gap:8px;
       background:var(--surface); border:1px solid var(--border);
       border-radius:10px; padding:10px 14px;
     }
     .tier-pill .price { font-size:16px; font-weight:800; }
     .tier-pill .label { font-size:12px; color:var(--muted); }
-    .tier-pill.highlight { border-color:var(--purple); background:rgba(91,91,214,0.08); }
+    .tier-pill.highlight { border-color:var(--purple); background:rgba(91,91,214,.08); }
     .tier-pill.highlight .price { color:var(--purple); }
-
-    /* social proof */
     .social-proof {
       background:var(--surface); border:1px solid var(--border);
       border-radius:12px; padding:16px 18px;
     }
     .social-proof p { font-size:13px; color:var(--muted); line-height:1.5; }
     .social-proof strong { color:var(--text); }
-
-    /* ── FORM COLUMN ── */
-    .form-col {}
     .form-card {
       background:var(--surface); border:1px solid var(--border);
       border-radius:18px; padding:32px; position:sticky; top:72px;
     }
-    .form-tabs { display:flex; gap:0; margin-bottom:24px; background:var(--bg); border-radius:10px; padding:4px; }
+    .form-tabs {
+      display:flex; margin-bottom:24px; background:var(--bg);
+      border-radius:10px; padding:4px;
+    }
     .tab-btn {
       flex:1; padding:9px; border:none; border-radius:8px;
       font-size:13px; font-weight:600; cursor:pointer;
-      background:none; color:var(--muted); font-family:var(--font);
-      transition:all 0.15s;
+      background:none; color:var(--muted); font-family:var(--font); transition:all .15s;
     }
     .tab-btn.active { background:var(--surface); color:var(--text); }
-
     .oauth-btn {
       display:flex; align-items:center; justify-content:center; gap:10px;
       width:100%; padding:12px; border-radius:10px; font-size:14px; font-weight:600;
       cursor:pointer; border:1px solid var(--border2); background:var(--bg);
-      color:var(--text); font-family:var(--font); transition:all 0.15s;
-      text-decoration:none; margin-bottom:10px;
+      color:var(--text); font-family:var(--font); transition:all .15s;
+      margin-bottom:10px;
     }
-    .oauth-btn:hover { border-color:var(--purple); background:rgba(91,91,214,0.06); }
-    .oauth-icon { font-size:16px; }
-
+    .oauth-btn:hover { border-color:var(--purple); background:rgba(91,91,214,.06); }
+    .oauth-btn:disabled { opacity:.5; cursor:not-allowed; }
     .divider-row {
       display:flex; align-items:center; gap:12px;
       margin:16px 0; font-size:12px; color:var(--dim);
     }
-    .divider-row::before, .divider-row::after {
-      content:''; flex:1; height:1px; background:var(--border);
-    }
-
+    .divider-row::before,.divider-row::after { content:''; flex:1; height:1px; background:var(--border); }
     .form-group { margin-bottom:14px; }
     .form-label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; font-family:var(--mono); }
     .form-input {
       width:100%; background:var(--bg); border:1px solid var(--border);
       border-radius:9px; padding:11px 14px; color:var(--text);
-      font-size:14px; font-family:var(--font); outline:none;
-      transition:border-color 0.15s;
+      font-size:14px; font-family:var(--font); outline:none; transition:border-color .15s;
     }
     .form-input:focus { border-color:var(--purple); }
     .form-input::placeholder { color:var(--dim); }
-
     .btn-submit {
       width:100%; background:var(--purple); color:white; border:none;
       border-radius:10px; padding:13px; font-size:15px; font-weight:700;
-      cursor:pointer; font-family:var(--font); transition:opacity 0.15s;
-      margin-top:6px;
+      cursor:pointer; font-family:var(--font); transition:opacity .15s; margin-top:6px;
     }
-    .btn-submit:hover { opacity:0.88; }
-
+    .btn-submit:hover { opacity:.88; }
+    .btn-submit:disabled { opacity:.5; cursor:not-allowed; }
     .form-footer { text-align:center; font-size:12px; color:var(--dim); margin-top:16px; }
-    .form-footer a { color:var(--purple); text-decoration:none; }
+    .form-footer a { color:var(--purple); text-decoration:none; cursor:pointer; }
     .form-footer a:hover { text-decoration:underline; }
-
     .form-note {
       font-size:11px; color:var(--dim); line-height:1.5;
       text-align:center; margin-top:16px; padding-top:16px;
       border-top:1px solid var(--border);
     }
-
-    /* panels */
     .panel { display:none; }
     .panel.active { display:block; }
-
-    /* ── FOOTER ── */
+    .alert {
+      padding:10px 14px; border-radius:8px; font-size:13px;
+      margin-bottom:14px; display:none;
+    }
+    .alert.error { background:rgba(255,107,107,.1); border:1px solid rgba(255,107,107,.3); color:var(--red); }
+    .alert.success { background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); color:var(--green); }
+    .alert.show { display:block; }
     footer {
       border-top:1px solid var(--border); padding:24px 32px;
       display:flex; justify-content:space-between; align-items:center;
@@ -186,7 +151,7 @@
 
 <div class="page">
 
-  <!-- ── VALUE COLUMN ── -->
+  <!-- VALUE COLUMN -->
   <div class="value-col">
     <div class="value-label">Free tier — no credit card</div>
     <h1>Start building with 15 free APIs.</h1>
@@ -202,28 +167,20 @@
 
     <div class="tier-row">
       <div class="tier-pill">
-        <div>
-          <div class="price">$0</div>
-          <div class="label">Free forever</div>
-        </div>
+        <div class="price">$0</div>
+        <div class="label">Free forever</div>
       </div>
       <div class="tier-pill highlight">
-        <div>
-          <div class="price">$15<span style="font-size:12px;font-weight:500;color:var(--muted)">/mo</span></div>
-          <div class="label">SwarmSpace Pro</div>
-        </div>
+        <div class="price">$15<span style="font-size:12px;font-weight:500;color:var(--muted)">/mo</span></div>
+        <div class="label">SwarmSpace Pro</div>
       </div>
       <div class="tier-pill">
-        <div>
-          <div class="price">$20<span style="font-size:12px;font-weight:500;color:var(--muted)">/mo</span></div>
-          <div class="label">LUMARA Premium</div>
-        </div>
+        <div class="price">$20<span style="font-size:12px;font-weight:500;color:var(--muted)">/mo</span></div>
+        <div class="label">LUMARA Premium</div>
       </div>
       <div class="tier-pill">
-        <div>
-          <div class="price" style="color:var(--green);">$0</div>
-          <div class="label">Developer Pro</div>
-        </div>
+        <div class="price" style="color:var(--green)">$0</div>
+        <div class="label">Developer Pro</div>
       </div>
     </div>
 
@@ -232,7 +189,7 @@
     </div>
   </div>
 
-  <!-- ── FORM COLUMN ── -->
+  <!-- FORM COLUMN -->
   <div class="form-col">
     <div class="form-card">
 
@@ -243,84 +200,96 @@
 
       <!-- SIGN UP -->
       <div id="panel-signup" class="panel active">
-        <a href="#" class="oauth-btn">
-          <span class="oauth-icon">G</span> Continue with Google
-        </a>
-        <a href="#" class="oauth-btn">
-          <span class="oauth-icon">⌥</span> Continue with GitHub
-        </a>
+        <div id="signup-alert" class="alert error"></div>
+
+        <button class="oauth-btn" id="btn-google-signup" onclick="signInWithGoogle()">
+          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.4 30.2 0 24 0 14.7 0 6.8 5.4 3 13.3l7.8 6C12.8 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-10 6.9-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.2A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.3-7.7 2.3-6.1 0-11.2-3.5-13.2-8.7l-8.3 5.9C6.8 42.6 14.7 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+
+        <button class="oauth-btn" id="btn-github-signup" onclick="signInWithGithub()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.57v-2.2c-3.34.72-4.04-1.42-4.04-1.42-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.22 1.83 1.22 1.06 1.82 2.78 1.3 3.46.99.1-.77.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.28-1.23 3.28-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.22.68.83.56C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Continue with GitHub
+        </button>
 
         <div class="divider-row">or sign up with email</div>
 
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input class="form-input" type="email" placeholder="you@example.com" />
+          <input class="form-input" id="signup-email" type="email" placeholder="you@example.com" />
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input class="form-input" type="password" placeholder="Min. 8 characters" />
+          <input class="form-input" id="signup-password" type="password" placeholder="Min. 8 characters" />
         </div>
 
-        <button class="btn-submit">Create account →</button>
+        <button class="btn-submit" id="btn-email-signup" onclick="signUpWithEmail()">Create account →</button>
 
         <div class="form-footer">
-          Already have an account? <a href="#" onclick="showPanel('signin', document.querySelectorAll('.tab-btn')[1])">Sign in</a>
+          Already have an account? <a onclick="showPanel('signin', document.querySelectorAll('.tab-btn')[1])">Sign in</a>
         </div>
-
         <div class="form-note">
-          Free tier includes 15 APIs and 20 calls/day.<br>
-          No credit card required. Upgrade any time.
+          Free tier includes 15 APIs and 20 calls/day.<br>No credit card required. Upgrade any time.
         </div>
       </div>
 
       <!-- SIGN IN -->
       <div id="panel-signin" class="panel">
-        <a href="#" class="oauth-btn">
-          <span class="oauth-icon">G</span> Continue with Google
-        </a>
-        <a href="#" class="oauth-btn">
-          <span class="oauth-icon">⌥</span> Continue with GitHub
-        </a>
+        <div id="signin-alert" class="alert error"></div>
+
+        <button class="oauth-btn" onclick="signInWithGoogle()">
+          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.4 30.2 0 24 0 14.7 0 6.8 5.4 3 13.3l7.8 6C12.8 13 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.9-10 6.9-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.2A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.3-5.9z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.3-7.7 2.3-6.1 0-11.2-3.5-13.2-8.7l-8.3 5.9C6.8 42.6 14.7 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+
+        <button class="oauth-btn" onclick="signInWithGithub()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.57v-2.2c-3.34.72-4.04-1.42-4.04-1.42-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.22 1.83 1.22 1.06 1.82 2.78 1.3 3.46.99.1-.77.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.28-1.23 3.28-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.22.68.83.56C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Continue with GitHub
+        </button>
 
         <div class="divider-row">or sign in with email</div>
 
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input class="form-input" type="email" placeholder="you@example.com" />
+          <input class="form-input" id="signin-email" type="email" placeholder="you@example.com" />
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input class="form-input" type="password" placeholder="Your password" />
+          <input class="form-input" id="signin-password" type="password" placeholder="Your password" />
         </div>
 
-        <button class="btn-submit">Sign in →</button>
+        <button class="btn-submit" onclick="signInWithEmail()">Sign in →</button>
 
         <div class="form-footer">
-          <a href="#" onclick="showPanel('reset', document.querySelectorAll('.tab-btn')[1])">Forgot password?</a>
+          <a onclick="showPanel('reset', null)">Forgot password?</a>
           &nbsp;·&nbsp;
-          <a href="#" onclick="showPanel('signup', document.querySelectorAll('.tab-btn')[0])">Create account</a>
+          <a onclick="showPanel('signup', document.querySelectorAll('.tab-btn')[0])">Create account</a>
         </div>
       </div>
 
       <!-- RESET -->
       <div id="panel-reset" class="panel">
-        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Enter your email and we'll send a link to reset your password.</p>
+        <div id="reset-alert" class="alert error"></div>
+        <div id="reset-success" class="alert success"></div>
+
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">
+          Enter your email and we'll send a link to reset your password.
+        </p>
 
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input class="form-input" type="email" placeholder="you@example.com" />
+          <input class="form-input" id="reset-email" type="email" placeholder="you@example.com" />
         </div>
 
-        <button class="btn-submit">Send reset link →</button>
+        <button class="btn-submit" onclick="sendReset()">Send reset link →</button>
 
         <div class="form-footer">
-          <a href="#" onclick="showPanel('signin', document.querySelectorAll('.tab-btn')[1])">← Back to sign in</a>
+          <a onclick="showPanel('signin', document.querySelectorAll('.tab-btn')[1])">← Back to sign in</a>
         </div>
       </div>
 
     </div>
   </div>
-
 </div>
 
 <footer>
@@ -333,6 +302,185 @@
   </div>
 </footer>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, createUserWithEmailAndPassword,
+           signInWithEmailAndPassword, sendPasswordResetEmail,
+           GoogleAuthProvider, GithubAuthProvider,
+           signInWithPopup, onAuthStateChanged }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, setDoc, getDoc,
+           serverTimestamp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain:        "arc-epi.firebaseapp.com",
+    projectId:         "arc-epi",
+    storageBucket:     "arc-epi.firebasestorage.app",
+    messagingSenderId: "563971839074",
+    appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b",
+    measurementId:     "G-C3Q3LL6JXV"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // ── Redirect if already signed in ──────────────────────────
+  onAuthStateChanged(auth, user => {
+    if (user) window.location.href = '/dashboard.html';
+  });
+
+  // ── Create user doc in Firestore on first sign-in ──────────
+  async function ensureUserDoc(user) {
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        email:      user.email,
+        plan:       'free',
+        isPremium:  false,
+        createdAt:  serverTimestamp(),
+        callsToday: 0,
+        callsReset: serverTimestamp(),
+      });
+    }
+  }
+
+  // ── After successful auth ───────────────────────────────────
+  async function onSuccess(user) {
+    await ensureUserDoc(user);
+    window.location.href = '/dashboard.html';
+  }
+
+  // ── Error messages ──────────────────────────────────────────
+  function friendlyError(code) {
+    const map = {
+      'auth/email-already-in-use':    'An account with this email already exists. Sign in instead.',
+      'auth/invalid-email':           'Please enter a valid email address.',
+      'auth/weak-password':           'Password must be at least 8 characters.',
+      'auth/user-not-found':          'No account found with this email.',
+      'auth/wrong-password':          'Incorrect password. Try again or reset it.',
+      'auth/invalid-credential':      'Incorrect email or password.',
+      'auth/too-many-requests':       'Too many attempts. Please wait a moment and try again.',
+      'auth/popup-closed-by-user':    'Sign-in window was closed. Please try again.',
+      'auth/cancelled-popup-request': '',
+      'auth/popup-blocked':           'Pop-up was blocked. Please allow pop-ups for this site.',
+    };
+    return map[code] || 'Something went wrong. Please try again.';
+  }
+
+  function showAlert(id, msg, type = 'error') {
+    const el = document.getElementById(id);
+    if (!el || !msg) return;
+    el.className = `alert ${type} show`;
+    el.textContent = msg;
+  }
+
+  function clearAlert(id) {
+    const el = document.getElementById(id);
+    if (el) el.className = 'alert error';
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.style.opacity = loading ? '0.6' : '1';
+  }
+
+  // ── Google ──────────────────────────────────────────────────
+  window.signInWithGoogle = async function() {
+    clearAlert('signup-alert'); clearAlert('signin-alert');
+    try {
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      await onSuccess(result.user);
+    } catch (e) {
+      const msg = friendlyError(e.code);
+      if (msg) showAlert('signup-alert', msg);
+      if (msg) showAlert('signin-alert', msg);
+    }
+  };
+
+  // ── GitHub ──────────────────────────────────────────────────
+  window.signInWithGithub = async function() {
+    clearAlert('signup-alert'); clearAlert('signin-alert');
+    try {
+      const result = await signInWithPopup(auth, new GithubAuthProvider());
+      await onSuccess(result.user);
+    } catch (e) {
+      const msg = friendlyError(e.code);
+      if (msg) {
+        showAlert('signup-alert', msg);
+        showAlert('signin-alert', msg);
+      }
+    }
+  };
+
+  // ── Email sign up ───────────────────────────────────────────
+  window.signUpWithEmail = async function() {
+    clearAlert('signup-alert');
+    const email    = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    if (!email || !password) {
+      showAlert('signup-alert', 'Please enter your email and a password.');
+      return;
+    }
+    setLoading('btn-email-signup', true);
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await onSuccess(result.user);
+    } catch (e) {
+      showAlert('signup-alert', friendlyError(e.code));
+      setLoading('btn-email-signup', false);
+    }
+  };
+
+  // ── Email sign in ───────────────────────────────────────────
+  window.signInWithEmail = async function() {
+    clearAlert('signin-alert');
+    const email    = document.getElementById('signin-email').value.trim();
+    const password = document.getElementById('signin-password').value;
+    if (!email || !password) {
+      showAlert('signin-alert', 'Please enter your email and password.');
+      return;
+    }
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      await onSuccess(result.user);
+    } catch (e) {
+      showAlert('signin-alert', friendlyError(e.code));
+    }
+  };
+
+  // ── Password reset ──────────────────────────────────────────
+  window.sendReset = async function() {
+    clearAlert('reset-alert');
+    document.getElementById('reset-success').className = 'alert success';
+    const email = document.getElementById('reset-email').value.trim();
+    if (!email) {
+      showAlert('reset-alert', 'Please enter your email address.');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      const el = document.getElementById('reset-success');
+      el.className = 'alert success show';
+      el.textContent = 'Reset link sent — check your inbox.';
+    } catch (e) {
+      showAlert('reset-alert', friendlyError(e.code));
+    }
+  };
+
+  // ── Enter key support ───────────────────────────────────────
+  document.getElementById('signup-password')
+    .addEventListener('keydown', e => { if (e.key === 'Enter') window.signUpWithEmail(); });
+  document.getElementById('signin-password')
+    .addEventListener('keydown', e => { if (e.key === 'Enter') window.signInWithEmail(); });
+  document.getElementById('reset-email')
+    .addEventListener('keydown', e => { if (e.key === 'Enter') window.sendReset(); });
+</script>
+
 <script>
   function showPanel(id, btn) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -340,10 +488,6 @@
     document.getElementById('panel-' + id).classList.add('active');
     if (btn) btn.classList.add('active');
   }
-
-  // Wire up existing Firebase auth — replace these handlers with your actual auth calls
-  // The form structure matches the original signup.html flow so Firebase listeners
-  // should attach the same way they did before.
 </script>
 
 </body>
