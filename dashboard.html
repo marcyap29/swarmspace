@@ -164,7 +164,7 @@
     <div class="topbar-title">Dashboard</div>
     <div class="topbar-right">
       <div class="topbar-plan">Free tier · 20 calls/day</div>
-      <div class="topbar-signout">Sign out</div>
+      <div class="topbar-signout" onclick="doSignOut()">Sign out</div>
     </div>
   </div>
 
@@ -408,6 +408,48 @@
 
   </div>
 </div>
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
+  const app  = initializeApp({
+    apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain:        "arc-epi.firebaseapp.com",
+    projectId:         "arc-epi",
+    storageBucket:     "arc-epi.firebasestorage.app",
+    messagingSenderId: "563971839074",
+    appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
+  });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // Auth guard — redirect to signup if not logged in
+  onAuthStateChanged(auth, async user => {
+    if (!user) return window.location.href = '/signup.html';
+
+    // Show email in topbar
+    const emailEl = document.querySelector('.topbar-plan');
+    if (emailEl) emailEl.textContent = user.email;
+
+    // Load plan from Firestore
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      const plan = data.isPremium ? 'LUMARA Premium'
+                 : data.plan === 'pro' ? 'SwarmSpace Pro'
+                 : 'Free tier · 20 calls/day';
+      if (emailEl) emailEl.textContent = plan;
+    }
+  });
+
+  // Sign out
+  window.doSignOut = async function() {
+    await signOut(auth);
+    window.location.href = '/signup.html';
+  };
+</script>
 </body>
 </html>
