@@ -1,0 +1,10 @@
+name = "swarmspace-orchestrator"
+main = "src/index.js"
+compatibility_date = "2026-03-01"
+
+[vars]
+SWARMSPACE_ROUTER_URL = "https://us-central1-arc-epi.cloudfunctions.net/swarmspaceRouter"
+
+# Set via `wrangler secret put SWARMSPACE_INTERNAL_TOKEN`
+# [secrets]
+# SWARMSPACE_INTERNAL_TOKEN

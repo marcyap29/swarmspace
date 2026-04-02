@@ -1,0 +1,13 @@
+{
+  "name": "swarmspace-orchestrator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SwarmSpace workflow orchestration Worker — chains free-tier plugins into multi-step workflows",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
