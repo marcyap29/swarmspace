@@ -1,0 +1,319 @@
+// SwarmSpace Orchestration Worker
+// Routes: /research, /competitor, /marketing, /plugins, /academic,
+//         /news-brief, /market-scan, /location-brief, /health-research,
+//         /tech-scout, /fact-check, /content-brief
+//
+// Each route chains multiple free-tier SwarmSpace plugins into a single
+// workflow. Authenticated via Firebase ID token (passed through to
+// swarmspaceRouter).
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (request.method === 'OPTIONS') {
+      return corsResponse(null, 204);
+    }
+
+    if (request.method !== 'POST') {
+      return corsResponse(JSON.stringify({ error: 'POST required' }), 405);
+    }
+
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return corsResponse(JSON.stringify({ error: 'Missing Authorization header' }), 401);
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return corsResponse(JSON.stringify({ error: 'Invalid JSON body' }), 400);
+    }
+
+    const ctx = {
+      token: authHeader,
+      routerUrl: env.SWARMSPACE_ROUTER_URL,
+      query: body.query || body.topic || '',
+      params: body,
+    };
+
+    const routes = {
+      '/research':       runResearchWorkflow,
+      '/competitor':     runCompetitorWorkflow,
+      '/marketing':      runMarketingWorkflow,
+      '/plugins':        runPluginsWorkflow,
+      '/academic':       runAcademicWorkflow,
+      '/news-brief':     runNewsBriefWorkflow,
+      '/market-scan':    runMarketScanWorkflow,
+      '/location-brief': runLocationBriefWorkflow,
+      '/health-research': runHealthResearchWorkflow,
+      '/tech-scout':     runTechScoutWorkflow,
+      '/fact-check':     runFactCheckWorkflow,
+      '/content-brief':  runContentBriefWorkflow,
+    };
+
+    const handler = routes[url.pathname];
+    if (!handler) {
+      return corsResponse(JSON.stringify({
+        error: 'Unknown route',
+        available: Object.keys(routes),
+      }), 404);
+    }
+
+    try {
+      const result = await handler(ctx);
+      return corsResponse(JSON.stringify({ workflow: url.pathname, result }), 200);
+    } catch (err) {
+      return corsResponse(JSON.stringify({ error: err.message }), 500);
+    }
+  }
+};
+
+// ── Helper: call a single plugin via swarmspaceRouter ──
+
+async function callPlugin(ctx, pluginId, params) {
+  const res = await fetch(ctx.routerUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': ctx.token,
+    },
+    body: JSON.stringify({ data: { plugin_id: pluginId, params } }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Plugin ${pluginId} failed (${res.status}): ${text}`);
+  }
+
+  const json = await res.json();
+  return json.result || json;
+}
+
+// ── Helper: run plugins in parallel ──
+
+async function parallel(ctx, calls) {
+  const results = await Promise.allSettled(
+    calls.map(([pluginId, params]) => callPlugin(ctx, pluginId, params))
+  );
+  const out = {};
+  calls.forEach(([pluginId], i) => {
+    const r = results[i];
+    out[pluginId] = r.status === 'fulfilled' ? r.value : { error: r.reason.message };
+  });
+  return out;
+}
+
+// ── CORS helper ──
+
+function corsResponse(body, status) {
+  return new Response(body, {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// WORKFLOW IMPLEMENTATIONS
+// ════════════════════════════════════════════════════════════════
+
+// 1. /research — Deep research: web search + Wikipedia + academic papers
+async function runResearchWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['brave-search', { query: q, count: 8 }],
+    ['wikipedia', { query: q, mode: 'search', limit: 3 }],
+    ['semantic-scholar', { query: q, limit: 5 }],
+  ]);
+
+  // Synthesize with Gemini Flash
+  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Synthesize a research brief from these sources on "${q}":\n\nWeb results: ${JSON.stringify(results['brave-search'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nAcademic papers: ${JSON.stringify(results['semantic-scholar'])}\n\nProvide a structured summary with key findings, sources cited, and gaps in available information.`,
+  });
+
+  return { sources: results, synthesis };
+}
+
+// 2. /competitor — Competitive analysis: web search + news + synthesis
+async function runCompetitorWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['brave-search', { query: `${q} competitor analysis market position`, count: 8 }],
+    ['newsapi', { query: q, count: 5 }],
+    ['hackernews', { query: q, count: 5 }],
+  ]);
+
+  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a competitive intelligence brief for "${q}":\n\nWeb search: ${JSON.stringify(results['brave-search'])}\n\nNews: ${JSON.stringify(results['newsapi'])}\n\nHacker News discussion: ${JSON.stringify(results['hackernews'])}\n\nStructure as: Overview, Key Players, Recent Moves, Community Sentiment, Strategic Implications.`,
+  });
+
+  return { sources: results, analysis: synthesis };
+}
+
+// 3. /marketing — Content marketing brief: search + trends + draft
+async function runMarketingWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['brave-search', { query: `${q} marketing trends content strategy`, count: 6 }],
+    ['newsapi', { query: q, count: 5 }],
+  ]);
+
+  const brief = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a content marketing brief for "${q}":\n\nTrending content: ${JSON.stringify(results['brave-search'])}\n\nRecent news: ${JSON.stringify(results['newsapi'])}\n\nOutput: 1) Key themes and angles, 2) Content calendar suggestions (3 post ideas with hooks), 3) SEO keywords to target, 4) Audience pain points to address.`,
+  });
+
+  return { research: results, brief };
+}
+
+// 4. /plugins — Plugin discovery: search existing ecosystem + gaps
+async function runPluginsWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['brave-search', { query: `${q} API plugin integration`, count: 8 }],
+    ['github-public', { query: q }],
+  ]);
+
+  const analysis = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Analyze the plugin/API ecosystem for "${q}":\n\nWeb results: ${JSON.stringify(results['brave-search'])}\n\nGitHub repos: ${JSON.stringify(results['github-public'])}\n\nOutput: 1) Existing APIs/plugins available, 2) Integration patterns, 3) Gaps and opportunities for new SwarmSpace plugins, 4) Recommended manifest structure for this capability.`,
+  });
+
+  return { sources: results, analysis };
+}
+
+// 5. /academic — Deep academic research: arXiv + PubMed + Semantic Scholar
+async function runAcademicWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['semantic-scholar', { query: q, limit: 5 }],
+    ['arxiv', { query: q, limit: 5 }],
+    ['pubmed', { query: q, limit: 5 }],
+  ]);
+
+  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create an academic literature review on "${q}":\n\nSemantic Scholar: ${JSON.stringify(results['semantic-scholar'])}\n\narXiv preprints: ${JSON.stringify(results['arxiv'])}\n\nPubMed: ${JSON.stringify(results['pubmed'])}\n\nStructure as: Research Landscape, Key Papers, Methodological Trends, Open Questions, Suggested Reading Order.`,
+  });
+
+  return { papers: results, review: synthesis };
+}
+
+// 6. /news-brief — Multi-source news briefing
+async function runNewsBriefWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['newsapi', { query: q, count: 8 }],
+    ['hackernews', { query: q, count: 5 }],
+    ['brave-search', { query: `${q} latest news today`, count: 5 }],
+  ]);
+
+  const brief = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a news intelligence brief for "${q}":\n\nMainstream news: ${JSON.stringify(results['newsapi'])}\n\nTech community: ${JSON.stringify(results['hackernews'])}\n\nWeb: ${JSON.stringify(results['brave-search'])}\n\nStructure as: Headlines Summary (3 bullets), Detailed Analysis, Community Reaction, What To Watch.`,
+  });
+
+  return { sources: results, brief };
+}
+
+// 7. /market-scan — Financial/market overview
+async function runMarketScanWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['brave-search', { query: `${q} market analysis financial outlook`, count: 6 }],
+    ['newsapi', { query: `${q} market`, count: 5 }],
+    ['exchange-rates', { base: ctx.params.currency || 'USD' }],
+  ]);
+
+  const scan = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a market scan for "${q}":\n\nMarket research: ${JSON.stringify(results['brave-search'])}\n\nFinancial news: ${JSON.stringify(results['newsapi'])}\n\nExchange rates context: ${JSON.stringify(results['exchange-rates'])}\n\nStructure as: Market Overview, Key Metrics, Recent Developments, Risk Factors, Outlook.`,
+  });
+
+  return { data: results, scan };
+}
+
+// 8. /location-brief — Geographic intelligence
+async function runLocationBriefWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['nominatim', { query: q }],
+    ['open-meteo', { query: q }],
+    ['rest-countries', { query: q }],
+    ['wikipedia', { query: q, mode: 'search', limit: 2 }],
+  ]);
+
+  const brief = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a location intelligence brief for "${q}":\n\nGeocoding: ${JSON.stringify(results['nominatim'])}\n\nWeather: ${JSON.stringify(results['open-meteo'])}\n\nCountry data: ${JSON.stringify(results['rest-countries'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nStructure as: Location Overview, Current Conditions, Key Facts, Context.`,
+  });
+
+  return { data: results, brief };
+}
+
+// 9. /health-research — Health and biomedical research
+async function runHealthResearchWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['pubmed', { query: q, limit: 8 }],
+    ['semantic-scholar', { query: q, limit: 5 }],
+    ['wikipedia', { query: q, mode: 'search', limit: 2 }],
+  ]);
+
+  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a health research summary on "${q}":\n\nPubMed studies: ${JSON.stringify(results['pubmed'])}\n\nAcademic papers: ${JSON.stringify(results['semantic-scholar'])}\n\nWikipedia context: ${JSON.stringify(results['wikipedia'])}\n\nStructure as: Clinical Overview, Key Studies, Evidence Strength, Practical Implications. Add disclaimer that this is not medical advice.`,
+  });
+
+  return { papers: results, summary: synthesis };
+}
+
+// 10. /tech-scout — Technology scouting and evaluation
+async function runTechScoutWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['github-public', { query: q }],
+    ['hackernews', { query: q, count: 8 }],
+    ['brave-search', { query: `${q} technology comparison review`, count: 6 }],
+    ['arxiv', { query: q, limit: 3 }],
+  ]);
+
+  const evaluation = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a technology evaluation for "${q}":\n\nGitHub ecosystem: ${JSON.stringify(results['github-public'])}\n\nHacker News sentiment: ${JSON.stringify(results['hackernews'])}\n\nWeb research: ${JSON.stringify(results['brave-search'])}\n\nAcademic papers: ${JSON.stringify(results['arxiv'])}\n\nStructure as: Technology Overview, Maturity Assessment, Community Adoption, Alternatives, Recommendation.`,
+  });
+
+  return { sources: results, evaluation };
+}
+
+// 11. /fact-check — Multi-source fact verification
+async function runFactCheckWorkflow(ctx) {
+  const q = ctx.query;
+  const results = await parallel(ctx, [
+    ['brave-search', { query: q, count: 8 }],
+    ['wikipedia', { query: q, mode: 'search', limit: 3 }],
+    ['semantic-scholar', { query: q, limit: 3 }],
+    ['dictionary-api', { word: q.split(' ')[0] }],
+  ]);
+
+  const verdict = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Fact-check the following claim: "${q}"\n\nWeb sources: ${JSON.stringify(results['brave-search'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nAcademic sources: ${JSON.stringify(results['semantic-scholar'])}\n\nProvide: 1) Verdict (Supported / Partially Supported / Unsupported / Unverifiable), 2) Evidence For, 3) Evidence Against, 4) Source Quality Assessment, 5) Confidence Level.`,
+  });
+
+  return { sources: results, verdict };
+}
+
+// 12. /content-brief — Content creation brief with research
+async function runContentBriefWorkflow(ctx) {
+  const q = ctx.query;
+  const format = ctx.params.format || 'blog post';
+  const results = await parallel(ctx, [
+    ['brave-search', { query: q, count: 6 }],
+    ['wikipedia', { query: q, mode: 'search', limit: 2 }],
+    ['newsapi', { query: q, count: 3 }],
+  ]);
+
+  const brief = await callPlugin(ctx, 'gemini-flash', {
+    prompt: `Create a content brief for a ${format} about "${q}":\n\nResearch: ${JSON.stringify(results['brave-search'])}\n\nBackground: ${JSON.stringify(results['wikipedia'])}\n\nRecent news: ${JSON.stringify(results['newsapi'])}\n\nOutput: 1) Title Options (3), 2) Target Audience, 3) Key Points to Cover, 4) Outline (H2/H3 structure), 5) Data Points to Include, 6) Call to Action Suggestions.`,
+  });
+
+  return { research: results, brief };
+}
