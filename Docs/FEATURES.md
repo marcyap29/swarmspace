@@ -12,7 +12,7 @@
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Landing page | 7 free APIs, upgrade CTA | ✅ |
-| User auth | Signup/login via Supabase: generic email signup + OAuth (Google, GitHub); forgot password + reset page | ✅ |
+| User auth | Signup/login via Firebase: email signup + OAuth (Google, GitHub); forgot password + reset page | ✅ |
 | Unified account model | One account, API key (`ss_` prefix), developer_mode toggle | ✅ |
 | Developer dashboard | Plugin submission, status; API key reveal/copy/regenerate; API usage examples (JSON, cURL, JS) | ✅ |
 | Upgrade flow | Stripe Checkout for Verified tier ($30/mo) | ✅ |
@@ -26,7 +26,7 @@
 
 | Integration | Purpose |
 |-------------|---------|
-| Supabase | Auth, database (developers table) |
+| Firebase | Auth, Firestore (users, submissions, plugins collections) |
 | Stripe | Checkout, subscriptions, webhooks |
 | Vercel | Hosting, serverless API |
 | Firebase (external) | swarmspaceRouter, swarmspacePluginStatus for LUMARA |

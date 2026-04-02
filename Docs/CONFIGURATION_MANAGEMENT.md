@@ -16,14 +16,14 @@ Tracks changes between the repository codebase and documentation, ensuring docs 
 | Entry point | Purpose | When to read |
 |-------------|---------|--------------|
 | **overview.md** | Purpose, flow, orientation for users/agents | First read; what is SwarmSpace |
-| **README.md** | Setup guide (Supabase, Stripe, Vercel) | Deploy instructions |
+| **README.md** | Setup guide (Firebase, Stripe, Vercel) | Deploy instructions |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | API integration |
 | **architecture.md** | SwarmStore architecture & hosting | Broader vision; plugin format |
 | **Docs/claude.md** | AI context guide; Documentation & Config Role | Onboarding; doc workflows |
 | **Docs/CONFIGURATION_MANAGEMENT.md** (this file) | Docs inventory and change log | Sync status; what changed |
 | **Docs/CHANGELOG.md** | Version history | What changed and when |
 | **Docs/FEATURES.md** | Feature list | Capabilities |
-| **Docs/backend.md** | Backend (API, Vercel, Supabase) | Backend structure |
+| **Docs/backend.md** | Backend (API, Vercel, Firebase) | Backend structure |
 | **Docs/bugtracker/** | Bug tracker | Known issues, fixes |
 
 ---
