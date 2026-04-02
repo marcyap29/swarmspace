@@ -48,9 +48,44 @@ When a plugin is invoked, the Firebase Cloud Function (`swarmspaceRouter`) forwa
     "website": "https://yourdomain.com"
   },
   "created_at": "2026-02-01T00:00:00Z",
-  "updated_at": "2026-02-15T00:00:00Z"
+  "updated_at": "2026-02-15T00:00:00Z",
+
+  // AST10 additions:
+  "network_permissions": {
+    "mode": "allowlist",
+    "allowed_domains": ["api.example.com", "cdn.example.com"],
+    "denied_domains": []
+  },
+  "content_hash": "sha256:abc123...",
+  "scan_status": {
+    "scanner": "swarmspace-scanner",
+    "scanner_version": "1.0.0",
+    "scan_date": "2026-03-15T00:00:00Z",
+    "result": "pass",
+    "findings": []
+  },
+  "risk_tier": "L0",
+  "deny_write": {
+    "identity_files": true,
+    "memory_files": true,
+    "context_files": true,
+    "exceptions": []
+  },
+  "version_pinning": {
+    "dependencies_hash": "sha256:def456...",
+    "pinned_at": "2026-03-15T00:00:00Z"
+  }
 }
 ```
+
+#### OWASP AST10 Field Reference
+
+- **`network_permissions`** (AST03 — Over-Privileged Skills): Replaces binary `network: true/false` with explicit domain allowlist/denylist. Mode can be `allowlist` or `denylist`.
+- **`content_hash`** (AST01/AST02 — Malicious Skills / Supply Chain): SHA-256 hash of manifest content, verified at listing and runtime. Any modification invalidates the hash.
+- **`scan_status`** (AST08 — Poor Scanning): Behavioral/semantic scan result, not just schema validation. Records scanner version, date, result, and any findings.
+- **`risk_tier`** (AST09 — No Governance): `L0`=safe, `L1`=low, `L2`=elevated, `L3`=destructive. Gates which trust tiers can access which risk tiers.
+- **`deny_write`** (AST03): Explicit write protection for identity, memory, and context files. Default deny. Maps to LUMARA's CHRONICLE and PRISM layers.
+- **`version_pinning`** (AST07 — Update Drift): Dependency hash for verified plugins. Alerts when a previously-scanned plugin updates without re-review.
 
 **Why JSON, not YAML?**
 - JSON is natively parseable by every language without dependencies
