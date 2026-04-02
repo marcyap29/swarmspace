@@ -41,7 +41,7 @@ SwarmSpace is a **plugin layer and developer platform** for AI agents and applic
 
 | Layer | Tech |
 |-------|------|
-| Web app (dashboard, signup, marketplace) | Vercel, Supabase (auth + DB), Stripe |
+| Web app (dashboard, signup, marketplace) | Vercel, Firebase (auth + Firestore), Stripe |
 | API layer (plugin invocation) | Firebase Cloud Functions → Cloudflare Workers |
 | Plugin workers | Cloudflare Workers wrapping Brave, Tavily, Wikipedia, etc. |
 
@@ -55,7 +55,7 @@ When working with SwarmSpace in code or docs:
 - **Auth:** Firebase ID token in `Authorization: Bearer <token>`
 - **Tiers:** Free (7 plugins) | Standard $30/mo (url-reader, tavily-search) | Premium (exa-search, perplexity-sonar)
 - **API reference:** `SWARMSPACE_API_CONTEXT.md` — endpoints, request schemas, plugin registry
-- **Setup:** `README.md` — Supabase, Stripe, Vercel env vars
+- **Setup:** `README.md` — Firebase, Stripe, Vercel env vars
 - **Never commit API keys** — add via env vars or locally
 
 ---
