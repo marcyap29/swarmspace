@@ -1,5 +1,11 @@
 // api/stripe-webhook.js
 // Vercel Edge Function — handles Stripe subscription events
+//
+// Required environment variables:
+//   STRIPE_SECRET_KEY        — Stripe secret key
+//   STRIPE_WEBHOOK_SECRET    — Stripe webhook signing secret
+//   FIREBASE_PROJECT_ID      — Firebase project ID (e.g. "arc-epi")
+//   FIREBASE_API_KEY         — Firebase Web API key
 
 export const config = { runtime: 'edge' };
 
@@ -10,8 +16,10 @@ export default async function handler(req) {
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const apiKey = process.env.FIREBASE_API_KEY;
+
+  const firestoreBase = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents`;
 
   const body = await req.text();
   const signature = req.headers.get('stripe-signature');
@@ -31,22 +39,96 @@ export default async function handler(req) {
     return new Response('Invalid JSON', { status: 400 });
   }
 
-  const supabaseHeaders = {
-    'Content-Type': 'application/json',
-    'apikey': supabaseServiceKey,
-    'Authorization': `Bearer ${supabaseServiceKey}`
-  };
+  // Convert a plain updates object to Firestore typed-value format
+  function toFirestoreFields(updates) {
+    const fields = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === undefined) {
+        fields[key] = { nullValue: null };
+      } else if (typeof value === 'boolean') {
+        fields[key] = { booleanValue: value };
+      } else if (typeof value === 'number') {
+        fields[key] = Number.isInteger(value)
+          ? { integerValue: String(value) }
+          : { doubleValue: value };
+      } else {
+        fields[key] = { stringValue: String(value) };
+      }
+    }
+    return fields;
+  }
 
-  async function updateDeveloper(stripeCustomerId, updates) {
+  // Query Firestore users collection by stripe_customer_id
+  async function findUserByStripeCustomer(stripeCustomerId) {
+    const res = await fetch(`${firestoreBase}:runQuery?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: 'users' }],
+          where: {
+            fieldFilter: {
+              field: { fieldPath: 'stripe_customer_id' },
+              op: 'EQUAL',
+              value: { stringValue: stripeCustomerId }
+            }
+          },
+          limit: 1
+        }
+      })
+    });
+
+    if (!res.ok) return null;
+
+    const results = await res.json();
+    // runQuery returns [{ document: { name, fields } }] or [{ readTime }] if empty
+    if (results.length > 0 && results[0].document) {
+      return results[0].document.name;
+    }
+    return null;
+  }
+
+  // Get a user document path by Firebase UID directly
+  function userDocPath(uid) {
+    return `${firestoreBase}/users/${uid}`;
+  }
+
+  // Update a Firestore document at the given path
+  async function patchDocument(documentPath, updates) {
+    const fields = toFirestoreFields(updates);
+    const fieldPaths = Object.keys(updates);
+    const maskParams = fieldPaths
+      .map((fp) => `updateMask.fieldPaths=${encodeURIComponent(fp)}`)
+      .join('&');
+
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/developers?stripe_customer_id=eq.${stripeCustomerId}`,
+      `https://firestore.googleapis.com/v1/${documentPath}?key=${apiKey}&${maskParams}`,
       {
         method: 'PATCH',
-        headers: supabaseHeaders,
-        body: JSON.stringify(updates)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields })
       }
     );
     return res.ok;
+  }
+
+  // Find user by stripe_customer_id. For checkout.session.completed, fall back
+  // to client_reference_id (Firebase UID) if the customer is not yet linked.
+  async function updateUser(stripeCustomerId, updates, session) {
+    let docPath = await findUserByStripeCustomer(stripeCustomerId);
+
+    // Fallback: on checkout.session.completed the user doc may not have
+    // stripe_customer_id yet. Use client_reference_id (Firebase UID) if available.
+    if (!docPath && session && session.client_reference_id) {
+      docPath = userDocPath(session.client_reference_id);
+    }
+
+    if (!docPath) {
+      console.error(`No user found for stripe customer ${stripeCustomerId}`);
+      return false;
+    }
+
+    return patchDocument(docPath, updates);
   }
 
   try {
@@ -57,38 +139,41 @@ export default async function handler(req) {
         if (session.mode !== 'subscription') break;
 
         // Save stripe_customer_id and subscription_id, upgrade plan
-        await updateDeveloper(session.customer, {
+        await updateUser(session.customer, {
           stripe_customer_id: session.customer,
           stripe_subscription_id: session.subscription,
           plan: 'verified',
-          plan_status: 'active'
-        });
+          plan_status: 'active',
+          isPremium: false
+        }, session);
         break;
       }
 
       case 'customer.subscription.updated': {
         const sub = event.data.object;
         const status = sub.status; // active, past_due, canceled, etc.
-        await updateDeveloper(sub.customer, {
+        await updateUser(sub.customer, {
           plan: status === 'active' ? 'verified' : 'free',
-          plan_status: status
+          plan_status: status,
+          isPremium: false
         });
         break;
       }
 
       case 'customer.subscription.deleted': {
         const sub = event.data.object;
-        await updateDeveloper(sub.customer, {
+        await updateUser(sub.customer, {
           plan: 'free',
           plan_status: 'canceled',
-          stripe_subscription_id: null
+          stripe_subscription_id: null,
+          isPremium: false
         });
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
-        await updateDeveloper(invoice.customer, {
+        await updateUser(invoice.customer, {
           plan_status: 'past_due'
         });
         break;
