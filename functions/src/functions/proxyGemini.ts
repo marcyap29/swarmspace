@@ -1,0 +1,121 @@
+// functions/proxyGemini.ts - Simple API key proxy for Gemini calls
+
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions";
+import { GEMINI_API_KEY } from "../config";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { enforceAuth, checkJournalEntryLimit, checkChatLimit } from "../authGuard";
+import { checkUnifiedDailyLimit } from "../rateLimiter";
+
+/**
+ * Simple proxy to hide Gemini API key from client
+ * 
+ * This function:
+ * 1. Enforces authentication
+ * 2. Checks per-entry usage limits for free users (if entryId provided)
+ * 3. Checks per-chat usage limits for free users (if chatId provided)
+ * 4. Accepts system + user prompts from client
+ * 5. Adds the secret API key
+ * 6. Forwards to Gemini API
+ * 7. Returns the response
+ * 
+ * All LUMARA logic runs on the client (has access to local journals)
+ */
+export const proxyGemini = onCall(
+  {
+    secrets: [GEMINI_API_KEY],
+    // Auth enforced via enforceAuth() - no invoker: "public"
+  },
+  async (request) => {
+    const { system, user, jsonExpected, entryId, chatId, localCalendarDate } = request.data;
+
+    if (!user) {
+      throw new HttpsError(
+        "invalid-argument",
+        "user prompt is required"
+      );
+    }
+
+    // Enforce authentication
+    const authResult = await enforceAuth(request);
+    const { userId, isAnonymous, isPremium } = authResult;
+    const userEmail = request.auth?.token?.email as string | undefined;
+
+    logger.info(`Proxying Gemini request for user ${userId} (anonymous: ${isAnonymous}, premium: ${isPremium})`);
+
+    const dailyCheck = await checkUnifiedDailyLimit(userId, userEmail, localCalendarDate);
+    if (!dailyCheck.allowed) {
+      throw new HttpsError(
+        "resource-exhausted",
+        dailyCheck.error?.message || "Daily limit reached",
+        dailyCheck.error
+      );
+    }
+
+    // Check per-entry limit for in-journal LUMARA (if entryId provided)
+    if (entryId) {
+      const limitResult = await checkJournalEntryLimit(userId, entryId, isPremium);
+      logger.info(`Journal entry limit check: ${limitResult.remaining} remaining for entry ${entryId}`);
+    }
+
+    // Check per-chat limit for in-chat LUMARA (if chatId provided)
+    if (chatId) {
+      const limitResult = await checkChatLimit(userId, chatId, isPremium);
+      logger.info(`Chat limit check: ${limitResult.remaining} remaining for chat ${chatId}`);
+    }
+
+    try {
+      const apiKey = GEMINI_API_KEY.value();
+      
+      if (!apiKey) {
+        throw new HttpsError("internal", "Gemini API key not configured");
+      }
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-3-flash-preview",
+        generationConfig: jsonExpected 
+          ? { responseMimeType: "application/json" } 
+          : undefined,
+      });
+
+      // Create chat with system prompt as initial exchange
+      const chat = model.startChat({
+        history: system
+          ? [
+              { role: "user", parts: [{ text: system }] },
+              { role: "model", parts: [{ text: "Ok." }] },
+            ]
+          : [],
+      });
+
+      const result = await chat.sendMessage(user);
+      const response = result.response.text();
+
+      logger.info(`Gemini proxy successful for user ${userId}`);
+
+      return { response };
+    } catch (error: any) {
+      // Re-throw HttpsErrors (like limit exceeded) as-is
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      
+      const errMsg = error?.message ?? String(error);
+      const errStr = typeof error === "object" ? JSON.stringify(error, null, 0).slice(0, 500) : String(error);
+      logger.error("Gemini proxy error:", errMsg, errStr);
+      
+      if (errMsg.includes("429") || errMsg.includes("quota")) {
+        throw new HttpsError(
+          "resource-exhausted",
+          "Rate limit exceeded. Please try again later."
+        );
+      }
+      // Surface a clearer message; avoid leaking internals
+      const userMsg = errMsg && errMsg !== "INTERNAL" && errMsg.length < 200
+        ? `Gemini API error: ${errMsg}`
+        : "AI service error. Try again or use a shorter message.";
+      throw new HttpsError("internal", userMsg);
+    }
+  }
+);
