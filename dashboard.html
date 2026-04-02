@@ -202,10 +202,10 @@
         <h3>Your API key</h3>
         <p>Use this key to authenticate with <code style="font-family:var(--mono);color:var(--purple);">swarmspaceRouter</code>. Keep it secret — it represents your account and tier.</p>
         <div class="key-row">
-          <div class="key-display">••••••••••••••••••••••••••••••••</div>
-          <button class="btn-sm">Reveal</button>
-          <button class="btn-sm">Copy</button>
-          <button class="btn-sm danger">Regenerate</button>
+          <div class="key-display" id="key-display">••••••••••••••••••••••••••••••••</div>
+          <button class="btn-sm" id="btn-reveal">Reveal</button>
+          <button class="btn-sm" id="btn-copy">Copy</button>
+          <button class="btn-sm danger" id="btn-regen">Regenerate</button>
         </div>
       </div>
 
@@ -260,7 +260,7 @@
     <div id="capabilities" style="margin-top:48px;">
       <div class="section-head">My plugins</div>
 
-      <div class="submit-card" style="text-align:center;padding:40px;">
+      <div class="submit-card" id="my-plugins-container" style="text-align:center;padding:40px;">
         <div style="font-size:36px;margin-bottom:16px;">⬡</div>
         <h3 style="margin-bottom:8px;">No plugins yet</h3>
         <p style="max-width:400px;margin:0 auto 20px;">Submit your first capability to get discovered by AI agents at runtime. Community tier is free and gets immediate listing after safety review.</p>
@@ -284,11 +284,11 @@
           <div class="form-grid">
             <div class="form-row">
               <label class="form-label">Plugin name</label>
-              <input class="form-input" type="text" placeholder="e.g. WeatherKit" />
+              <input class="form-input" id="dash-plugin-name" type="text" placeholder="e.g. WeatherKit" />
             </div>
             <div class="form-row">
               <label class="form-label">Category</label>
-              <select class="form-input">
+              <select class="form-input" id="dash-plugin-category">
                 <option>Select category</option>
                 <option>Health</option>
                 <option>Finance</option>
@@ -305,14 +305,14 @@
 
           <div class="form-row">
             <label class="form-label">Capability description</label>
-            <textarea class="form-input" placeholder="Plain English — this is what agents search for. Be specific about what the plugin does, what it returns, and when to use it."></textarea>
+            <textarea class="form-input" id="dash-plugin-capability" placeholder="Plain English — this is what agents search for. Be specific about what the plugin does, what it returns, and when to use it."></textarea>
             <div class="form-note">This is your agent_guidance field. Write it as if you're telling an AI agent when and how to use your plugin. Agents query SwarmSpace in natural language — this is what they read.</div>
           </div>
 
           <div class="form-grid">
             <div class="form-row">
               <label class="form-label">Trust tier requested</label>
-              <select class="form-input">
+              <select class="form-input" id="dash-plugin-tier">
                 <option>Experimental — no review needed</option>
                 <option>Community — safety review</option>
                 <option>Verified — merit review (earned, not paid)</option>
@@ -320,7 +320,7 @@
             </div>
             <div class="form-row">
               <label class="form-label">Pricing model</label>
-              <select class="form-input">
+              <select class="form-input" id="dash-plugin-pricing">
                 <option>Free</option>
                 <option>Usage-based (credits)</option>
                 <option>Subscription</option>
@@ -331,14 +331,14 @@
 
           <div class="form-row">
             <label class="form-label">Manifest URL <span style="color:var(--dim);">(optional)</span></label>
-            <input class="form-input" type="url" placeholder="https://your-domain.com/swarmspace-manifest.json" />
+            <input class="form-input" id="dash-manifest-url" type="url" placeholder="https://your-domain.com/swarmspace-manifest.json" />
             <div class="form-note">If you have a SwarmSpace-spec manifest ready, link it here for faster review.</div>
           </div>
 
           <div class="form-grid">
             <div class="form-row">
               <label class="form-label">Auth method</label>
-              <select class="form-input">
+              <select class="form-input" id="dash-auth-method">
                 <option>None</option>
                 <option>API key</option>
                 <option>OAuth 2.0</option>
@@ -347,16 +347,16 @@
             </div>
             <div class="form-row">
               <label class="form-label">Website / repo URL <span style="color:var(--dim);">(optional)</span></label>
-              <input class="form-input" type="url" placeholder="https://github.com/you/plugin" />
+              <input class="form-input" id="dash-website-url" type="url" placeholder="https://github.com/you/plugin" />
             </div>
           </div>
 
           <div class="form-row">
             <label class="form-label">Semantic tags <span style="color:var(--dim);">(comma-separated)</span></label>
-            <input class="form-input" type="text" placeholder="e.g. weather, forecast, location, climate" />
+            <input class="form-input" id="dash-plugin-tags" type="text" placeholder="e.g. weather, forecast, location, climate" />
           </div>
 
-          <button class="btn-submit">Submit for review →</button>
+          <button class="btn-submit" id="dash-submit-btn">Submit for review →</button>
         </div>
       </div>
     </div>
@@ -412,7 +412,7 @@
   import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut }
                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, doc, getDoc }
+  import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, updateDoc, serverTimestamp, orderBy }
                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const app  = initializeApp({
@@ -426,9 +426,14 @@
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
+  let currentUser = null;
+  let currentApiKey = null;
+  let keyRevealed = false;
+
   // Auth guard — redirect to signup if not logged in
   onAuthStateChanged(auth, async user => {
     if (!user) return window.location.href = '/signup.html';
+    currentUser = user;
 
     // Show email in topbar
     const emailEl = document.querySelector('.topbar-plan');
@@ -443,6 +448,11 @@
                  : 'Free tier · 20 calls/day';
       if (emailEl) emailEl.textContent = plan;
     }
+
+    // Wire up features after auth
+    loadMyPlugins(user);
+    wireApiKeyButtons(user);
+    wireSubmitForm(user);
   });
 
   // Sign out
@@ -450,6 +460,199 @@
     await signOut(auth);
     window.location.href = '/signup.html';
   };
+
+  // ── Task B: Load My Plugins ──
+  async function loadMyPlugins(user) {
+    const container = document.getElementById('my-plugins-container');
+    try {
+      const q = query(
+        collection(db, 'plugins'),
+        where('developerId', '==', user.uid),
+        orderBy('created_at', 'desc')
+      );
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return; // keep existing empty state
+
+      container.style.textAlign = 'left';
+      container.style.padding = '0';
+      container.innerHTML = '';
+
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;';
+
+        const statusColors = {
+          pending: { bg: 'rgba(251,146,60,0.15)', color: 'var(--orange)' },
+          approved: { bg: 'rgba(52,211,153,0.15)', color: 'var(--green)' },
+          rejected: { bg: 'rgba(255,107,107,0.15)', color: '#FF6B6B' }
+        };
+        const st = statusColors[d.status] || statusColors.pending;
+
+        const dateStr = d.created_at
+          ? new Date(d.created_at.seconds * 1000).toLocaleDateString()
+          : '—';
+
+        card.innerHTML = `
+          <div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${escHtml(d.name || 'Unnamed')}</div>
+            <div style="font-size:12px;color:var(--muted);font-family:var(--mono);">${escHtml(d.category || '—')} · ${dateStr}</div>
+          </div>
+          <span style="display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:10px;font-weight:600;background:${st.bg};color:${st.color};">${escHtml(d.status || 'pending')}</span>
+        `;
+        container.appendChild(card);
+      });
+    } catch (err) {
+      console.error('Failed to load plugins:', err);
+    }
+  }
+
+  function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ── Task C: API Key Reveal/Copy/Regenerate ──
+  function wireApiKeyButtons(user) {
+    const display = document.getElementById('key-display');
+    const btnReveal = document.getElementById('btn-reveal');
+    const btnCopy = document.getElementById('btn-copy');
+    const btnRegen = document.getElementById('btn-regen');
+
+    btnReveal.addEventListener('click', async () => {
+      if (keyRevealed) {
+        display.textContent = '••••••••••••••••••••••••••••••••';
+        btnReveal.textContent = 'Reveal';
+        keyRevealed = false;
+        return;
+      }
+      btnReveal.textContent = 'Loading…';
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists() && snap.data().api_key) {
+          currentApiKey = snap.data().api_key;
+          display.textContent = currentApiKey;
+          btnReveal.textContent = 'Hide';
+          keyRevealed = true;
+        } else {
+          display.textContent = 'No key found';
+          btnReveal.textContent = 'Reveal';
+        }
+      } catch (err) {
+        console.error('Failed to load API key:', err);
+        btnReveal.textContent = 'Reveal';
+      }
+    });
+
+    btnCopy.addEventListener('click', async () => {
+      if (!currentApiKey) {
+        // Auto-reveal first
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists() && snap.data().api_key) {
+          currentApiKey = snap.data().api_key;
+        } else {
+          return;
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(currentApiKey);
+        const orig = btnCopy.textContent;
+        btnCopy.textContent = 'Copied!';
+        setTimeout(() => { btnCopy.textContent = orig; }, 1500);
+      } catch (err) {
+        console.error('Copy failed:', err);
+      }
+    });
+
+    btnRegen.addEventListener('click', async () => {
+      if (!confirm('Regenerate your API key? The current key will stop working immediately.')) return;
+      btnRegen.textContent = 'Generating…';
+      try {
+        const newKey = 'ss_' + crypto.randomUUID();
+        await updateDoc(doc(db, 'users', user.uid), { api_key: newKey });
+        currentApiKey = newKey;
+        display.textContent = newKey;
+        btnReveal.textContent = 'Hide';
+        keyRevealed = true;
+        btnRegen.textContent = 'Regenerate';
+      } catch (err) {
+        console.error('Regenerate failed:', err);
+        btnRegen.textContent = 'Regenerate';
+      }
+    });
+  }
+
+  // ── Task A: Submit Form ──
+  function wireSubmitForm(user) {
+    const btn = document.getElementById('dash-submit-btn');
+    btn.addEventListener('click', async () => {
+      const name = document.getElementById('dash-plugin-name').value.trim();
+      const category = document.getElementById('dash-plugin-category').value;
+      const capability = document.getElementById('dash-plugin-capability').value.trim();
+      const trustTier = document.getElementById('dash-plugin-tier').value;
+      const pricingModel = document.getElementById('dash-plugin-pricing').value;
+      const manifestUrl = document.getElementById('dash-manifest-url').value.trim();
+      const authMethod = document.getElementById('dash-auth-method').value;
+      const website = document.getElementById('dash-website-url').value.trim();
+      const tagsRaw = document.getElementById('dash-plugin-tags').value.trim();
+      const tagsArray = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+      if (!name || !capability || category === 'Select category') {
+        alert('Please fill in at least: Plugin name, Category, and Capability description.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+
+      try {
+        await addDoc(collection(db, 'plugins'), {
+          name,
+          category,
+          capability,
+          trustTier,
+          pricingModel,
+          manifestUrl,
+          authMethod,
+          website,
+          semanticTags: tagsArray,
+          developerId: user.uid,
+          status: 'pending',
+          created_at: serverTimestamp(),
+          updated_at: serverTimestamp()
+        });
+
+        // Clear form
+        document.getElementById('dash-plugin-name').value = '';
+        document.getElementById('dash-plugin-category').selectedIndex = 0;
+        document.getElementById('dash-plugin-capability').value = '';
+        document.getElementById('dash-plugin-tier').selectedIndex = 0;
+        document.getElementById('dash-plugin-pricing').selectedIndex = 0;
+        document.getElementById('dash-manifest-url').value = '';
+        document.getElementById('dash-auth-method').selectedIndex = 0;
+        document.getElementById('dash-website-url').value = '';
+        document.getElementById('dash-plugin-tags').value = '';
+
+        // Show success message
+        btn.textContent = 'Submitted!';
+        btn.style.background = 'var(--green)';
+        setTimeout(() => {
+          btn.textContent = 'Submit for review →';
+          btn.style.background = 'var(--purple)';
+          btn.disabled = false;
+        }, 2000);
+
+        // Refresh My Plugins section
+        loadMyPlugins(user);
+      } catch (err) {
+        console.error('Submit failed:', err);
+        alert('Submission failed. Please try again.');
+        btn.textContent = 'Submit for review →';
+        btn.disabled = false;
+      }
+    });
+  }
 </script>
 </body>
 </html>
