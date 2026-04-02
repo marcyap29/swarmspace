@@ -176,24 +176,24 @@
 
       <div class="stat-row">
         <div class="stat-card">
-          <div class="stat-num">0</div>
+          <div class="stat-num" id="stat-plugins-count">0</div>
           <div class="stat-label">Plugins listed</div>
-          <div class="stat-sub">Submit your first →</div>
+          <div class="stat-sub" id="stat-plugins-sub">Submit your first →</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num" style="color:var(--green);">20</div>
+          <div class="stat-num" id="stat-calls-remaining" style="color:var(--green);">—</div>
           <div class="stat-label">Calls remaining today</div>
-          <div class="stat-sub">Resets at midnight UTC</div>
+          <div class="stat-sub" id="stat-calls-sub">Resets at midnight UTC</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num">—</div>
+          <div class="stat-num" id="stat-plan">—</div>
           <div class="stat-label">Current plan</div>
-          <div class="stat-sub">Free tier</div>
+          <div class="stat-sub" id="stat-plan-sub">Loading…</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num">—</div>
+          <div class="stat-num" id="stat-review">—</div>
           <div class="stat-label">Review status</div>
-          <div class="stat-sub">No submissions yet</div>
+          <div class="stat-sub" id="stat-review-sub">Loading…</div>
         </div>
       </div>
 
@@ -441,18 +441,20 @@
 
     // Load plan from Firestore
     const snap = await getDoc(doc(db, 'users', user.uid));
+    let userData = null;
     if (snap.exists()) {
-      const data = snap.data();
-      const plan = data.isPremium ? 'LUMARA Premium'
-                 : data.plan === 'pro' ? 'SwarmSpace Pro'
+      userData = snap.data();
+      const plan = userData.isPremium ? 'LUMARA Premium'
+                 : userData.plan === 'pro' ? 'SwarmSpace Pro'
                  : 'Free tier · 20 calls/day';
       if (emailEl) emailEl.textContent = plan;
     }
 
     // Wire up features after auth
-    loadMyPlugins(user);
+    const pluginCount = await loadMyPlugins(user);
     wireApiKeyButtons(user);
     wireSubmitForm(user);
+    updateStatCards(userData, pluginCount);
   });
 
   // Sign out
@@ -471,7 +473,7 @@
         orderBy('created_at', 'desc')
       );
       const snapshot = await getDocs(q);
-      if (snapshot.empty) return; // keep existing empty state
+      if (snapshot.empty) return 0; // keep existing empty state
 
       container.style.textAlign = 'left';
       container.style.padding = '0';
@@ -502,8 +504,70 @@
         `;
         container.appendChild(card);
       });
+      return snapshot.size;
     } catch (err) {
       console.error('Failed to load plugins:', err);
+      return 0;
+    }
+  }
+
+  // ── Stat Cards ──
+  function updateStatCards(userData, pluginCount) {
+    // Plugins listed
+    const pluginsNum = document.getElementById('stat-plugins-count');
+    const pluginsSub = document.getElementById('stat-plugins-sub');
+    pluginsNum.textContent = String(pluginCount || 0);
+    pluginsSub.textContent = pluginCount > 0
+      ? (pluginCount === 1 ? '1 plugin submitted' : pluginCount + ' plugins submitted')
+      : 'Submit your first →';
+
+    // Calls remaining today
+    const callsNum = document.getElementById('stat-calls-remaining');
+    const callsSub = document.getElementById('stat-calls-sub');
+    if (userData) {
+      const limits = { free: 20, pro: 500, premium: 500 };
+      const plan = userData.isPremium ? 'premium' : (userData.plan || 'free');
+      const limit = limits[plan] || 20;
+      const used = userData.callsToday || 0;
+      const remaining = Math.max(0, limit - used);
+      callsNum.textContent = String(remaining);
+      callsNum.style.color = remaining > 5 ? 'var(--green)' : remaining > 0 ? 'var(--orange)' : '#FF6B6B';
+      callsSub.textContent = used + ' / ' + limit + ' used today';
+    } else {
+      callsNum.textContent = '20';
+      callsSub.textContent = 'Resets at midnight UTC';
+    }
+
+    // Current plan
+    const planNum = document.getElementById('stat-plan');
+    const planSub = document.getElementById('stat-plan-sub');
+    if (userData) {
+      const planLabels = { free: 'Free', pro: 'Pro', premium: 'Premium' };
+      const planKey = userData.isPremium ? 'premium' : (userData.plan || 'free');
+      planNum.textContent = planLabels[planKey] || 'Free';
+      planNum.style.color = planKey === 'free' ? 'var(--text)' : 'var(--purple)';
+      planSub.textContent = planKey === 'free' ? 'Free tier' : planKey === 'pro' ? '$15/mo' : '$20/mo';
+    } else {
+      planNum.textContent = 'Free';
+      planSub.textContent = 'Free tier';
+    }
+
+    // Review status — derive from most recent plugin
+    const reviewNum = document.getElementById('stat-review');
+    const reviewSub = document.getElementById('stat-review-sub');
+    if (pluginCount > 0) {
+      // Find most recent status from rendered plugin cards
+      const firstCard = document.querySelector('#my-plugins-container span');
+      const latestStatus = firstCard ? firstCard.textContent.trim() : 'pending';
+      const statusLabels = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
+      reviewNum.textContent = statusLabels[latestStatus] || latestStatus;
+      reviewNum.style.color = latestStatus === 'approved' ? 'var(--green)'
+                            : latestStatus === 'rejected' ? '#FF6B6B'
+                            : 'var(--orange)';
+      reviewSub.textContent = 'Latest submission';
+    } else {
+      reviewNum.textContent = '—';
+      reviewSub.textContent = 'No submissions yet';
     }
   }
 
