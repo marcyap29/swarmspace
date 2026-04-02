@@ -340,6 +340,7 @@
         email:      user.email,
         plan:       'free',
         isPremium:  false,
+        api_key:    'ss_' + crypto.randomUUID(),
         createdAt:  serverTimestamp(),
         callsToday: 0,
         callsReset: serverTimestamp(),
