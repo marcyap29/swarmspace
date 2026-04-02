@@ -6,7 +6,6 @@
 <title>SwarmSpace — Marketplace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #0a0b0d; --bg2: #0f1115; --bg3: #141720; --bg4: #1a1e27;
@@ -256,19 +255,26 @@
 <body>
 
 <!-- AUTH GATE: redirect if not logged in -->
-<script>
-  const SUPABASE_URL = 'https://hzboqpnmokhllvydknjz.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_s_4jnWqudwyHFv81Y7jmng_jxWnD_6a';
-  const { createClient } = supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  let currentUser = null;
-  sb.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  const app = initializeApp({
+    apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain:        "arc-epi.firebaseapp.com",
+    projectId:         "arc-epi",
+    storageBucket:     "arc-epi.firebasestorage.app",
+    messagingSenderId: "563971839074",
+    appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
+  });
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
       window.location.href = '/signup.html?next=marketplace';
     } else {
-      currentUser = session.user;
       const emailEl = document.getElementById('nav-user-email');
-      if (emailEl) emailEl.textContent = currentUser.email;
+      if (emailEl) emailEl.textContent = user.email;
     }
   });
 </script>
