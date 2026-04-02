@@ -466,17 +466,18 @@
 
   // TODO: Replace with your real Firebase config.
   const FIREBASE_CONFIG = {
-    apiKey: "REPLACE_ME",
-    authDomain: "REPLACE_ME.firebaseapp.com",
-    projectId: "REPLACE_ME",
-    storageBucket: "REPLACE_ME.appspot.com",
-    messagingSenderId: "REPLACE_ME",
-    appId: "REPLACE_ME"
+    apiKey: "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain: "arc-epi.firebaseapp.com",
+    projectId: "arc-epi",
+    storageBucket: "arc-epi.appspot.com",
+    messagingSenderId: "563971839074",
+    appId: "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
   };
 
   // Strict admin email allowlist (lowercase). Keep private.
   const ADMIN_EMAIL_ALLOWLIST = [
-    "admin@example.com"
+    "marcyap@orbitalai.net",
+    "marcyap@fastmail.com"
   ];
   const hasRealFirebaseConfig = Object.values(FIREBASE_CONFIG).every((value) => !String(value).startsWith("REPLACE_ME"));
   const hasConfiguredAdminEmail = ADMIN_EMAIL_ALLOWLIST.some((email) => String(email).toLowerCase() !== "admin@example.com");
