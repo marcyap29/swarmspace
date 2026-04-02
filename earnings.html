@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — Earnings</title>
+  <style>
+    :root {
+      --bg:#0A0A0F; --surface:#13131E; --surface2:#1A1A2C;
+      --border:#1E1E35; --purple:#5B5BD6; --green:#34D399;
+      --orange:#FB923C; --text:#E8E8F0; --muted:#7A7A9A; --dim:#44445A;
+      --mono:'JetBrains Mono','Fira Code',monospace;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; font-size:15px; line-height:1.6; min-height:100vh; }
+
+    /* ── NAV ── */
+    nav {
+      background:var(--surface); border-bottom:1px solid var(--border);
+      padding:0 32px; height:56px; display:flex; align-items:center;
+      justify-content:space-between; position:sticky; top:0; z-index:10;
+    }
+    .nav-logo { font-weight:800; font-size:16px; text-decoration:none; color:var(--text); }
+    .nav-links { display:flex; align-items:center; gap:20px; }
+    .nav-links a { font-size:13px; color:var(--muted); text-decoration:none; transition:color 0.15s; }
+    .nav-links a:hover { color:var(--text); }
+    .nav-signout { font-size:13px; color:var(--dim); cursor:pointer; background:none; border:none; }
+
+    /* ── CONTENT ── */
+    .content { max-width:900px; margin:0 auto; padding:32px; }
+    .page-title { font-size:20px; font-weight:700; margin-bottom:6px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+
+    /* ── CARDS GRID ── */
+    .stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:32px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; }
+    .stat-card .stat-num { font-size:28px; font-weight:800; }
+    .stat-card .stat-label { font-size:12px; color:var(--muted); margin-top:4px; }
+    .stat-card .stat-sub { font-size:11px; color:var(--dim); margin-top:4px; font-family:var(--mono); }
+
+    .section-head { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.08em; margin:32px 0 14px; }
+
+    /* ── CONNECT CARD ── */
+    .connect-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:28px; }
+    .connect-card h3 { font-size:15px; margin-bottom:6px; }
+    .connect-card p { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    .btn-connect {
+      display:inline-block; background:var(--purple); color:white; border:none;
+      border-radius:8px; padding:11px 22px; font-size:14px; font-weight:700;
+      cursor:pointer; text-decoration:none; transition:opacity 0.15s;
+    }
+    .btn-connect:hover { opacity:0.9; }
+    .badge-connected {
+      display:inline-block; font-size:11px; font-family:var(--mono); padding:4px 12px;
+      border-radius:20px; font-weight:600; background:rgba(52,211,153,0.15); color:var(--green);
+    }
+    .link-stripe {
+      font-size:13px; color:var(--purple); text-decoration:none; margin-left:12px;
+    }
+    .link-stripe:hover { text-decoration:underline; }
+
+    /* ── TABLE ── */
+    table { width:100%; border-collapse:collapse; }
+    th { text-align:left; font-size:11px; font-family:var(--mono); font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.06em; padding:10px 12px; border-bottom:1px solid var(--border); }
+    td { padding:11px 12px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border); }
+    tr:last-child td { border-bottom:none; }
+    .empty-state { text-align:center; padding:40px; color:var(--dim); font-size:13px; }
+
+    /* ── MERIT CARD ── */
+    .merit-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:28px; }
+    .merit-card h3 { font-size:15px; margin-bottom:6px; }
+    .merit-card p { font-size:13px; color:var(--muted); }
+    .merit-score { font-size:36px; font-weight:800; color:var(--purple); margin:12px 0 4px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">SwarmSpace</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <button class="nav-signout" onclick="doSignOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="page-title">Earnings</div>
+  <p class="page-sub">Track your revenue, manage payouts, and view your developer metrics.</p>
+
+  <!-- ── OVERVIEW CARDS ── -->
+  <div class="section-head">Overview</div>
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-total-earned">$0.00</div>
+      <div class="stat-label">Total earned</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-pending-payout" style="color:var(--orange);">$0.00</div>
+      <div class="stat-label">Pending payout</div>
+      <div class="stat-sub">Awaiting transfer</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-revenue-share" style="color:var(--purple);">80%</div>
+      <div class="stat-label">Revenue share</div>
+      <div class="stat-sub" id="stat-share-sub">Standard rate</div>
+    </div>
+  </div>
+
+  <!-- ── STRIPE CONNECT ── -->
+  <div class="section-head">Payout account</div>
+  <div class="connect-card">
+    <h3>Stripe Connect</h3>
+    <div id="connect-status">
+      <p>Connect your Stripe account to receive payouts for your plugin usage.</p>
+      <button class="btn-connect" id="btn-connect" onclick="connectStripe()">Connect Stripe account</button>
+    </div>
+    <div id="connect-connected" style="display:none;">
+      <span class="badge-connected">Connected</span>
+      <a class="link-stripe" href="https://dashboard.stripe.com/" target="_blank" rel="noopener">View Stripe Dashboard</a>
+    </div>
+  </div>
+
+  <!-- ── RECENT TRANSACTIONS ── -->
+  <div class="section-head">Recent transactions</div>
+  <div class="connect-card" style="padding:0;overflow:hidden;">
+    <table id="transactions-table">
+      <thead>
+        <tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr>
+      </thead>
+      <tbody id="transactions-body">
+      </tbody>
+    </table>
+    <div class="empty-state" id="transactions-empty">No transactions yet</div>
+  </div>
+
+  <!-- ── MERIT SCORE ── -->
+  <div class="section-head">Developer merit</div>
+  <div class="merit-card">
+    <h3>Merit score</h3>
+    <p>Your merit score reflects plugin quality, uptime, and user satisfaction.</p>
+    <div class="merit-score" id="merit-score-value">&mdash;</div>
+    <div style="font-size:11px;color:var(--dim);font-family:var(--mono);">Updated periodically</div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const app  = initializeApp({
+    apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain:        "arc-epi.firebaseapp.com",
+    projectId:         "arc-epi",
+    storageBucket:     "arc-epi.firebasestorage.app",
+    messagingSenderId: "563971839074",
+    appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
+  });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  let currentUser = null;
+
+  // Auth guard
+  onAuthStateChanged(auth, async user => {
+    if (!user) return window.location.href = '/signup.html';
+    currentUser = user;
+
+    // Load user doc for connect status
+    const userSnap = await getDoc(doc(db, 'users', user.uid));
+    const userData = userSnap.exists() ? userSnap.data() : {};
+
+    // Load developer doc for earnings
+    const devSnap = await getDoc(doc(db, 'developers', user.uid));
+    const devData = devSnap.exists() ? devSnap.data() : {};
+
+    // Earnings overview
+    const totalEarned = devData.total_earned || 0;
+    const pendingPayout = devData.pending_payout || 0;
+    const revenueShare = devData.revenue_share || 80;
+
+    document.getElementById('stat-total-earned').textContent =
+      '$' + (totalEarned / 100).toFixed(2);
+    document.getElementById('stat-pending-payout').textContent =
+      '$' + (pendingPayout / 100).toFixed(2);
+    document.getElementById('stat-revenue-share').textContent =
+      revenueShare + '%';
+    document.getElementById('stat-share-sub').textContent =
+      revenueShare >= 85 ? 'Founding developer rate' : 'Standard rate';
+
+    // Stripe Connect status
+    const connectId = userData.stripe_connect_id;
+    if (connectId) {
+      document.getElementById('connect-status').style.display = 'none';
+      document.getElementById('connect-connected').style.display = 'block';
+    }
+
+    // Merit score
+    const meritScore = devData.merit_score;
+    if (meritScore !== undefined && meritScore !== null) {
+      document.getElementById('merit-score-value').textContent = String(meritScore);
+    }
+  });
+
+  // Sign out
+  window.doSignOut = async function() {
+    await signOut(auth);
+    window.location.href = '/signup.html';
+  };
+
+  // Connect Stripe
+  window.connectStripe = async function() {
+    if (!currentUser) return;
+    const btn = document.getElementById('btn-connect');
+    btn.textContent = 'Connecting...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/create-connect-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: currentUser.email,
+          firebaseUid: currentUser.uid
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Failed to create Connect account');
+        btn.textContent = 'Connect Stripe account';
+        btn.disabled = false;
+      }
+    } catch (err) {
+      console.error('Connect failed:', err);
+      alert('Something went wrong. Please try again.');
+      btn.textContent = 'Connect Stripe account';
+      btn.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>

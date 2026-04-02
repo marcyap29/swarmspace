@@ -136,16 +136,43 @@ export default async function handler(req) {
 
       case 'checkout.session.completed': {
         const session = event.data.object;
-        if (session.mode !== 'subscription') break;
 
-        // Save stripe_customer_id and subscription_id, upgrade plan
-        await updateUser(session.customer, {
-          stripe_customer_id: session.customer,
-          stripe_subscription_id: session.subscription,
-          plan: 'verified',
-          plan_status: 'active',
-          isPremium: false
-        }, session);
+        if (session.mode === 'subscription') {
+          // Save stripe_customer_id and subscription_id, upgrade plan
+          await updateUser(session.customer, {
+            stripe_customer_id: session.customer,
+            stripe_subscription_id: session.subscription,
+            plan: 'verified',
+            plan_status: 'active',
+            isPremium: false
+          }, session);
+        }
+
+        if (session.mode === 'payment') {
+          // Credit top-up: read credits from metadata
+          const credits = parseInt(session.metadata?.credits || '0', 10);
+          const firebaseUid = session.client_reference_id;
+          if (credits > 0 && firebaseUid) {
+            // Read current credits from Firestore, add the new credits
+            const docPath = userDocPath(firebaseUid);
+            const currentDoc = await fetch(
+              `https://firestore.googleapis.com/v1/${docPath}?key=${apiKey}`,
+              { method: 'GET' }
+            );
+            let currentCredits = 0;
+            if (currentDoc.ok) {
+              const data = await currentDoc.json();
+              const creditsField = data.fields?.credits;
+              if (creditsField?.integerValue) currentCredits = parseInt(creditsField.integerValue, 10);
+            }
+            await patchDocument(docPath, {
+              credits: currentCredits + credits,
+              last_credit_purchase: new Date().toISOString(),
+              last_credit_bundle: session.metadata?.bundle_id || 'unknown'
+            });
+          }
+        }
+
         break;
       }
 
