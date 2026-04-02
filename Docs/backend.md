@@ -6,22 +6,29 @@
 
 ## Overview
 
-SwarmSpace is a static web app with serverless API endpoints. Auth and database via Supabase; payments via Stripe; hosting on Vercel.
+SwarmSpace is a static web app with serverless API endpoints. Auth and database via Firebase; payments via Stripe; hosting on Vercel.
 
 ---
 
-## Database (Supabase)
+## Database (Firestore)
 
-### developers table
+### `users/{uid}` collection
 
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid | FK to auth.users |
-| email | text | |
-| plan | text | `free` \| `verified` |
-| developer_mode | boolean | Default false; API consumer vs Developer mode |
-| developer_accepted_terms_at | timestamptz | When dev mode was enabled |
-| api_key | text | Auto-generated on signup (`ss_` prefix), unique |
+| Field | Type | Notes |
+|-------|------|-------|
+| email | string | |
+| plan | string | `free` \| `verified` |
+| isPremium | boolean | Whether user has premium access |
+| api_key | string | Auto-generated on signup (`ss_` prefix), unique |
+| createdAt | timestamp | Account creation time |
+| callsToday | number | API calls made today |
+| callsReset | timestamp | When callsToday was last reset |
+
+### `submissions` collection
+Plugin submissions from developers.
+
+### `plugins` collection
+Plugin registry.
 
 ---
 
@@ -29,7 +36,7 @@ SwarmSpace is a static web app with serverless API endpoints. Auth and database 
 
 | Service | Purpose | Tech |
 |---------|---------|------|
-| Supabase | Auth, database (developers, plugins) | Supabase |
+| Firebase | Auth, database (users, submissions, plugins) | Firebase Authentication, Firestore |
 | Stripe | Checkout, subscriptions, webhooks | Stripe API |
 | Vercel | Hosting, serverless functions | Vercel |
 | API (external) | swarmspaceRouter, swarmspacePluginStatus | Firebase Cloud Functions |
@@ -88,9 +95,8 @@ service cloud.firestore {
 
 ## Environment & Config
 
-- **Env vars (Vercel):** STRIPE_SECRET_KEY, STRIPE_VERIFIED_PRICE_ID, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, APP_URL
+- **Env vars (Vercel):** STRIPE_SECRET_KEY, STRIPE_VERIFIED_PRICE_ID, STRIPE_WEBHOOK_SECRET, FIREBASE_PROJECT_ID, FIREBASE_API_KEY, APP_URL
 - **Secrets:** Never commit API keys. Add via Vercel env vars or locally.
-- **Supabase:** Replace SUPABASE_URL and SUPABASE_ANON_KEY in signup.html and dashboard.html.
 
 ---
 

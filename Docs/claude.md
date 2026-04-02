@@ -13,13 +13,13 @@
 | Document | Purpose | Path |
 |----------|---------|------|
 | **overview.md** | SwarmSpace purpose, flow, and orientation for users/agents | `overview.md` |
-| **README.md** | Setup guide (Supabase, Stripe, Vercel) | `README.md` |
+| **README.md** | Setup guide (Firebase, Stripe, Vercel) | `README.md` |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | `SWARMSPACE_API_CONTEXT.md` |
 | **architecture.md** | SwarmStore architecture & hosting | `architecture.md` |
 | **Docs/CONFIGURATION_MANAGEMENT.md** | Docs inventory and change tracking | `Docs/CONFIGURATION_MANAGEMENT.md` |
 | **Docs/CHANGELOG.md** | Version history | `Docs/CHANGELOG.md` |
 | **Docs/FEATURES.md** | Feature list | `Docs/FEATURES.md` |
-| **Docs/backend.md** | Backend (API, Vercel, Supabase) | `Docs/backend.md` |
+| **Docs/backend.md** | Backend (API, Vercel, Firebase) | `Docs/backend.md` |
 | **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
 | **Documentation, Config & Git Backup** | Universal prompt for docs, config, and backup sync | This file: section below |
 
@@ -29,11 +29,11 @@
 
 ### 📖 SwarmSpace Overview
 - **overview.md** — Purpose, user flow, account model, orientation for users and AI agents.
-- **README.md** — Setup, deploy, test flow. Supabase, Stripe, Vercel env vars.
+- **README.md** — Setup, deploy, test flow. Firebase, Stripe, Vercel env vars.
 - **SWARMSPACE_API_CONTEXT.md** — Endpoints (swarmspaceRouter, swarmspacePluginStatus), tiers (Free/Standard/Premium), request schemas. Auth: Firebase ID token. Never commit API keys.
 
 ### 🏗️ Architecture
-- **architecture.md** — SwarmStore plugin format, hosting (Cloudflare Workers/R2/D1), security protocols. Broader vision; current app is Vercel + Supabase + Stripe.
+- **architecture.md** — SwarmStore plugin format, hosting (Cloudflare Workers/R2/D1), security protocols. Broader vision; current app is Vercel + Firebase + Stripe.
 
 ### 📁 File Structure
 ```
@@ -41,7 +41,7 @@ swarmspace/
 ├── overview.md         ← Orientation for users and agents
 ├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html
 ├── api/create-checkout.js, api/stripe-webhook.js
-├── supabase-setup.sql, vercel.json
+├── vercel.json
 ├── SWARMSPACE_API_CONTEXT.md, architecture.md
 └── Docs/
     ├── claude.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
