@@ -636,10 +636,10 @@
 
     let snapshot = null;
     try {
-      snapshot = await getDocs(query(collection(db, "plugin_submissions"), orderBy("submitted_at", "desc")));
+      snapshot = await getDocs(query(collection(db, "submissions"), orderBy("submitted_at", "desc")));
     } catch (firstError) {
       try {
-        snapshot = await getDocs(query(collection(db, "plugin_submissions"), orderBy("created_at", "desc")));
+        snapshot = await getDocs(query(collection(db, "submissions"), orderBy("created_at", "desc")));
       } catch (fallbackError) {
         showMsg("Failed to load submissions. Check Firestore indexes/rules and config.", "error");
         renderLoadError();
@@ -655,12 +655,17 @@
       rows.push({
         id: item.id,
         status,
-        pluginName: resolveField(data, ["plugin_name", "name", "title"], "Untitled Plugin"),
-        submittedBy: resolveField(data, ["submitter_email", "email", "developer_email", "owner_email"], data.submitted_by?.email || data.contact?.email || "-"),
-        endpoint: resolveField(data, ["endpoint", "endpoint_url", "api_endpoint", "url"], "-"),
-        useCase: resolveField(data, ["use_case", "useCase"], ""),
+        pluginName: resolveField(data, ["name", "plugin_name", "title"], "Untitled Plugin"),
+        submittedBy: resolveField(data, ["submitterEmail", "submitter_email", "email", "developer_email", "owner_email"], data.contactEmail || data.submitted_by?.email || data.contact?.email || "-"),
+        endpoint: resolveField(data, ["manifestUrl", "endpoint", "endpoint_url", "api_endpoint", "url"], "-"),
+        useCase: resolveField(data, ["useCase", "use_case"], ""),
         description: resolveField(data, ["description", "capability", "summary"], ""),
-        manifest: resolveField(data, ["manifest_json", "manifest", "manifest_text"], ""),
+        trustTier: resolveField(data, ["trustTier", "trust_tier"], ""),
+        pricingModel: resolveField(data, ["pricingModel", "pricing"], ""),
+        authMethod: resolveField(data, ["authMethod", "auth_method"], ""),
+        website: resolveField(data, ["website"], ""),
+        tags: data.tags || [],
+        manifest: resolveField(data, ["manifestUrl", "manifest_json", "manifest", "manifest_text"], ""),
         notes: resolveField(data, ["notes", "admin_notes", "submitter_notes"], ""),
         reviewNote: resolveField(data, ["review_note"], ""),
         reviewedAt: resolveField(data, ["reviewed_at"], ""),
@@ -690,6 +695,11 @@
         item.status,
         item.description,
         item.useCase,
+        item.trustTier,
+        item.pricingModel,
+        item.authMethod,
+        item.website,
+        Array.isArray(item.tags) ? item.tags.join(" ") : item.tags,
         item.notes,
         item.reviewNote,
         item.reviewedBy
@@ -899,12 +909,16 @@
 
         details.appendChild(makeDetailBlock("Description", item.description));
         details.appendChild(makeDetailBlock("Use case", item.useCase));
-        details.appendChild(makeDetailBlock("Endpoint", item.endpoint));
+        details.appendChild(makeDetailBlock("Trust tier", item.trustTier));
+        details.appendChild(makeDetailBlock("Pricing model", item.pricingModel));
+        details.appendChild(makeDetailBlock("Auth method", item.authMethod));
+        details.appendChild(makeDetailBlock("Website", item.website));
+        details.appendChild(makeDetailBlock("Tags", Array.isArray(item.tags) ? item.tags.join(", ") : item.tags));
+        details.appendChild(makeDetailBlock("Manifest URL", item.endpoint));
         details.appendChild(makeDetailBlock("Submitter notes", item.notes));
         details.appendChild(makeDetailBlock("Review note", item.reviewNote));
         details.appendChild(makeDetailBlock("Reviewed by", item.reviewedBy));
         details.appendChild(makeDetailBlock("Reviewed at", displayDate(item.reviewedAt)));
-        details.appendChild(makeDetailBlock("Manifest JSON", safeManifestText(item.manifest), true));
 
         detailCell.appendChild(details);
         detailRow.appendChild(detailCell);
@@ -926,7 +940,7 @@
     setLoading(true);
     clearMsg();
     try {
-      const ref = doc(db, "plugin_submissions", item.id);
+      const ref = doc(db, "submissions", item.id);
       await updateDoc(ref, {
         status,
         review_note: note.trim(),
