@@ -289,16 +289,14 @@
             <div class="form-row">
               <label class="form-label">Category</label>
               <select class="form-input" id="dash-plugin-category">
-                <option>Select category</option>
-                <option>Health</option>
-                <option>Finance</option>
-                <option>Productivity</option>
-                <option>Research</option>
-                <option>Communication</option>
-                <option>Developer Tools</option>
-                <option>Data & Analytics</option>
-                <option>Creative</option>
-                <option>Other</option>
+                <option value="">Select category</option>
+                <option value="health">Health</option>
+                <option value="finance">Finance</option>
+                <option value="productivity">Productivity</option>
+                <option value="research">Research</option>
+                <option value="communication">Communication</option>
+                <option value="developer-tools">Developer Tools</option>
+                <option value="other">Other</option>
               </select>
             </div>
           </div>
@@ -313,18 +311,19 @@
             <div class="form-row">
               <label class="form-label">Trust tier requested</label>
               <select class="form-input" id="dash-plugin-tier">
-                <option>Experimental — no review needed</option>
-                <option>Community — safety review</option>
-                <option>Verified — merit review (earned, not paid)</option>
+                <option value="experimental">Experimental</option>
+                <option value="community">Community</option>
+                <option value="verified">Verified</option>
               </select>
             </div>
             <div class="form-row">
               <label class="form-label">Pricing model</label>
               <select class="form-input" id="dash-plugin-pricing">
-                <option>Free</option>
-                <option>Usage-based (credits)</option>
-                <option>Subscription</option>
-                <option>Custom / contact us</option>
+                <option value="">Select pricing</option>
+                <option value="free">Free</option>
+                <option value="usage">Usage-based</option>
+                <option value="subscription">Subscription</option>
+                <option value="custom">Custom / contact us</option>
               </select>
             </div>
           </div>
@@ -339,10 +338,11 @@
             <div class="form-row">
               <label class="form-label">Auth method</label>
               <select class="form-input" id="dash-auth-method">
-                <option>None</option>
-                <option>API key</option>
-                <option>OAuth 2.0</option>
-                <option>Firebase ID token</option>
+                <option value="">Select auth method</option>
+                <option value="none">None</option>
+                <option value="api-key">API key</option>
+                <option value="oauth2">OAuth 2.0</option>
+                <option value="firebase-token">Firebase ID token</option>
               </select>
             </div>
             <div class="form-row">
