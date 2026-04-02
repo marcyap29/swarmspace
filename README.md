@@ -6,26 +6,20 @@ Get live in ~20 minutes.
 
 ---
 
-## 1. Supabase
+## 1. Firebase
 
-1. Go to https://supabase.com → New project
-2. Save your **Project URL** and **anon public key** (Settings → API)
-3. Go to **SQL Editor** → paste and run `supabase-setup.sql`
-4. Go to **Authentication → Providers** and enable:
-   - **Google** — Supabase provides a default client; or use your own OAuth 2.0 credentials from [Google Cloud Console](https://console.cloud.google.com/apis/credentials) (Authorized redirect URI: `https://YOUR_SUPABASE_PROJECT.supabase.co/auth/v1/callback`)
-   - **GitHub** (optional) — Create an OAuth app at https://github.com/settings/developers; callback URL: `https://YOUR_SUPABASE_PROJECT.supabase.co/auth/v1/callback`
-
-5. Replace in `signup.html`, `dashboard.html`, and `reset-password.html`:
-   ```
-   const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-   const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-   ```
-
-6. **Password reset:** In Supabase → **Authentication → URL Configuration**, add your app URL to **Redirect URLs**, e.g. `https://your-domain.vercel.app/reset-password.html`, so “Forgot password?” emails point to your site.
+1. Go to [Firebase Console](https://console.firebase.google.com/) → select project **arc-epi** (or create it)
+2. Enable **Authentication** with providers: Google, GitHub, email/password
+3. Enable **Cloud Firestore** with the following collections:
+   - `users/{uid}` — fields: `email`, `plan`, `isPremium`, `api_key`, `createdAt`, `callsToday`, `callsReset`
+   - `submissions` — plugin submissions
+   - `plugins` — plugin registry
+4. In **Project settings → General → Your apps (Web app)**, copy your Firebase web config
+5. Add your Firebase config to each page that requires auth (e.g. `signup.html`, `dashboard.html`)
 
 ---
 
-## 1.5 Firebase (submit/admin flow for `plugin_submissions`)
+## 1.5 Firebase Submit/Admin Flow (`plugin_submissions`)
 
 Use this if you are wiring a Firebase-backed plugin submission flow (submit page + admin review page). Keep this setup in the page script itself (or a shared JS module), and do not commit secrets.
 
@@ -120,8 +114,8 @@ In your Vercel project → Settings → Environment Variables, add:
 | `STRIPE_SECRET_KEY` | `sk_live_...` |
 | `STRIPE_VERIFIED_PRICE_ID` | `price_...` |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` |
-| `SUPABASE_URL` | `https://xxx.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | your service role key (Settings → API) |
+| `FIREBASE_PROJECT_ID` | `arc-epi` |
+| `FIREBASE_API_KEY` | your Firebase API key (Project settings → General) |
 | `APP_URL` | `https://your-vercel-domain.vercel.app` |
 
 ---
@@ -145,12 +139,12 @@ vercel --prod
 
 1. Go to `/signup.html` → create an account
 2. You’ll land on `/dashboard.html` (API key visible)
-3. Check Supabase → Authentication → Users (you should see the new user)
-4. Check Supabase → Table Editor → developers (auto-created row with `api_key`; `developer_mode` for plugin submitters)
+3. Check Firebase Console → Authentication → Users (you should see the new user)
+4. Check Firestore → `users/{uid}` (auto-created doc with `api_key`)
 5. Go to `/dashboard.html` → enable developer mode to submit a plugin
 6. Click Upgrade → Verified → you'll land in Stripe Checkout (test mode)
 7. Use Stripe test card: `4242 4242 4242 4242`, any expiry/CVC
-8. After success, check developers table — plan should update to `verified`
+8. After success, check Firestore `users/{uid}` doc — plan should update to `verified`
 
 ---
 
@@ -167,7 +161,7 @@ swarmspace/
 ├── dashboard.html      ← Developer dashboard
 ├── marketplace.html    ← Plugin marketplace
 ├── thankyou.html       ← Post-signup (marketplace preview)
-├── reset-password.html ← Complete password reset from Supabase email link
+├── reset-password.html ← Complete password reset from Firebase email link
 ├── faq.html            ← FAQ
 ├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
 ├── .cursorrules        ← Cursor rules (API context, tiers, never commit keys)
@@ -178,7 +172,6 @@ swarmspace/
 ├── api/
 │   ├── create-checkout.js   ← Stripe checkout session
 │   └── stripe-webhook.js    ← Stripe event handler
-├── supabase-setup.sql  ← Run once in Supabase SQL editor
 ├── vercel.json         ← URL rewrites
 └── README.md
 ```

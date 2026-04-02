@@ -12,7 +12,7 @@
 
 ## Auth & Secrets
 
-- [ ] Auth enforced server-side for sensitive operations (Supabase)
+- [ ] Auth enforced server-side for sensitive operations (Firebase)
 - [ ] API keys in env vars or secure secrets (not in repo)
 - [ ] Stripe webhook signature verified (STRIPE_WEBHOOK_SECRET)
 - [ ] Token refresh and expiry handled correctly
@@ -35,6 +35,6 @@
 
 ## SwarmSpace-Specific
 
-- [ ] Supabase URL and anon key in client (anon key is public; RLS protects data)
-- [ ] SUPABASE_SERVICE_ROLE_KEY only in server env (Vercel)
+- [ ] Firebase API key in client (Security Rules protect data)
+- [ ] Firebase service credentials only in server env (Vercel)
 - [ ] Stripe webhook events validate signature before processing
