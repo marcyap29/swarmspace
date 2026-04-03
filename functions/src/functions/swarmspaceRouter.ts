@@ -22,7 +22,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { enforceAuth, isAdminEmail } from "../authGuard";
 import { loadUserLlmSettings } from "../userLlmSettings";
 import { LLM_SETTINGS_ENCRYPTION_KEY } from "../config";
@@ -115,6 +115,63 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     description: "Latest news and headlines (NewsData.io)",
     exampleQuery: "Top tech news today",
   },
+  // ── New free tier plugins ──────────────────────────────────────────────────
+  "arxiv": {
+    workerUrl: "https://swarmspace-plugin-arxiv.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["academic_search", "preprints", "research"],
+    description: "Scientific preprints from arXiv",
+    exampleQuery: "Recent LLM alignment papers",
+  },
+  "pubmed": {
+    workerUrl: "https://swarmspace-plugin-pubmed.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["biomedical", "research", "clinical"],
+    description: "Biomedical literature from PubMed/NCBI",
+    exampleQuery: "Sleep and HRV studies",
+  },
+  "nominatim": {
+    workerUrl: "https://swarmspace-plugin-nominatim.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["geocoding", "location", "maps"],
+    description: "Geocoding via OpenStreetMap",
+    exampleQuery: "Coords for La Jolla, CA",
+  },
+  "rest-countries": {
+    workerUrl: "https://swarmspace-plugin-rest-countries.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["geography", "country_data", "reference"],
+    description: "Country data and geography",
+    exampleQuery: "Info about Japan",
+  },
+  "github-public": {
+    workerUrl: "https://swarmspace-plugin-github-public.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["developer_tools", "repositories", "open_source"],
+    description: "Public GitHub repo and developer data",
+    exampleQuery: "Stars on bytedance/deer-flow",
+  },
+  "hackernews": {
+    workerUrl: "https://swarmspace-plugin-hackernews.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["tech_news", "community", "discussions"],
+    description: "Tech community discussions from Hacker News",
+    exampleQuery: "HN posts about MCP today",
+  },
+  "dictionary-api": {
+    workerUrl: "https://swarmspace-plugin-dictionary-api.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["language", "definitions", "reference"],
+    description: "Word definitions and etymology",
+    exampleQuery: "Define interoperability",
+  },
+  "jina-reader": {
+    workerUrl: "https://swarmspace-plugin-jina-reader.orbitalai.workers.dev",
+    requiredTier: "free",
+    capabilities: ["url_fetch", "content_extraction", "reading"],
+    description: "Fetch and extract any URL content",
+    exampleQuery: "Read https://example.com",
+  },
   // ── Standard tier ($30/mo) ─────────────────────────────────────────────────
   "vision-ocr": {
     workerUrl: "https://us-central1-arc-epi.cloudfunctions.net/visionOcrInvoke",
@@ -204,6 +261,87 @@ function effectiveUserTier(
   return resolved;
 }
 
+// ── Credit enforcement ─────────────────────────────────────────────────────────
+const SWARMSPACE_USAGE_COLLECTION = "swarmspace_usage";
+
+const TIER_DAILY_LIMITS: Record<Tier, number> = {
+  free: 20,
+  standard: 500,
+  premium: 500,
+};
+
+interface QuotaInfo {
+  limit: number;
+  used: number;
+  remaining: number;
+  resets_at: string;
+}
+
+async function enforceSwarmSpaceQuota(
+  userId: string,
+  userTier: Tier,
+  isAdmin: boolean
+): Promise<QuotaInfo> {
+  if (isAdmin) {
+    return { limit: -1, used: 0, remaining: -1, resets_at: "" };
+  }
+
+  const db = getFirestore();
+  const limit = TIER_DAILY_LIMITS[userTier] ?? TIER_DAILY_LIMITS.free;
+  const usageRef = db.collection(SWARMSPACE_USAGE_COLLECTION).doc(`${userId}_daily`);
+
+  const now = new Date();
+  const todayMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const tomorrowMidnight = new Date(todayMidnight.getTime() + 24 * 60 * 60 * 1000);
+
+  const usageDoc = await usageRef.get();
+  let currentCount = 0;
+  let needsReset = false;
+
+  if (usageDoc.exists) {
+    const data = usageDoc.data()!;
+    const windowStart = data.windowStart;
+    if (windowStart && typeof windowStart.toMillis === "function") {
+      if (windowStart.toMillis() < todayMidnight.getTime()) {
+        needsReset = true;
+      } else {
+        currentCount = data.count || 0;
+      }
+    } else {
+      needsReset = true;
+    }
+  } else {
+    needsReset = true;
+  }
+
+  if (currentCount >= limit) {
+    logger.warn(`SwarmSpace quota exceeded: user=${userId} tier=${userTier} used=${currentCount}/${limit}`);
+    throw new HttpsError(
+      "resource-exhausted",
+      `Daily call limit reached (${currentCount}/${limit}). Resets at midnight UTC.`,
+      {
+        quota: { limit, used: currentCount, remaining: 0, resets_at: tomorrowMidnight.toISOString() },
+        upgrade_url: "https://swarmspace.ai/upgrade",
+      }
+    );
+  }
+
+  if (needsReset) {
+    await usageRef.set({ userId, count: 1, windowStart: todayMidnight, updatedAt: FieldValue.serverTimestamp() });
+    currentCount = 1;
+  } else {
+    await usageRef.update({ count: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() });
+    currentCount += 1;
+  }
+
+  const remaining = Math.max(0, limit - currentCount);
+  if (remaining > 0 && currentCount >= limit * 0.8) {
+    logger.info(`SwarmSpace quota 80% warning: user=${userId} tier=${userTier} used=${currentCount}/${limit}`);
+  }
+
+  return { limit, used: currentCount, remaining, resets_at: tomorrowMidnight.toISOString() };
+}
+
 // ── Activity log (PRISM Phase 1) ───────────────────────────────────────────────
 // Fire-and-forget write to Firestore so every plugin call is recorded for Activity tab.
 function writePluginActivityLog(entry: {
@@ -272,6 +410,11 @@ export const swarmspaceRouter = onCall(
     logger.info(
       `SwarmSpace router: user=${userId} tier=${userTier} plugin=${plugin_id}`
     );
+
+    // Step 4a: Enforce daily call quota (atomic check-increment-or-block)
+    const requestEmail = request.auth?.token?.email as string | undefined;
+    const isAdminUser = isAdminEmail(requestEmail);
+    const quota = await enforceSwarmSpaceQuota(userId, userTier, isAdminUser);
 
     // Step 4b: For LLM plugins, pass user's API key if they have custom config
     let paramsToSend = params ?? {};
@@ -418,8 +561,12 @@ export const swarmspaceRouter = onCall(
       result: "success",
     });
 
-    // Return the worker's response body to LUMARA
-    return workerBody;
+    // Return the worker's response body to LUMARA with quota info
+    const responseWithQuota = {
+      ...(typeof workerBody === "object" && workerBody !== null ? workerBody : { data: workerBody }),
+      quota,
+    };
+    return responseWithQuota;
   }
 );
 
