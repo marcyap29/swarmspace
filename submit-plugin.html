@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — Submit a Plugin</title>
+  <style>
+    :root {
+      --bg:#0A0A0F; --surface:#13131E; --surface2:#1A1A2C;
+      --border:#1E1E35; --purple:#5B5BD6; --green:#34D399;
+      --orange:#FB923C; --text:#E8E8F0; --muted:#7A7A9A; --dim:#44445A;
+      --mono:'JetBrains Mono','Fira Code',monospace;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; font-size:15px; line-height:1.6; min-height:100vh; }
+
+    /* ── NAV BAR ── */
+    .navbar {
+      background:var(--surface); border-bottom:1px solid var(--border);
+      padding:0 32px; height:56px; display:flex; align-items:center;
+      justify-content:space-between; position:sticky; top:0; z-index:10;
+    }
+    .navbar-logo { font-weight:800; font-size:16px; color:var(--text); text-decoration:none; }
+    .navbar-right { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .navbar-link { font-size:13px; color:var(--muted); text-decoration:none; transition:color 0.15s; }
+    .navbar-link:hover { color:var(--text); }
+    .navbar-plan { font-family:var(--mono); font-size:11px; color:var(--purple); background:rgba(91,91,214,0.12); border:1px solid rgba(91,91,214,0.25); padding:4px 12px; border-radius:20px; }
+    .navbar-signout { font-size:13px; color:var(--dim); cursor:pointer; text-decoration:none; }
+    .navbar-signout:hover { color:var(--text); }
+
+    /* ── CONTENT ── */
+    .content { padding:32px; max-width:860px; margin:0 auto; }
+    .page-title { font-size:24px; font-weight:800; margin-bottom:6px; }
+    .page-subtitle { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:32px; }
+
+    .section-head { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.08em; margin:40px 0 14px; }
+
+    /* ── FORM CARD ── */
+    .submit-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px; }
+    .form-row { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+    .form-label { font-size:12px; font-weight:600; color:var(--muted); font-family:var(--mono); }
+    .form-input {
+      background:var(--bg); border:1px solid var(--border); border-radius:8px;
+      padding:10px 14px; color:var(--text); font-size:14px; font-family:inherit;
+      transition:border-color 0.15s; outline:none; width:100%;
+    }
+    .form-input:focus { border-color:var(--purple); }
+    .form-input::placeholder { color:var(--dim); }
+    select.form-input { cursor:pointer; }
+    select.form-input option { background:var(--surface); }
+    textarea.form-input { min-height:80px; resize:vertical; }
+    .form-note { font-size:12px; color:var(--dim); line-height:1.5; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:640px){ .form-grid { grid-template-columns:1fr; } }
+
+    /* ── CHECKBOX ── */
+    .checkbox-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:16px; }
+    .checkbox-row input[type="checkbox"] {
+      appearance:none; -webkit-appearance:none; width:18px; height:18px; min-width:18px;
+      border:1px solid var(--border); border-radius:4px; background:var(--bg);
+      cursor:pointer; position:relative; margin-top:2px; transition:all 0.15s;
+    }
+    .checkbox-row input[type="checkbox"]:checked {
+      background:var(--purple); border-color:var(--purple);
+    }
+    .checkbox-row input[type="checkbox"]:checked::after {
+      content:''; position:absolute; left:5px; top:2px; width:5px; height:9px;
+      border:solid white; border-width:0 2px 2px 0; transform:rotate(45deg);
+    }
+    .checkbox-row label { font-size:13px; color:var(--muted); line-height:1.5; cursor:pointer; }
+
+    /* ── BUTTONS ── */
+    .btn-submit {
+      background:var(--purple); color:white; border:none; border-radius:8px;
+      padding:12px 24px; font-size:14px; font-weight:700; cursor:pointer;
+      transition:opacity 0.15s;
+    }
+    .btn-submit:hover { opacity:0.9; }
+    .btn-submit:disabled { opacity:0.5; cursor:not-allowed; }
+
+    /* ── MESSAGES ── */
+    .msg-box {
+      border-radius:8px; padding:14px 18px; margin-bottom:20px;
+      font-size:13px; line-height:1.6; display:none;
+    }
+    .msg-box.error { background:rgba(255,107,107,0.08); border-left:3px solid #FF6B6B; color:#FF8A8A; }
+    .msg-box.success { background:rgba(52,211,153,0.08); border-left:3px solid var(--green); color:var(--green); }
+    .msg-box.warning { background:rgba(251,146,60,0.08); border-left:3px solid var(--orange); color:var(--orange); }
+    .msg-box.visible { display:block; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th { text-align:left; font-size:11px; font-family:var(--mono); font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:0.06em; padding:10px 12px; border-bottom:1px solid var(--border); }
+    td { padding:11px 12px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border); }
+    tr:last-child td { border-bottom:none; }
+
+    .status-badge {
+      display:inline-block; font-size:10px; font-family:var(--mono);
+      padding:2px 8px; border-radius:10px; font-weight:600;
+    }
+    .badge-pending { background:rgba(251,146,60,0.15); color:var(--orange); }
+    .badge-approved { background:rgba(52,211,153,0.15); color:var(--green); }
+    .badge-rejected { background:rgba(255,107,107,0.15); color:#FF6B6B; }
+
+    .review-notes {
+      font-size:12px; color:#FF8A8A; margin-top:4px; padding:6px 10px;
+      background:rgba(255,107,107,0.06); border-radius:6px; line-height:1.5;
+    }
+
+    .empty-state {
+      text-align:center; padding:40px 20px; color:var(--muted); font-size:14px;
+    }
+
+    /* ── SUCCESS PANEL ── */
+    .success-panel {
+      background:rgba(52,211,153,0.06); border:1px solid rgba(52,211,153,0.2);
+      border-radius:12px; padding:24px; text-align:center; display:none;
+    }
+    .success-panel.visible { display:block; }
+    .success-panel h3 { font-size:16px; color:var(--green); margin-bottom:8px; }
+    .success-panel p { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:6px; }
+    .success-panel a { color:var(--purple); text-decoration:none; font-weight:600; font-size:14px; }
+    .success-panel a:hover { text-decoration:underline; }
+
+    /* ── RESPONSIVE NAV ── */
+    @media(max-width:640px){
+      .navbar { padding:0 16px; height:auto; min-height:56px; flex-wrap:wrap; gap:8px; padding-top:12px; padding-bottom:12px; }
+      .content { padding:20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV BAR ── -->
+<nav class="navbar">
+  <a href="/" class="navbar-logo">SwarmSpace</a>
+  <div class="navbar-right">
+    <a href="/" class="navbar-link">Home</a>
+    <a href="dashboard.html" class="navbar-link">Dashboard</a>
+    <span class="navbar-plan" id="nav-plan">Loading...</span>
+    <a class="navbar-signout" id="btn-signout">Sign out</a>
+  </div>
+</nav>
+
+<!-- ── CONTENT ── -->
+<div class="content">
+
+  <h1 class="page-title">Submit a Plugin</h1>
+  <p class="page-subtitle">Share your capability with the SwarmSpace ecosystem. Plugins are reviewed within 2-3 business days.</p>
+
+  <!-- ── FORM ── -->
+  <div class="submit-card" id="form-card">
+
+    <!-- Messages -->
+    <div class="msg-box error" id="msg-error"></div>
+    <div class="msg-box warning" id="msg-warning"></div>
+    <div class="msg-box success" id="msg-success"></div>
+
+    <!-- Success panel (shown after submission) -->
+    <div class="success-panel" id="success-panel">
+      <h3>Plugin submitted for review</h3>
+      <p>You'll receive an email when it's approved.</p>
+      <p style="font-size:12px;color:var(--dim);">Initial safety review typically takes 2-3 business days.</p>
+      <div style="margin-top:16px;">
+        <a href="dashboard.html">View your dashboard &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form id="plugin-form" novalidate>
+
+      <!-- Row 1: Name + Category -->
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label" for="f-name">Plugin name *</label>
+          <input class="form-input" id="f-name" type="text" required maxlength="60" placeholder="e.g. WeatherKit Pro" />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="f-category">Category *</label>
+          <select class="form-input" id="f-category" required>
+            <option value="">Select category</option>
+            <option value="Research">Research</option>
+            <option value="Productivity">Productivity</option>
+            <option value="Finance">Finance</option>
+            <option value="Health">Health</option>
+            <option value="Creative">Creative</option>
+            <option value="Developer Tools">Developer Tools</option>
+            <option value="Communication">Communication</option>
+            <option value="Data">Data</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-row">
+        <label class="form-label" for="f-description">Description * <span style="color:var(--dim);font-weight:400;">(min 50 chars)</span></label>
+        <textarea class="form-input" id="f-description" required minlength="50" maxlength="500" placeholder="Plain English -- this is what agents search for. Be specific about what the plugin does, what it returns, and when to use it."></textarea>
+        <div class="form-note">Agents query SwarmSpace in natural language. This description is what they read to decide whether to call your plugin.</div>
+      </div>
+
+      <!-- Agent guidance -->
+      <div class="form-row">
+        <label class="form-label" for="f-guidance">Agent guidance <span style="color:var(--dim);font-weight:400;">(optional, max 300)</span></label>
+        <textarea class="form-input" id="f-guidance" maxlength="300" placeholder="When and how agents should use this plugin"></textarea>
+      </div>
+
+      <!-- Endpoint URL -->
+      <div class="form-row">
+        <label class="form-label" for="f-endpoint">Endpoint URL *</label>
+        <input class="form-input" id="f-endpoint" type="url" required placeholder="https://api.yourdomain.com/v1/plugin" />
+      </div>
+
+      <!-- Manifest URL -->
+      <div class="form-row">
+        <label class="form-label" for="f-manifest">Manifest URL <span style="color:var(--dim);font-weight:400;">(optional)</span></label>
+        <input class="form-input" id="f-manifest" type="url" placeholder="https://yourdomain.com/.well-known/swarmspace.json" />
+      </div>
+
+      <!-- Row: Auth + Pricing -->
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label" for="f-auth">Auth method *</label>
+          <select class="form-input" id="f-auth" required>
+            <option value="">Select auth method</option>
+            <option value="None">None</option>
+            <option value="API Key">API Key</option>
+            <option value="OAuth 2.0">OAuth 2.0</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="f-pricing">Pricing model *</label>
+          <select class="form-input" id="f-pricing" required>
+            <option value="">Select pricing model</option>
+            <option value="Free">Free (Community tier)</option>
+            <option value="Credits">Credits (requires Verified status)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Website -->
+      <div class="form-row">
+        <label class="form-label" for="f-website">Website <span style="color:var(--dim);font-weight:400;">(optional)</span></label>
+        <input class="form-input" id="f-website" type="url" placeholder="https://yourdomain.com" />
+      </div>
+
+      <!-- Semantic tags -->
+      <div class="form-row">
+        <label class="form-label" for="f-tags">Semantic tags * <span style="color:var(--dim);font-weight:400;">(comma-separated, 2-10 tags)</span></label>
+        <input class="form-input" id="f-tags" type="text" required placeholder="weather, forecast, climate, location" />
+      </div>
+
+      <!-- Privacy data required -->
+      <div class="form-row">
+        <label class="form-label" for="f-privacy">Privacy data required <span style="color:var(--dim);font-weight:400;">(optional)</span></label>
+        <textarea class="form-input" id="f-privacy" placeholder="e.g. location, name, or 'none'" style="min-height:60px;"></textarea>
+      </div>
+
+      <!-- Network domains -->
+      <div class="form-row">
+        <label class="form-label" for="f-domains">Network domains <span style="color:var(--dim);font-weight:400;">(optional, one per line)</span></label>
+        <textarea class="form-input" id="f-domains" placeholder="api.example.com&#10;cdn.example.com" style="min-height:60px;"></textarea>
+      </div>
+
+      <!-- Terms -->
+      <div class="checkbox-row">
+        <input type="checkbox" id="f-terms" />
+        <label for="f-terms">I agree to the SwarmSpace Developer Agreement and confirm this plugin complies with the API Terms of Service of any third-party services it uses</label>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit">Submit for review &rarr;</button>
+    </form>
+  </div>
+
+  <!-- ── MY SUBMISSIONS ── -->
+  <div class="section-head">My Submissions</div>
+  <div class="submit-card" id="submissions-card">
+    <div class="empty-state" id="submissions-empty">No submissions yet. Submit your first plugin above.</div>
+    <div class="table-wrap" id="submissions-table-wrap" style="display:none;">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Category</th><th>Status</th><th>Submitted</th></tr>
+        </thead>
+        <tbody id="submissions-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged, signOut }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const app  = initializeApp({
+    apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain:        "arc-epi.firebaseapp.com",
+    projectId:         "arc-epi",
+    storageBucket:     "arc-epi.firebasestorage.app",
+    messagingSenderId: "563971839074",
+    appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
+  });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  let currentUser = null;
+
+  // ── Auth Gate ──
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      window.location.href = '/signup.html?redirect=submit-plugin';
+      return;
+    }
+    currentUser = user;
+
+    // Show email in nav
+    const planEl = document.getElementById('nav-plan');
+    planEl.textContent = user.email;
+
+    // Load developer profile
+    try {
+      const snap = await getDoc(doc(db, 'developers', user.uid));
+      if (snap.exists()) {
+        const dev = snap.data();
+        const plan = dev.plan || 'community';
+        const planLabels = { community: 'Community', pro: 'Pro', premium: 'Premium' };
+        planEl.textContent = user.email + ' \u00B7 ' + (planLabels[plan] || plan);
+      }
+    } catch (e) {
+      // Fallback: just show email
+      console.warn('Could not load developer profile:', e);
+    }
+
+    // Load submissions
+    loadSubmissions(user);
+  });
+
+  // ── Sign Out ──
+  document.getElementById('btn-signout').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = '/signup.html';
+  });
+
+  // ── Helpers ──
+  function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function showMsg(id, text) {
+    const el = document.getElementById(id);
+    el.innerHTML = text;
+    el.classList.add('visible');
+  }
+
+  function hideMsg(id) {
+    document.getElementById(id).classList.remove('visible');
+  }
+
+  function hideAllMsgs() {
+    hideMsg('msg-error');
+    hideMsg('msg-warning');
+    hideMsg('msg-success');
+  }
+
+  // ── Form Submission ──
+  const form = document.getElementById('plugin-form');
+  const btnSubmit = document.getElementById('btn-submit');
+  const successPanel = document.getElementById('success-panel');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAllMsgs();
+    successPanel.classList.remove('visible');
+
+    if (!currentUser) return;
+
+    // Gather values
+    const pluginName    = document.getElementById('f-name').value.trim();
+    const category      = document.getElementById('f-category').value;
+    const description   = document.getElementById('f-description').value.trim();
+    const agentGuidance = document.getElementById('f-guidance').value.trim();
+    const endpointUrl   = document.getElementById('f-endpoint').value.trim();
+    const manifestUrl   = document.getElementById('f-manifest').value.trim();
+    const authMethod    = document.getElementById('f-auth').value;
+    const pricingModel  = document.getElementById('f-pricing').value;
+    const website       = document.getElementById('f-website').value.trim();
+    const tagsRaw       = document.getElementById('f-tags').value.trim();
+    const privacyData   = document.getElementById('f-privacy').value.trim();
+    const domainsRaw    = document.getElementById('f-domains').value.trim();
+    const termsChecked  = document.getElementById('f-terms').checked;
+
+    // Parse tags
+    const tagsArray = tagsRaw
+      ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean)
+      : [];
+
+    // Parse network domains
+    const networkDomainsArray = domainsRaw
+      ? domainsRaw.split('\n').map(d => d.trim()).filter(Boolean)
+      : [];
+
+    // ── Validation ──
+    const errors = [];
+
+    if (!pluginName)    errors.push('Plugin name is required.');
+    if (!category)      errors.push('Category is required.');
+    if (!description)   errors.push('Description is required.');
+    if (description && description.length < 50) errors.push('Description must be at least 50 characters (currently ' + description.length + ').');
+    if (!endpointUrl)   errors.push('Endpoint URL is required.');
+    if (endpointUrl && !endpointUrl.startsWith('https://')) errors.push('Endpoint URL must start with https://');
+    if (!authMethod)    errors.push('Auth method is required.');
+    if (!pricingModel)  errors.push('Pricing model is required.');
+    if (tagsArray.length < 2) errors.push('At least 2 semantic tags are required.');
+    if (tagsArray.length > 10) errors.push('Maximum 10 semantic tags allowed (you have ' + tagsArray.length + ').');
+    if (!termsChecked)  errors.push('You must accept the terms to submit.');
+
+    if (errors.length > 0) {
+      showMsg('msg-error', errors.map(e => escHtml(e)).join('<br>'));
+      return;
+    }
+
+    // ── Endpoint reachability check (non-blocking) ──
+    if (endpointUrl) {
+      try {
+        await fetch(endpointUrl, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(5000) });
+      } catch (err) {
+        showMsg('msg-warning', 'Could not reach the endpoint URL. This will not block your submission, but please verify the URL is correct.');
+      }
+    }
+
+    // ── Submit to Firestore ──
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = 'Submitting...';
+
+    try {
+      await addDoc(collection(db, 'plugin_submissions'), {
+        name: pluginName,
+        category: category,
+        description: description,
+        agent_guidance: agentGuidance || null,
+        endpoint_url: endpointUrl,
+        manifest_url: manifestUrl || null,
+        auth_method: authMethod,
+        pricing_model: pricingModel,
+        website: website || null,
+        semantic_tags: tagsArray,
+        privacy_data_required: privacyData || "none",
+        network_domains: networkDomainsArray,
+        developer_uid: currentUser.uid,
+        developer_email: currentUser.email,
+        status: "pending",
+        submitted_at: serverTimestamp(),
+        review_notes: null,
+        reviewed_by: null,
+        reviewed_at: null
+      });
+
+      // Show success
+      successPanel.classList.add('visible');
+
+      // Clear form
+      form.reset();
+
+      // Refresh submissions
+      loadSubmissions(currentUser);
+
+      btnSubmit.textContent = 'Submit for review \u2192';
+      btnSubmit.disabled = false;
+
+    } catch (err) {
+      console.error('Submission failed:', err);
+      showMsg('msg-error', 'Submission failed: ' + escHtml(err.message) + '. Please try again.');
+      btnSubmit.textContent = 'Submit for review \u2192';
+      btnSubmit.disabled = false;
+    }
+  });
+
+  // ── Enter key support: submit form on Enter in single-line inputs ──
+  form.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.type !== 'submit') {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  // ── Load My Submissions ──
+  async function loadSubmissions(user) {
+    const emptyEl   = document.getElementById('submissions-empty');
+    const tableWrap = document.getElementById('submissions-table-wrap');
+    const tbody     = document.getElementById('submissions-tbody');
+
+    try {
+      const q = query(
+        collection(db, 'plugin_submissions'),
+        where('developer_uid', '==', user.uid),
+        orderBy('submitted_at', 'desc')
+      );
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        emptyEl.style.display = 'block';
+        tableWrap.style.display = 'none';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      tableWrap.style.display = 'block';
+      tbody.innerHTML = '';
+
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        const tr = document.createElement('tr');
+
+        const dateStr = d.submitted_at
+          ? new Date(d.submitted_at.seconds * 1000).toLocaleDateString()
+          : '\u2014';
+
+        const statusClass = d.status === 'approved' ? 'badge-approved'
+                          : d.status === 'rejected' ? 'badge-rejected'
+                          : 'badge-pending';
+
+        let nameCell = escHtml(d.name || 'Unnamed');
+
+        let statusCell = '<span class="status-badge ' + statusClass + '">' + escHtml(d.status || 'pending') + '</span>';
+
+        tr.innerHTML =
+          '<td style="font-weight:600;color:var(--text);">' + nameCell + '</td>' +
+          '<td>' + escHtml(d.category || '\u2014') + '</td>' +
+          '<td>' + statusCell + '</td>' +
+          '<td style="font-family:var(--mono);font-size:12px;">' + dateStr + '</td>';
+
+        tbody.appendChild(tr);
+
+        // If rejected, show review notes
+        if (d.status === 'rejected' && d.review_notes) {
+          const notesTr = document.createElement('tr');
+          notesTr.innerHTML = '<td colspan="4"><div class="review-notes"><strong>Review notes:</strong> ' + escHtml(d.review_notes) + '</div></td>';
+          tbody.appendChild(notesTr);
+        }
+      });
+
+    } catch (err) {
+      console.error('Failed to load submissions:', err);
+      emptyEl.textContent = 'Failed to load submissions.';
+      emptyEl.style.display = 'block';
+      tableWrap.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>
