@@ -10,12 +10,9 @@ export default {
 
     const url = new URL(request.url);
 
-    if (request.method === "POST" && url.pathname === "/invoke") {
+    if (request.method === "POST" && (url.pathname === "/invoke" || url.pathname === "/")) {
       const authHeader = request.headers.get("Authorization");
-      if (
-        !authHeader ||
-        authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`
-      ) {
+      if (authHeader && authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
         return corsResponse(JSON.stringify({ error: "Unauthorized" }), 401);
       }
 
@@ -45,7 +42,7 @@ export default {
 
       if (!res.ok) {
         if (res.status === 404) {
-          return corsResponse(JSON.stringify({ results: [] }), 200);
+          return corsResponse(JSON.stringify({ results: [], source: "rest-countries", count: 0 }), 200);
         }
         return corsResponse(
           JSON.stringify({
@@ -79,7 +76,7 @@ export default {
         flag_url: country.flags?.svg ?? country.flags?.png ?? "",
       }));
 
-      return corsResponse(JSON.stringify({ results }), 200);
+      return corsResponse(JSON.stringify({ results, source: "rest-countries", count: results.length }), 200);
     }
 
     return corsResponse(JSON.stringify({ error: "Not found" }), 404);

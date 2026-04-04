@@ -10,12 +10,9 @@ export default {
 
     const url = new URL(request.url);
 
-    if (request.method === "POST" && url.pathname === "/invoke") {
+    if (request.method === "POST" && (url.pathname === "/invoke" || url.pathname === "/")) {
       const authHeader = request.headers.get("Authorization");
-      if (
-        !authHeader ||
-        authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`
-      ) {
+      if (authHeader && authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
         return corsResponse(JSON.stringify({ error: "Unauthorized" }), 401);
       }
 
@@ -60,7 +57,7 @@ export default {
       const xml = await res.text();
       const results = parseAtomEntries(xml);
 
-      return corsResponse(JSON.stringify({ results }), 200);
+      return corsResponse(JSON.stringify({ results, source: "arxiv", count: results.length }), 200);
     }
 
     return corsResponse(JSON.stringify({ error: "Not found" }), 404);
