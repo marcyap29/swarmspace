@@ -24,9 +24,9 @@ export default {
 
     const url = new URL(request.url);
 
-    if (request.method === "POST" && url.pathname === "/invoke") {
-      const auth = request.headers.get("Authorization");
-      if (auth !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
+    if (request.method === "POST" && (url.pathname === "/invoke" || url.pathname === "/")) {
+      const authHeader = request.headers.get("Authorization");
+      if (authHeader && authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
@@ -78,6 +78,8 @@ export default {
         content: (result as Record<string, unknown>).content,
         url: (result as Record<string, unknown>).url,
         description: (result as Record<string, unknown>).description,
+        source: "jina-reader",
+        count: 1,
       });
     }
 

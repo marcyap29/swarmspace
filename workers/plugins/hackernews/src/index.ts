@@ -23,9 +23,9 @@ export default {
 
     const url = new URL(request.url);
 
-    if (request.method === "POST" && url.pathname === "/invoke") {
-      const auth = request.headers.get("Authorization");
-      if (auth !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
+    if (request.method === "POST" && (url.pathname === "/invoke" || url.pathname === "/")) {
+      const authHeader = request.headers.get("Authorization");
+      if (authHeader && authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
@@ -58,17 +58,20 @@ export default {
         hits: Array<Record<string, unknown>>;
       };
 
+      const results = data.hits.map((hit) => ({
+        title: hit.title,
+        url: hit.url,
+        points: hit.points,
+        author: hit.author,
+        created_at: hit.created_at,
+        num_comments: hit.num_comments,
+        objectID: hit.objectID,
+        hn_url: `https://news.ycombinator.com/item?id=${hit.objectID}`,
+      }));
       return jsonResponse({
-        results: data.hits.map((hit) => ({
-          title: hit.title,
-          url: hit.url,
-          points: hit.points,
-          author: hit.author,
-          created_at: hit.created_at,
-          num_comments: hit.num_comments,
-          objectID: hit.objectID,
-          hn_url: `https://news.ycombinator.com/item?id=${hit.objectID}`,
-        })),
+        results,
+        source: "hackernews",
+        count: results.length,
       });
     }
 

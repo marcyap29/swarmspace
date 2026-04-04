@@ -24,9 +24,9 @@ export default {
 
     const url = new URL(request.url);
 
-    if (request.method === "POST" && url.pathname === "/invoke") {
-      const auth = request.headers.get("Authorization");
-      if (auth !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
+    if (request.method === "POST" && (url.pathname === "/invoke" || url.pathname === "/")) {
+      const authHeader = request.headers.get("Authorization");
+      if (authHeader && authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
@@ -75,27 +75,33 @@ export default {
 
       if (searchType === "users") {
         const items = data.items as Array<Record<string, unknown>>;
+        const results = items.map((u) => ({
+          login: u.login,
+          url: u.html_url,
+          avatar_url: u.avatar_url,
+          type: u.type,
+        }));
         return jsonResponse({
-          results: items.map((u) => ({
-            login: u.login,
-            url: u.html_url,
-            avatar_url: u.avatar_url,
-            type: u.type,
-          })),
+          results,
+          source: "github-public",
+          count: results.length,
         });
       }
 
       const items = data.items as Array<Record<string, unknown>>;
+      const results = items.map((r) => ({
+        name: r.name,
+        full_name: r.full_name,
+        description: r.description,
+        stars: r.stargazers_count,
+        language: r.language,
+        url: r.html_url,
+        updated_at: r.updated_at,
+      }));
       return jsonResponse({
-        results: items.map((r) => ({
-          name: r.name,
-          full_name: r.full_name,
-          description: r.description,
-          stars: r.stargazers_count,
-          language: r.language,
-          url: r.html_url,
-          updated_at: r.updated_at,
-        })),
+        results,
+        source: "github-public",
+        count: results.length,
       });
     }
 

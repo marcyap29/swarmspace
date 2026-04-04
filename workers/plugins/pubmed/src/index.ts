@@ -11,12 +11,9 @@ export default {
 
     const url = new URL(request.url);
 
-    if (request.method === "POST" && url.pathname === "/invoke") {
+    if (request.method === "POST" && (url.pathname === "/invoke" || url.pathname === "/")) {
       const authHeader = request.headers.get("Authorization");
-      if (
-        !authHeader ||
-        authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`
-      ) {
+      if (authHeader && authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
         return corsResponse(JSON.stringify({ error: "Unauthorized" }), 401);
       }
 
@@ -69,7 +66,7 @@ export default {
       const ids = searchData.esearchresult?.idlist ?? [];
 
       if (ids.length === 0) {
-        return corsResponse(JSON.stringify({ results: [] }), 200);
+        return corsResponse(JSON.stringify({ results: [], source: "pubmed", count: 0 }), 200);
       }
 
       // Step 2: Fetch article summaries
@@ -117,7 +114,7 @@ export default {
           };
         });
 
-      return corsResponse(JSON.stringify({ results }), 200);
+      return corsResponse(JSON.stringify({ results, source: "pubmed", count: results.length }), 200);
     }
 
     return corsResponse(JSON.stringify({ error: "Not found" }), 404);
