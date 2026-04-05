@@ -1,7 +1,7 @@
 # SwarmSpace Bug Tracker
 
 **Version:** 1.0.0  
-**Last Updated:** 2026-03-01  
+**Last Updated:** 2026-04-04  
 **Record count:** 0 individual bug records in [records/](records/)
 
 ---
@@ -44,4 +44,4 @@ Detailed bug reports live in [records/](records/). Use the standardized format f
 
 | Fix / change | Version | Bug record | Notes |
 |--------------|---------|------------|-------|
-| — | — | — | — |
+| Plugin submission portal, Firestore rules, indexes, RULE.md, doc sync | 1.1.4 | — | See CHANGELOG [1.1.4] |

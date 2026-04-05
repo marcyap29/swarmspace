@@ -1,7 +1,7 @@
 # SwarmSpace Features
 
-**Version:** 1.1.0  
-**Last Updated:** 2026-03-23
+**Version:** 1.1.4  
+**Last Updated:** 2026-04-04
 
 ---
 
@@ -19,7 +19,8 @@
 | Marketplace | Plugin discovery | ✅ |
 | Thank-you page | Post-signup marketplace preview | ✅ |
 | FAQ | FAQ page | ✅ |
-| Developer submit portal (`/submit`) | Firebase Google sign-in; plugin idea or full manifest; writes `plugin_submissions` (pending) in Firestore | ✅ |
+| Developer submit portal (`/submit` → `submit.html`) | Firebase sign-in; idea or manifest modes; writes `plugin_submissions` with `developer_uid` + pending | ✅ |
+| Submit plugin portal (`submit-plugin.html`) | Full manifest-style flow, endpoint probe, submission history; same `plugin_submissions` collection; landing + dashboard links | ✅ |
 | Admin submissions (`/admin-submissions`) | Allowlisted reviewer; list/filter/search; approve / needs info / reject → Firestore | ✅ |
 
 ### Integrations

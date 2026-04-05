@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-03-23  
+**Last Updated:** 2026-04-04  
 **Status:** ✅ Synced
 
 ---
@@ -20,6 +20,7 @@ Tracks changes between the repository codebase and documentation, ensuring docs 
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | API integration |
 | **architecture.md** | SwarmStore architecture & hosting | Broader vision; plugin format |
 | **Docs/claude.md** | AI context guide; Documentation & Config Role | Onboarding; doc workflows |
+| **Docs/RULE.md** | Cursor/agent rules (API, tiers, security) | Day-to-day agent guidance |
 | **Docs/CONFIGURATION_MANAGEMENT.md** (this file) | Docs inventory and change log | Sync status; what changed |
 | **Docs/CHANGELOG.md** | Version history | What changed and when |
 | **Docs/FEATURES.md** | Feature list | Capabilities |
@@ -48,9 +49,11 @@ When running a doc sync or release:
 | README.md | root | 2026-03-23 | ✅ Synced | Firebase submit/admin; file structure |
 | SWARMSPACE_API_CONTEXT.md | root | — | ✅ Synced | |
 | architecture.md | root | — | ✅ Synced | |
-| submit.html | root | 2026-03-23 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` |
+| submit.html | root | 2026-04-04 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` (legacy shape + `developer_uid`) |
+| submit-plugin.html | root | 2026-04-04 | ✅ Synced | Primary submit portal; `plugin_submissions` + index-backed history query |
+| Docs/RULE.md | Docs/ | 2026-04-04 | ✅ Synced | Cursor/agent guidance |
 | admin-submissions.html | root | 2026-03-23 | ✅ Synced | Private `/admin-submissions`; reviewer UI |
-| Docs/claude.md | Docs/ | 2026-03-01 | ✅ Synced | |
+| Docs/claude.md | Docs/ | 2026-04-04 | ✅ Synced | |
 | Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-03-23 | ✅ Synced | |
 | Docs/CHANGELOG.md | Docs/ | 2026-03-23 | ✅ Synced | |
 | Docs/FEATURES.md | Docs/ | 2026-03-23 | ✅ Synced | |
@@ -58,11 +61,27 @@ When running a doc sync or release:
 | Docs/git.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/SECURITY_CHECKLIST.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/UI_UX.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/bugtracker/ | Docs/ | 2026-03-01 | ✅ Synced | |
+| Docs/bugtracker/ | Docs/ | 2026-04-04 | ✅ Synced | |
 
 ---
 
 ## Change Log
+
+### 2026-04-04 — Doc-config-git-backup (submit-plugin portal + rules + indexes)
+
+**Action:** Ran **Documentation, Configuration Management and Git Backup** workflow (`Docs/claude.md` § Documentation, Configuration Management and Git Backup); git backup sync after commit `e72d6ce` (plugin submission portal, rules, indexes, RULE.md).
+
+**Drift addressed:**
+- Docs did not list `submit-plugin.html`, `Docs/RULE.md`, or `firestore.indexes.json`; README/backend still described older `plugin_submissions` rule pattern.
+- CHANGELOG, FEATURES, README file structure, backend Firestore policy, claude.md inventory, bugtracker reference row updated.
+
+**Changes:**
+- CHANGELOG **1.1.4** entry for portal, RULE.md, indexes, rules, signup redirect, doc sync.
+- README: file structure; Firebase rules example aligned with repo `firestore.rules` for `plugin_submissions`; submit flow mentions `submit-plugin.html`.
+- FEATURES.md: submit-plugin portal row; version/date bump.
+- backend.md: `plugin_submissions` policy + index note; `firebase.json` indexes registration.
+- claude.md: Quick Reference + file structure include `Docs/RULE.md`, `submit-plugin.html`.
+- submit.html: add `developer_uid` on create for rule compatibility.
 
 ### 2026-03-23 — Doc-config-git-backup (submit/admin + inventory sync)
 

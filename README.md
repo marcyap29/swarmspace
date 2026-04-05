@@ -27,7 +27,7 @@ Use this if you are wiring a Firebase-backed plugin submission flow (submit page
    - **Authentication** (email/password or your provider)
    - **Cloud Firestore**
 2. In **Project settings → General → Your apps (Web app)**, copy your Firebase web config.
-3. In each Firebase-powered page (for example `submit.html` and `admin-submissions.html`), add the Firebase modular SDK imports and config in a `<script type="module">` block.
+3. In each Firebase-powered page (for example `submit.html`, `submit-plugin.html`, and `admin-submissions.html`), add the Firebase modular SDK imports and config in a `<script type="module">` block.
 4. Set `ADMIN_EMAIL` in the same script block (or a local env-injected value if you are bundling).
 
 Example pattern (use consistently across pages):
@@ -57,29 +57,29 @@ Example pattern (use consistently across pages):
 
 ### Minimum Firestore Rules (`plugin_submissions`)
 
-- Authenticated users can **create** their own submission.
-- Only `ADMIN_EMAIL` can **read** or **update** submissions.
-- No client-side delete access by default.
+Aligned with repo `firestore.rules`:
+
+- Authenticated users can **create** only if `developer_uid` matches their uid and `status` is `pending`.
+- Developers can **read** their own submission documents.
+- Client **update** and **delete** denied; admin review uses server-side tooling or the Admin SDK.
+
+Deploy composite index from `firestore.indexes.json` (see `firebase.json`) for queries that filter by `developer_uid` and order by `submitted_at`.
 
 ```rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /plugin_submissions/{submissionId} {
+    match /plugin_submissions/{docId} {
       allow create: if request.auth != null
-        && request.resource.data.submitterUid == request.auth.uid
-        && request.resource.data.submitterEmail == request.auth.token.email;
-
-      allow read, update: if request.auth != null
-        && request.auth.token.email == "admin@example.com";
-
-      allow delete: if false;
+        && request.resource.data.developer_uid == request.auth.uid
+        && request.resource.data.status == "pending";
+      allow read: if request.auth != null
+        && resource.data.developer_uid == request.auth.uid;
+      allow update, delete: if false;
     }
   }
 }
 ```
-
-Replace `"admin@example.com"` in rules to match your `ADMIN_EMAIL` value in code.
 
 ---
 
@@ -155,7 +155,8 @@ swarmspace/
 ├── overview.md         ← Orientation: purpose, flow, for users and agents
 ├── index.html          ← Landing page (7 free APIs, upgrade CTA)
 ├── signup.html         ← Auth (login + signup)
-├── submit.html         ← Developer plugin submission (Firebase; `/submit`)
+├── submit.html         ← Developer plugin submission (Firebase; clean URL `/submit`)
+├── submit-plugin.html  ← Primary submit portal (Firebase; linked from dashboard / landing)
 ├── admin-submissions.html ← Admin review queue (Firebase; `/admin-submissions`)
 ├── upgrade.html        ← API tier pricing (Free / Standard $30 / Premium)
 ├── dashboard.html      ← Developer dashboard
@@ -166,7 +167,7 @@ swarmspace/
 ├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
 ├── .cursorrules        ← Cursor rules (API context, tiers, never commit keys)
 ├── Docs/
-│   ├── claude.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
+│   ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
 │   ├── backend.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
 │   └── bugtracker/
 ├── api/

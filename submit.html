@@ -388,6 +388,7 @@ select option { background: var(--surface); }
       await addDoc(collection(db, "plugin_submissions"), {
         ...payload,
         status: "pending",
+        developer_uid: currentUser.uid,
         submitterUid: currentUser.uid,
         submitterEmail: currentUser.email || null,
         submitted_by: {
