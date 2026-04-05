@@ -1,7 +1,27 @@
 # SwarmSpace Changelog
 
-**Version:** 1.1.4  
+**Version:** 1.1.5  
 **Last Updated:** 2026-04-04
+
+---
+
+## [1.1.5] - 2026-04-04
+
+### Added
+
+- **`DEVELOPER_GUIDE.md`** — End-to-end developer reference: manifest field table, JSON Schema draft-07, endpoint requirements, submission checklist.
+- **`security.html`** — Public security & trust architecture page (OWASP Agentic Top 10 alignment, PRISM, tiers, limitations); linked from landing, dashboard, signup, upgrade.
+
+### Changed
+
+- **`admin-submissions.html`** — Reads and updates **`plugin_submissions`** (was `submissions`); maps review fields (`status`, `review_notes`, `reviewed_at`, `reviewed_by`) consistent with the submit portal.
+- **`firestore.rules`** — `isPluginSubmissionAdmin()` allowlist; developers read own rows; admins read all submissions; admin **update** only when `developer_uid` unchanged and changed keys limited to `status`, `review_notes`, `reviewed_at`, `reviewed_by`.
+- **`firestore.indexes.json`** — Composite indexes cleared (portal uses equality on `developer_uid` plus client-side sort by `submitted_at`).
+- **`submit-plugin.html`** — Query without composite index; sort submission history in the client.
+- **`upgrade.html`** — Footer “Submit plugin” points to `submit-plugin.html`; Security link.
+- **`index.html`**, **`signup.html`**, **`dashboard.html`** — Security navigation; dashboard site footer with core links.
+- **`Docs/PRISM.md`** — Expanded reference content.
+- **Documentation** — README (file tree, Firestore notes), `Docs/backend.md` (admin policy, indexes), FEATURES, CONFIGURATION_MANAGEMENT, claude.md reference paths, bugtracker row (doc-config-git-backup).
 
 ---
 

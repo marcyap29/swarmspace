@@ -45,3 +45,4 @@ Detailed bug reports live in [records/](records/). Use the standardized format f
 | Fix / change | Version | Bug record | Notes |
 |--------------|---------|------------|-------|
 | Plugin submission portal, Firestore rules, indexes, RULE.md, doc sync | 1.1.4 | — | See CHANGELOG [1.1.4] |
+| Admin `plugin_submissions`, security page, developer guide, PRISM docs | 1.1.5 | — | See CHANGELOG [1.1.5]; branch `developer-guide` |

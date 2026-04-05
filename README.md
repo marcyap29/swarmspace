@@ -55,31 +55,16 @@ Example pattern (use consistently across pages):
 </script>
 ```
 
-### Minimum Firestore Rules (`plugin_submissions`)
+### Firestore Rules (`plugin_submissions`)
 
-Aligned with repo `firestore.rules`:
+Canonical behavior is in root **`firestore.rules`** (keep it in sync with `admin-submissions.html` admin allowlist):
 
-- Authenticated users can **create** only if `developer_uid` matches their uid and `status` is `pending`.
-- Developers can **read** their own submission documents.
-- Client **update** and **delete** denied; admin review uses server-side tooling or the Admin SDK.
+- **Create:** authenticated user only if `developer_uid == request.auth.uid` and `status == "pending"`.
+- **Read:** owning developer **or** allowlisted admin emails (`isPluginSubmissionAdmin()` in rules).
+- **Update:** allowlisted admins only, with guards: `developer_uid` must not change; only `status`, `review_notes`, `reviewed_at`, `reviewed_by` may change.
+- **Delete:** denied from clients.
 
-Deploy composite index from `firestore.indexes.json` (see `firebase.json`) for queries that filter by `developer_uid` and order by `submitted_at`.
-
-```rules
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /plugin_submissions/{docId} {
-      allow create: if request.auth != null
-        && request.resource.data.developer_uid == request.auth.uid
-        && request.resource.data.status == "pending";
-      allow read: if request.auth != null
-        && resource.data.developer_uid == request.auth.uid;
-      allow update, delete: if false;
-    }
-  }
-}
-```
+**Indexes:** `firestore.indexes.json` may be empty; the submit portal uses an equality filter on `developer_uid` and sorts by `submitted_at` in the client. Add composite indexes there if you introduce server-side `orderBy` queries that require them.
 
 ---
 
@@ -153,6 +138,7 @@ vercel --prod
 ```
 swarmspace/
 ├── overview.md         ← Orientation: purpose, flow, for users and agents
+├── DEVELOPER_GUIDE.md  ← Plugin manifest spec, schemas, submission checklist
 ├── index.html          ← Landing page (7 free APIs, upgrade CTA)
 ├── signup.html         ← Auth (login + signup)
 ├── submit.html         ← Developer plugin submission (Firebase; clean URL `/submit`)
@@ -164,11 +150,12 @@ swarmspace/
 ├── thankyou.html       ← Post-signup (marketplace preview)
 ├── reset-password.html ← Complete password reset from Firebase email link
 ├── faq.html            ← FAQ
+├── security.html       ← Security & trust architecture (public)
 ├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
 ├── .cursorrules        ← Cursor rules (API context, tiers, never commit keys)
 ├── Docs/
 │   ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
-│   ├── backend.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
+│   ├── backend.md, PRISM.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
 │   └── bugtracker/
 ├── api/
 │   ├── create-checkout.js   ← Stripe checkout session

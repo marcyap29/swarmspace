@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Last Updated:** April 4, 2026
-**Current Branch:** `main`
+**Current Branch:** `developer-guide` (feature branch; merge to `main` when ready)
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
 
@@ -21,6 +21,8 @@
 | **Docs/CHANGELOG.md** | Version history | `Docs/CHANGELOG.md` |
 | **Docs/FEATURES.md** | Feature list | `Docs/FEATURES.md` |
 | **Docs/backend.md** | Backend (API, Vercel, Firebase) | `Docs/backend.md` |
+| **DEVELOPER_GUIDE.md** | Plugin manifest & submission reference | `DEVELOPER_GUIDE.md` |
+| **Docs/PRISM.md** | PRISM / privacy logging reference | `Docs/PRISM.md` |
 | **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
 | **Documentation, Config & Git Backup** | Universal prompt for docs, config, and backup sync | This file: section below |
 
@@ -40,13 +42,14 @@
 ```
 swarmspace/
 ├── overview.md         ← Orientation for users and agents
-├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html
+├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html
+├── DEVELOPER_GUIDE.md
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── vercel.json
 ├── SWARMSPACE_API_CONTEXT.md, architecture.md
 └── Docs/
     ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
-    ├── backend.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
+    ├── backend.md, PRISM.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
     └── bugtracker/
 ```
 
@@ -197,6 +200,9 @@ For each change, update the appropriate documents (only where relevant):
 - `Docs/CHANGELOG.md` — version history
 - `Docs/FEATURES.md` — feature catalog
 - `Docs/backend.md` — backend services
+- `DEVELOPER_GUIDE.md` — plugin manifest and submission reference
+- `Docs/PRISM.md` — PRISM reference
+- `security.html` — security & trust architecture (public page)
 - `Docs/git.md` — git workflow
 - `Docs/SECURITY_CHECKLIST.md` — security checklist
 - `Docs/UI_UX.md` — UI/UX patterns

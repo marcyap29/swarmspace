@@ -1,7 +1,7 @@
 # Configuration Management & Documentation Tracking
 
 **Last Updated:** 2026-04-04  
-**Status:** ✅ Synced
+**Status:** ✅ Synced (developer-guide + doc-config-git-backup)
 
 ---
 
@@ -25,6 +25,8 @@ Tracks changes between the repository codebase and documentation, ensuring docs 
 | **Docs/CHANGELOG.md** | Version history | What changed and when |
 | **Docs/FEATURES.md** | Feature list | Capabilities |
 | **Docs/backend.md** | Backend (API, Vercel, Firebase) | Backend structure |
+| **DEVELOPER_GUIDE.md** | Manifest spec, schemas, submission checklist | Plugin authors |
+| **Docs/PRISM.md** | Privacy / activity logging reference | Security, compliance |
 | **Docs/bugtracker/** | Bug tracker | Known issues, fixes |
 
 ---
@@ -46,18 +48,21 @@ When running a doc sync or release:
 | Document | Location | Last Reviewed | Status | Notes |
 |----------|----------|---------------|--------|-------|
 | overview.md | root | 2026-03-01 | ✅ Synced | |
-| README.md | root | 2026-03-23 | ✅ Synced | Firebase submit/admin; file structure |
+| README.md | root | 2026-04-04 | ✅ Synced | Firebase submit/admin; file structure |
 | SWARMSPACE_API_CONTEXT.md | root | — | ✅ Synced | |
 | architecture.md | root | — | ✅ Synced | |
 | submit.html | root | 2026-04-04 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` (legacy shape + `developer_uid`) |
 | submit-plugin.html | root | 2026-04-04 | ✅ Synced | Primary submit portal; `plugin_submissions` + index-backed history query |
 | Docs/RULE.md | Docs/ | 2026-04-04 | ✅ Synced | Cursor/agent guidance |
-| admin-submissions.html | root | 2026-03-23 | ✅ Synced | Private `/admin-submissions`; reviewer UI |
+| admin-submissions.html | root | 2026-04-04 | ✅ Synced | `/admin-submissions`; `plugin_submissions` review UI |
+| security.html | root | 2026-04-04 | ✅ Synced | Security & trust architecture (static page) |
+| DEVELOPER_GUIDE.md | root | 2026-04-04 | ✅ Synced | Developer / manifest reference |
+| Docs/PRISM.md | Docs/ | 2026-04-04 | ✅ Synced | PRISM reference |
 | Docs/claude.md | Docs/ | 2026-04-04 | ✅ Synced | |
 | Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-03-23 | ✅ Synced | |
-| Docs/CHANGELOG.md | Docs/ | 2026-03-23 | ✅ Synced | |
-| Docs/FEATURES.md | Docs/ | 2026-03-23 | ✅ Synced | |
-| Docs/backend.md | Docs/ | 2026-03-23 | ✅ Synced | |
+| Docs/CHANGELOG.md | Docs/ | 2026-04-04 | ✅ Synced | |
+| Docs/FEATURES.md | Docs/ | 2026-04-04 | ✅ Synced | |
+| Docs/backend.md | Docs/ | 2026-04-04 | ✅ Synced | |
 | Docs/git.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/SECURITY_CHECKLIST.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/UI_UX.md | Docs/ | 2026-03-01 | ✅ Synced | |
@@ -66,6 +71,16 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-04-04 — Doc-config-git-backup (developer-guide branch: admin sync, security page, guide)
+
+**Action:** Ran **Documentation, Configuration Management and Git Backup** on branch `developer-guide` after commit `4ad6388` and pending UI/docs edits.
+
+**Drift addressed:**
+- README/backend still described owner-only read and no client admin updates; `firestore.indexes.json` no longer defines a composite index.
+- New artifacts `DEVELOPER_GUIDE.md`, `security.html`, and expanded `Docs/PRISM.md` not in inventory or file-structure docs.
+
+**Changes:** CHANGELOG **1.1.5**; README Firestore narrative + file tree; backend.md `plugin_submissions` + admin + indexes; FEATURES; claude.md paths; bugtracker row; this entry.
 
 ### 2026-04-04 — Doc-config-git-backup (submit-plugin portal + rules + indexes)
 
