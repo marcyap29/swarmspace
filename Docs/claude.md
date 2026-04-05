@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Last Updated:** April 4, 2026
-**Current Branch:** `developer-guide` (feature branch; merge to `main` when ready)
+**Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
 

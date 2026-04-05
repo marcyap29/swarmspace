@@ -1,7 +1,7 @@
 # Configuration Management & Documentation Tracking
 
 **Last Updated:** 2026-04-04  
-**Status:** ✅ Synced (developer-guide + doc-config-git-backup)
+**Status:** ✅ Synced
 
 ---
 
@@ -71,6 +71,10 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-04-04 — Merge `developer-guide` → `main`
+
+**Action:** Fast-forwarded `main` to `79bf66b`; post-merge doc touch-ups (claude.md branch line, CONFIG status, bugtracker note).
 
 ### 2026-04-04 — Doc-config-git-backup (developer-guide branch: admin sync, security page, guide)
 
