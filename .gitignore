@@ -1,2 +1,5 @@
 .vercel
 .DS_Store
+
+# Wrangler local dev state
+.wrangler/
