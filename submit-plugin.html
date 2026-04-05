@@ -287,7 +287,7 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import {
-    getFirestore, doc, getDoc, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp
+    getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp
   } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const firebaseConfig = {
@@ -406,22 +406,29 @@
     return new Date(ts.seconds * 1000).toLocaleDateString(undefined, { dateStyle: 'medium' });
   }
 
+  function submittedAtMillis(ts) {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === 'function') return ts.toMillis();
+    if (typeof ts.seconds === 'number') return ts.seconds * 1000;
+    return 0;
+  }
+
   async function loadSubmissions(uid) {
     const tbody = $('submissions-tbody');
     tbody.innerHTML = '<tr><td colspan="4" style="color:var(--dim);padding:20px;">Loading…</td></tr>';
     try {
-      const q = query(
-        collection(db, 'plugin_submissions'),
-        where('developer_uid', '==', uid),
-        orderBy('submitted_at', 'desc')
-      );
+      // Equality-only query: no composite index required. Sort by date in the client.
+      const q = query(collection(db, 'plugin_submissions'), where('developer_uid', '==', uid));
       const snap = await getDocs(q);
       if (snap.empty) {
         tbody.innerHTML = '<tr><td colspan="4" style="color:var(--dim);padding:20px;">No submissions yet.</td></tr>';
         return;
       }
+      const docs = snap.docs.slice().sort(
+        (a, b) => submittedAtMillis(b.data().submitted_at) - submittedAtMillis(a.data().submitted_at)
+      );
       tbody.innerHTML = '';
-      snap.forEach((d) => {
+      docs.forEach((d) => {
         const row = document.createElement('tr');
         const x = d.data();
         const st = (x.status || 'pending').toLowerCase();
