@@ -326,9 +326,18 @@
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
+  function postAuthRedirect() {
+    const raw = new URLSearchParams(window.location.search).get('redirect');
+    if (!raw) return '/dashboard.html';
+    const dec = decodeURIComponent(raw).trim();
+    if (dec.startsWith('/') && !dec.startsWith('//') && /\.html$/i.test(dec)) return dec;
+    if (dec === 'submit-plugin' || dec === '/submit-plugin') return '/submit-plugin.html';
+    return '/dashboard.html';
+  }
+
   // ── Redirect if already signed in ──────────────────────────
   onAuthStateChanged(auth, user => {
-    if (user) window.location.href = '/dashboard.html';
+    if (user) window.location.href = postAuthRedirect();
   });
 
   // ── Create user doc in Firestore on first sign-in ──────────
@@ -351,7 +360,7 @@
   // ── After successful auth ───────────────────────────────────
   async function onSuccess(user) {
     await ensureUserDoc(user);
-    window.location.href = '/dashboard.html';
+    window.location.href = postAuthRedirect();
   }
 
   // ── Error messages ──────────────────────────────────────────
