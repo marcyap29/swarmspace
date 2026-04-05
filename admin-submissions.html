@@ -406,7 +406,7 @@
 <main class="page">
   <section class="header">
     <h1 class="page-title">Admin Submissions</h1>
-    <p class="page-sub">Private panel for reviewing plugin submissions in Firestore.</p>
+    <p class="page-sub">Private panel for reviewing <code class="mono">plugin_submissions</code> in Firestore. Admin emails must match <code class="mono">firestore.rules</code> (<code class="mono">isPluginSubmissionAdmin</code>).</p>
   </section>
 
   <div id="global-msg" class="msg"></div>
@@ -445,14 +445,14 @@
 </main>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
     getAuth,
     GoogleAuthProvider,
     onAuthStateChanged,
     signInWithPopup,
     signOut
-  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import {
     getFirestore,
     collection,
@@ -462,19 +462,19 @@
     updateDoc,
     doc,
     serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // TODO: Replace with your real Firebase config.
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
     authDomain: "arc-epi.firebaseapp.com",
     projectId: "arc-epi",
-    storageBucket: "arc-epi.appspot.com",
+    storageBucket: "arc-epi.firebasestorage.app",
     messagingSenderId: "563971839074",
     appId: "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
   };
 
-  // Strict admin email allowlist (lowercase). Keep private.
+  // Must match firestore.rules → isPluginSubmissionAdmin() (same addresses).
   const ADMIN_EMAIL_ALLOWLIST = [
     "marcyap@orbitalai.net",
     "marcyap@fastmail.com"
@@ -636,38 +636,58 @@
 
     let snapshot = null;
     try {
-      snapshot = await getDocs(query(collection(db, "submissions"), orderBy("submitted_at", "desc")));
-    } catch (firstError) {
-      try {
-        snapshot = await getDocs(query(collection(db, "submissions"), orderBy("created_at", "desc")));
-      } catch (fallbackError) {
-        showMsg("Failed to load submissions. Check Firestore indexes/rules and config.", "error");
-        renderLoadError();
-        setLoading(false);
-        return;
-      }
+      snapshot = await getDocs(
+        query(collection(db, "plugin_submissions"), orderBy("submitted_at", "desc"))
+      );
+    } catch (err) {
+      console.error(err);
+      showMsg(
+        "Failed to load plugin_submissions. Deploy Firestore rules and ensure your admin email is allowlisted.",
+        "error"
+      );
+      renderLoadError();
+      setLoading(false);
+      return;
     }
 
     const rows = [];
     snapshot.forEach((item) => {
       const data = item.data() || {};
       const status = normalizeStatus(resolveField(data, ["status", "review_status"], "pending"));
+      const endpointUrl = resolveField(data, ["endpoint_url", "endpoint", "api_endpoint", "url"], "");
+      const manifestUrl = resolveField(data, ["manifest_url", "manifestUrl"], "");
+      const tags = Array.isArray(data.semantic_tags)
+        ? data.semantic_tags
+        : Array.isArray(data.tags)
+          ? data.tags
+          : [];
+      const domains = Array.isArray(data.network_domains) ? data.network_domains : [];
       rows.push({
         id: item.id,
         status,
         pluginName: resolveField(data, ["name", "plugin_name", "title"], "Untitled Plugin"),
-        submittedBy: resolveField(data, ["submitterEmail", "submitter_email", "email", "developer_email", "owner_email"], data.contactEmail || data.submitted_by?.email || data.contact?.email || "-"),
-        endpoint: resolveField(data, ["manifestUrl", "endpoint", "endpoint_url", "api_endpoint", "url"], "-"),
-        useCase: resolveField(data, ["useCase", "use_case"], ""),
+        category: resolveField(data, ["category"], ""),
+        submittedBy: resolveField(
+          data,
+          ["developer_email", "submitterEmail", "submitter_email", "email", "owner_email"],
+          "-"
+        ),
+        endpoint: endpointUrl || manifestUrl || "-",
+        endpointUrl,
+        manifestUrl,
+        useCase: resolveField(data, ["agent_guidance", "useCase", "use_case"], ""),
         description: resolveField(data, ["description", "capability", "summary"], ""),
         trustTier: resolveField(data, ["trustTier", "trust_tier"], ""),
-        pricingModel: resolveField(data, ["pricingModel", "pricing"], ""),
-        authMethod: resolveField(data, ["authMethod", "auth_method"], ""),
+        pricingModel: resolveField(data, ["pricing_model", "pricingModel", "pricing"], ""),
+        authMethod: resolveField(data, ["auth_method", "authMethod"], ""),
         website: resolveField(data, ["website"], ""),
-        tags: data.tags || [],
-        manifest: resolveField(data, ["manifestUrl", "manifest_json", "manifest", "manifest_text"], ""),
+        tags,
+        privacyDataRequired: resolveField(data, ["privacy_data_required"], ""),
+        networkDomains: domains,
+        developerUid: resolveField(data, ["developer_uid", "developerId"], ""),
+        manifest: manifestUrl,
         notes: resolveField(data, ["notes", "admin_notes", "submitter_notes"], ""),
-        reviewNote: resolveField(data, ["review_note"], ""),
+        reviewNote: resolveField(data, ["review_notes", "review_note"], ""),
         reviewedAt: resolveField(data, ["reviewed_at"], ""),
         reviewedBy: resolveField(data, ["reviewed_by"], ""),
         submittedAt: resolveField(data, ["submitted_at", "created_at"], ""),
@@ -690,8 +710,12 @@
       if (!q) return true;
       const source = [
         item.pluginName,
+        item.category,
         item.submittedBy,
         item.endpoint,
+        item.endpointUrl,
+        item.manifestUrl,
+        item.developerUid,
         item.status,
         item.description,
         item.useCase,
@@ -699,6 +723,8 @@
         item.pricingModel,
         item.authMethod,
         item.website,
+        item.privacyDataRequired,
+        Array.isArray(item.networkDomains) ? item.networkDomains.join(" ") : item.networkDomains,
         Array.isArray(item.tags) ? item.tags.join(" ") : item.tags,
         item.notes,
         item.reviewNote,
@@ -843,7 +869,7 @@
       pluginName.textContent = item.pluginName;
       const pluginMeta = document.createElement("div");
       pluginMeta.className = "muted";
-      pluginMeta.textContent = item.endpoint || "-";
+      pluginMeta.textContent = item.endpointUrl || item.manifestUrl || item.endpoint || "-";
       colPlugin.appendChild(pluginName);
       colPlugin.appendChild(pluginMeta);
       row.appendChild(colPlugin);
@@ -907,16 +933,25 @@
         const details = document.createElement("div");
         details.className = "details";
 
+        details.appendChild(makeDetailBlock("Category", item.category));
         details.appendChild(makeDetailBlock("Description", item.description));
-        details.appendChild(makeDetailBlock("Use case", item.useCase));
+        details.appendChild(makeDetailBlock("Agent guidance", item.useCase));
+        details.appendChild(makeDetailBlock("Endpoint URL", item.endpointUrl));
+        details.appendChild(makeDetailBlock("Manifest URL", item.manifestUrl));
         details.appendChild(makeDetailBlock("Trust tier", item.trustTier));
         details.appendChild(makeDetailBlock("Pricing model", item.pricingModel));
         details.appendChild(makeDetailBlock("Auth method", item.authMethod));
         details.appendChild(makeDetailBlock("Website", item.website));
-        details.appendChild(makeDetailBlock("Tags", Array.isArray(item.tags) ? item.tags.join(", ") : item.tags));
-        details.appendChild(makeDetailBlock("Manifest URL", item.endpoint));
+        details.appendChild(makeDetailBlock("Semantic tags", Array.isArray(item.tags) ? item.tags.join(", ") : item.tags));
+        details.appendChild(
+          makeDetailBlock("Privacy / data required", item.privacyDataRequired)
+        );
+        details.appendChild(
+          makeDetailBlock("Network domains", Array.isArray(item.networkDomains) ? item.networkDomains.join("\n") : item.networkDomains)
+        );
+        details.appendChild(makeDetailBlock("Developer UID", item.developerUid));
         details.appendChild(makeDetailBlock("Submitter notes", item.notes));
-        details.appendChild(makeDetailBlock("Review note", item.reviewNote));
+        details.appendChild(makeDetailBlock("Review notes", item.reviewNote));
         details.appendChild(makeDetailBlock("Reviewed by", item.reviewedBy));
         details.appendChild(makeDetailBlock("Reviewed at", displayDate(item.reviewedAt)));
 
@@ -940,10 +975,10 @@
     setLoading(true);
     clearMsg();
     try {
-      const ref = doc(db, "submissions", item.id);
+      const ref = doc(db, "plugin_submissions", item.id);
       await updateDoc(ref, {
         status,
-        review_note: note.trim(),
+        review_notes: note.trim() || null,
         reviewed_at: serverTimestamp(),
         reviewed_by: state.user.email || "unknown"
       });

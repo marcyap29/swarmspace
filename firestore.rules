@@ -3,6 +3,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isPluginSubmissionAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email in [
+          "marcyap@orbitalai.net",
+          "marcyap@fastmail.com"
+        ];
+    }
+
     // ── developers/{uid} ──────────────────────────────────────────────
     // Owner can read and write their own doc. No deletes.
     match /developers/{uid} {
@@ -29,15 +38,20 @@ service cloud.firestore {
     }
 
     // ── plugin_submissions ────────────────────────────────────────────
-    // Developers create pending rows; read own docs for the submission portal.
-    // Admin review uses Admin SDK or separate tooling.
+    // Developers create pending rows and read their own docs.
+    // Allowlisted admins (same emails as admin-submissions.html) list and review.
     match /plugin_submissions/{docId} {
       allow create: if request.auth != null
                     && request.resource.data.developer_uid == request.auth.uid
                     && request.resource.data.status == "pending";
       allow read: if request.auth != null
-                  && resource.data.developer_uid == request.auth.uid;
-      allow update, delete: if false;
+                  && (resource.data.developer_uid == request.auth.uid
+                      || isPluginSubmissionAdmin());
+      allow update: if isPluginSubmissionAdmin()
+                    && request.resource.data.developer_uid == resource.data.developer_uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(["status", "review_notes", "reviewed_at", "reviewed_by"]);
+      allow delete: if false;
     }
 
     // ── submissions (new collection from backlog reconciliation) ──────

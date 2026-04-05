@@ -1,13 +1,4 @@
 {
-  "indexes": [
-    {
-      "collectionGroup": "plugin_submissions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "developer_uid", "order": "ASCENDING" },
-        { "fieldPath": "submitted_at", "order": "DESCENDING" }
-      ]
-    }
-  ],
+  "indexes": [],
   "fieldOverrides": []
 }
