@@ -141,6 +141,17 @@
       font-size:13px; color:var(--muted); line-height:1.6;
     }
     .founding-note strong { color:var(--purple); }
+
+    .site-footer {
+      border-top:1px solid var(--border);
+      padding:24px 0 8px;
+      margin-top:48px;
+      display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;
+    }
+    .site-footer p { font-size:12px; color:var(--dim); margin:0; }
+    .site-footer .links { display:flex; flex-wrap:wrap; gap:18px; }
+    .site-footer .links a { font-size:12px; color:var(--dim); text-decoration:none; }
+    .site-footer .links a:hover { color:var(--muted); }
   </style>
 </head>
 <body>
@@ -152,6 +163,7 @@
   <a class="sidebar-link active" href="#overview"><span class="sidebar-icon">◎</span> Overview</a>
   <a class="sidebar-link" href="#capabilities"><span class="sidebar-icon">⬡</span> My plugins</a>
   <a class="sidebar-link" href="submit-plugin.html"><span class="sidebar-icon">＋</span> Submit plugin</a>
+  <a class="sidebar-link" href="security.html"><span class="sidebar-icon">◇</span> Security</a>
   <a class="sidebar-link" href="#apis"><span class="sidebar-icon">◈</span> APIs</a>
   <div class="sidebar-section" style="margin-top:16px;">Account</div>
   <a class="sidebar-link" href="upgrade.html"><span class="sidebar-icon">✦</span> Upgrade</a>
@@ -421,6 +433,16 @@
         </div>
       </div>
     </div>
+
+    <footer class="site-footer">
+      <p>SwarmSpace by Orbital AI — 2026</p>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="upgrade.html">Pricing</a>
+        <a href="submit-plugin.html">Submit plugin</a>
+        <a href="security.html">Security</a>
+      </div>
+    </footer>
 
   </div>
 </div>

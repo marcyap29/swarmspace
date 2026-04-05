@@ -61,23 +61,15 @@ If you implement a Firebase-backed submit/admin review flow, use one consistent 
 Collection: `plugin_submissions`
 
 - **Create:** authenticated user only if `request.resource.data.developer_uid == request.auth.uid` and `status == "pending"`.
-- **Read:** owner only (`resource.data.developer_uid == request.auth.uid`).
-- **Update / delete:** denied from clients; admin workflows use server-side or Admin SDK.
+- **Read:** owning developer **or** allowlisted admin (`isPluginSubmissionAdmin()` in `firestore.rules` — keep emails aligned with `admin-submissions.html`).
+- **Update:** allowlisted admins only; `developer_uid` must match existing data; updates may touch only `status`, `review_notes`, `reviewed_at`, `reviewed_by` (enforced in rules via diff key checks).
+- **Delete:** denied from clients.
 
-**Indexes:** `firebase.json` registers `firestore.indexes.json`. Composite index: `plugin_submissions` — `developer_uid` ASC, `submitted_at` DESC (for the portal history query).
+**Admin UI:** `admin-submissions.html` lists and updates this collection (not legacy `submissions`).
 
-Canonical rules live in root `firestore.rules`; excerpt:
+**Indexes:** `firebase.json` registers `firestore.indexes.json`. The submit portal uses a single-field equality query on `developer_uid` and sorts by `submitted_at` in the browser; the indexes file may be empty until you add composite indexes for new queries.
 
-```rules
-match /plugin_submissions/{docId} {
-  allow create: if request.auth != null
-                && request.resource.data.developer_uid == request.auth.uid
-                && request.resource.data.status == "pending";
-  allow read: if request.auth != null
-              && resource.data.developer_uid == request.auth.uid;
-  allow update, delete: if false;
-}
-```
+Canonical rules live in root `firestore.rules`.
 
 ---
 
@@ -111,6 +103,7 @@ match /plugin_submissions/{docId} {
 | `/signup` | `/signup.html` |
 | `/submit` | `/submit.html` |
 | *(direct)* | `/submit-plugin.html` (no rewrite; linked from app pages) |
+| *(direct)* | `/security.html` (no rewrite; linked from app pages) |
 | `/admin-submissions` | `/admin-submissions.html` |
 | `/upgrade` | `/upgrade.html` |
 | `/dashboard` | `/dashboard.html` |

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — Security &amp; Trust Architecture</title>
+  <meta name="description" content="How SwarmSpace maps to the OWASP Agentic Security Top 10: sandboxing, PRISM, trust tiers, and known limitations." />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
+      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
+      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
+      --orange:#fb923c; --purple:#9b6dff;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --mono:'SF Mono','JetBrains Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.65; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+    .btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px; font-size:13px; color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
+
+    .page { max-width:900px; margin:0 auto; padding:56px 40px 80px; }
+    .section-label {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
+      text-transform:uppercase; background:rgba(91,91,214,.08);
+      border:1px solid rgba(91,91,214,.2); border-radius:20px;
+      padding:4px 12px; margin-bottom:20px;
+    }
+    h1 { font-size:clamp(28px,4.5vw,44px); font-weight:800; letter-spacing:-1px; line-height:1.12; margin-bottom:14px; }
+    .subtitle { font-size:17px; color:var(--muted); max-width:720px; margin-bottom:40px; line-height:1.6; }
+    h2 { font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:48px 0 16px; }
+    h2:first-of-type { margin-top:36px; }
+    .lead { font-size:15px; color:var(--muted); margin-bottom:16px; max-width:720px; }
+    p { font-size:14px; color:var(--muted); margin-bottom:14px; max-width:720px; }
+    ul { margin:12px 0 18px 20px; color:var(--muted); font-size:14px; }
+    li { margin-bottom:8px; }
+    li strong { color:var(--text); font-weight:600; }
+
+    .table-wrap { overflow-x:auto; margin:20px 0 28px; border:1px solid var(--border); border-radius:12px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
+    th { text-align:left; font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface); }
+    td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--muted); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    td:first-child { color:var(--text); font-weight:600; width:34%; }
+    code { font-family:var(--mono); font-size:12px; color:var(--accent2); }
+
+    .limitations {
+      margin-top:24px; padding:22px 24px;
+      border:1px solid rgba(251,146,60,.35);
+      border-radius:14px;
+      background:rgba(251,146,60,.06);
+    }
+    .limitations h3 { font-size:15px; font-weight:700; color:var(--orange); margin-bottom:12px; }
+    .limitations p, .limitations li { font-size:13px; color:var(--muted); }
+    .limitations ul { margin-bottom:0; }
+
+    .refs { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-top:28px; }
+    .refs h3 { font-size:14px; font-weight:700; margin-bottom:14px; }
+    .refs ul { list-style:none; margin:0; padding:0; }
+    .refs li { margin-bottom:10px; font-size:13px; color:var(--muted); }
+    .refs li:last-child { margin-bottom:0; }
+
+    footer { border-top:1px solid var(--border); padding:36px 40px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; max-width:1100px; margin:0 auto; }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:20px; }
+    .footer-links a { font-size:13px; color:var(--dim); }
+
+    @media(max-width:640px){
+      nav{padding:14px 20px;}
+      .page{padding:40px 20px 64px;}
+      footer{flex-direction:column;align-items:flex-start;padding:28px 20px;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">SwarmSpace</a>
+  <div class="nav-actions">
+    <a href="/" class="btn-ghost">Home</a>
+    <a href="/upgrade.html" class="btn-ghost">Pricing</a>
+    <a href="/submit-plugin.html" class="btn-ghost">Submit plugin</a>
+    <a href="/signup.html" class="btn-primary">Get API access →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="section-label">Trust</div>
+  <h1>Security &amp; Trust Architecture</h1>
+  <p class="subtitle">How SwarmSpace addresses the <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026" rel="noopener noreferrer">OWASP Top 10 for Agentic Applications</a> and related agentic-risk work (including the OWASP <a href="https://owasp.org/www-project-agentic-skills-top-10/" rel="noopener noreferrer">Agentic Skills Top 10</a> project). This page is for developers and security reviewers evaluating the platform.</p>
+
+  <h2>1. The problem</h2>
+  <p class="lead">Protocols such as MCP standardize how agents invoke tools. They do not, by themselves, establish whether a tool is safe to call or whether its operator is accountable.</p>
+  <p>The OWASP agentic-security line of work identifies recurring failure modes, including:</p>
+  <ul>
+    <li><strong>Private context + untrusted tools</strong> — agents with access to user data calling plugins whose behavior and provenance are unknown.</li>
+    <li><strong>Runtime content</strong> — plugins that were acceptable at submission time but later fetch external content that carries prompt-injection payloads.</li>
+    <li><strong>Weak identity and governance</strong> — no meaningful verification of who ships a plugin, no runtime telemetry, no path to revoke or downgrade trust.</li>
+    <li><strong>Credential handling</strong> — secrets embedded in tool configurations or exposed to tool code.</li>
+    <li><strong>No execution isolation</strong> — tool code running with full process or network privileges.</li>
+  </ul>
+  <p>OWASP describes a <strong>lethal trifecta</strong>: the combination of <strong>access to private data</strong>, <strong>exposure to untrusted content</strong>, and <strong>external communication</strong>. An agent that invokes an unreviewed plugin with all three channels available operates inside that high-risk zone. SwarmSpace is designed to narrow each channel where the architecture can do so structurally; what cannot be fully closed is covered honestly below.</p>
+
+  <h2>2. SwarmSpace mitigations</h2>
+  <p class="lead">The following rows map common AST-style risks to concrete controls. Wording follows product architecture, not a third-party audit certificate.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>SwarmSpace mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Untrusted plugin execution</td>
+          <td><strong>Dynamic Worker (V8 isolate) sandboxing.</strong> Each invocation runs in an isolate with only declared APIs exposed. Millisecond-level cold start, megabyte-scale memory, no shared mutable state between calls. Undeclared platform surfaces are unavailable, not only “disallowed.”</td>
+        </tr>
+        <tr>
+          <td>Credential exposure</td>
+          <td><strong>Injection at the network boundary.</strong> Platform-managed keys are attached via HTTP filtering at egress. Plugin code issues <code>fetch</code>; it does not receive raw secrets to log, embed in responses, or exfiltrate.</td>
+        </tr>
+        <tr>
+          <td>Excessive data access</td>
+          <td><strong>PRISM context minimization.</strong> Only fields listed in <code>privacy_data_required</code> are included in <code>context</code>. LUMARA extracts that subset client-side; the worker receives nothing else through the supported path. Enforcement is structural at the sandbox boundary, not an honor-system policy.</td>
+        </tr>
+        <tr>
+          <td>Undeclared network access</td>
+          <td><strong><code>globalOutbound: null</code></strong> by default. Only hostnames in <code>network_domains</code> are allowlisted for outbound calls. Other destinations fail at the platform layer.</td>
+        </tr>
+        <tr>
+          <td>Unverified developer identity</td>
+          <td><strong>Human safety review</strong> before Community listing. <strong>Developer Agreement</strong> (accepted in the submission flow) includes indemnification, prompt-injection liability, and third-party API terms warranties. Every listed plugin has passed an identity and policy gate.</td>
+        </tr>
+        <tr>
+          <td>Indirect prompt injection</td>
+          <td><strong>Runtime behavioral monitoring</strong> in the sandbox, manifest disclosure for external content sources, and contractual terms in the Developer Agreement. Residual risk remains; see <a href="#limitations">Honest limitations</a>.</td>
+        </tr>
+        <tr>
+          <td>No quality assurance</td>
+          <td><strong>Merit-based Verified tier.</strong> Monthly composite score (upvotes, call volume, retention, developer activity, error rate). Placement is earned from signals, not purchased.</td>
+        </tr>
+        <tr>
+          <td>Plugin integrity drift</td>
+          <td><strong><code>content_hash</code></strong> on the manifest for submitted artifacts. Hash recorded at review; changes are detected on later review cycles. Verified listings use additional signing and integrity checks as specified in operations.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>3. Trust tiers</h2>
+  <p>SwarmSpace exposes three trust tiers. Agents (or their orchestrators) can filter calls by tier before execution.</p>
+  <ul>
+    <li><strong>Verified</strong> — Sandboxed execution, human review, cryptographic signing on the verified pipeline. Suitable for plugins that receive personal context. Subject to monthly merit review for continued placement.</li>
+    <li><strong>Community</strong> — Passed safety review. Free to end users. Standard catalogue placement. Appropriate for well-scoped tools with clear manifests.</li>
+    <li><strong>Experimental</strong> — Clearly flagged in catalogue and APIs. Limited context access. Intended for prototypes; conservative agents can exclude this tier entirely.</li>
+  </ul>
+  <p>A cautious integration can restrict execution to <strong>Verified-only</strong> plugins regardless of what the user’s subscription allows.</p>
+
+  <h2>4. The review process</h2>
+  <ol style="margin:12px 0 18px 22px; color:var(--muted); font-size:14px; max-width:720px;">
+    <li style="margin-bottom:12px;"><strong>Manifest submission</strong> — JSON schema validation, field consistency checks, HTTPS <code>endpoint_url</code>, reachability probes.</li>
+    <li style="margin-bottom:12px;"><strong>Sandbox testing</strong> — Prompt-injection probes where applicable, PRISM minimization checks against <code>privacy_data_required</code>, latency against <code>latency_class</code>, outbound traffic against <code>network_domains</code>.</li>
+    <li style="margin-bottom:12px;"><strong>Safety review</strong> — Human review for abuse, third-party ToS alignment, privacy proportionality, developer identity.</li>
+    <li style="margin-bottom:12px;"><strong>Listing</strong> — Community tier publication and discovery indexing.</li>
+    <li style="margin-bottom:12px;"><strong>Monthly merit review</strong> — Promotion to Verified for sustained quality; demotion or removal if signals fail.</li>
+  </ol>
+
+  <h2 id="limitations">5. Honest limitations</h2>
+  <div class="limitations">
+    <h3>What SwarmSpace does not claim to solve</h3>
+    <ul>
+      <li><strong>Indirect prompt injection</strong> remains a residual risk. A compliant plugin can still retrieve hostile web content at runtime. Mitigations include monitoring, disclosure, and contract terms; they reduce risk but do not remove it.</li>
+      <li><strong>Third-party APIs</strong> are not audited by SwarmSpace. We review how your plugin uses the network; we do not certify upstream vendors’ data retention or security.</li>
+      <li><strong>Merit scores</strong> are operational signals, not a security certification. High merit means consistent usage and quality metrics, not a formal pen-test pass.</li>
+      <li><strong>Manifest honesty</strong> — PRISM enforces declared fields. If a developer over-declares or mis-declares needs, safety review is the backstop; automation does not read intent.</li>
+    </ul>
+  </div>
+
+  <h2>6. Architecture references</h2>
+  <div class="refs">
+    <h3>Documentation</h3>
+    <ul>
+      <li><a href="https://github.com/marcyap29/swarmspace/blob/main/Docs/PRISM.md">PRISM technical documentation</a> (<code>Docs/PRISM.md</code> in the repository)</li>
+      <li><a href="https://github.com/marcyap29/swarmspace/blob/main/DEVELOPER_GUIDE.md">Developer Guide</a> — manifest specification, endpoint contract, submission flow</li>
+      <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026" rel="noopener noreferrer">OWASP Top 10 for Agentic Applications (2026)</a></li>
+      <li><a href="https://owasp.org/www-project-agentic-skills-top-10/" rel="noopener noreferrer">OWASP Agentic Skills Top 10</a> (related project)</li>
+      <li><strong>SwarmSpace Developer Agreement</strong> — accepted when submitting a plugin via <a href="/submit-plugin.html">submit-plugin.html</a>. A standalone legal URL will be published when available.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>SwarmSpace by Orbital AI — 2026</p>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/upgrade.html">Pricing</a>
+    <a href="/submit-plugin.html">Submit plugin</a>
+    <a href="/security.html">Security</a>
+    <a href="#">Docs</a>
+    <a href="#">Privacy</a>
+  </div>
+</footer>
+
+</body>
+</html>

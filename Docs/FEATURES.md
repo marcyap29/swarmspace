@@ -1,6 +1,6 @@
 # SwarmSpace Features
 
-**Version:** 1.1.4  
+**Version:** 1.1.5  
 **Last Updated:** 2026-04-04
 
 ---
@@ -21,7 +21,9 @@
 | FAQ | FAQ page | ✅ |
 | Developer submit portal (`/submit` → `submit.html`) | Firebase sign-in; idea or manifest modes; writes `plugin_submissions` with `developer_uid` + pending | ✅ |
 | Submit plugin portal (`submit-plugin.html`) | Full manifest-style flow, endpoint probe, submission history; same `plugin_submissions` collection; landing + dashboard links | ✅ |
-| Admin submissions (`/admin-submissions`) | Allowlisted reviewer; list/filter/search; approve / needs info / reject → Firestore | ✅ |
+| Admin submissions (`/admin-submissions`) | Allowlisted reviewer; list/filter/search on **`plugin_submissions`**; approve / needs info / reject → Firestore | ✅ |
+| Security & trust (`security.html`) | OWASP Agentic Top 10 mapping, PRISM, trust tiers; linked from main nav and dashboard | ✅ |
+| Developer guide (`DEVELOPER_GUIDE.md`) | Manifest specification, JSON Schema, endpoint and submission guidance for plugin authors | ✅ |
 
 ### Integrations
 
