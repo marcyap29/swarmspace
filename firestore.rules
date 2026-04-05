@@ -28,11 +28,16 @@ service cloud.firestore {
                             && resource.data.developer_uid == request.auth.uid;
     }
 
-    // ── plugin_submissions (existing — do not modify) ─────────────────
+    // ── plugin_submissions ────────────────────────────────────────────
+    // Developers create pending rows; read own docs for the submission portal.
+    // Admin review uses Admin SDK or separate tooling.
     match /plugin_submissions/{docId} {
-      allow create: if request.auth != null;
-      allow read, update: if false;
-      allow delete: if false;
+      allow create: if request.auth != null
+                    && request.resource.data.developer_uid == request.auth.uid
+                    && request.resource.data.status == "pending";
+      allow read: if request.auth != null
+                  && resource.data.developer_uid == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // ── submissions (new collection from backlog reconciliation) ──────

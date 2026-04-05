@@ -140,6 +140,11 @@
     .who-list li { font-size:13px; color:var(--muted); padding:5px 0; border-bottom:1px solid var(--border); }
     .who-list li:last-child { border-bottom:none; }
     .who-list li::before { content:"→ "; color:var(--dim); }
+    .who-cta {
+      display:inline-block; margin-top:16px; padding:10px 18px; background:var(--accent);
+      border-radius:8px; font-size:13px; font-weight:700; color:#fff;
+    }
+    .who-cta:hover { opacity:.92; text-decoration:none; }
 
     .status-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:40px; }
     .status-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; align-items:center; gap:10px; }
@@ -565,6 +570,7 @@
         <li>First 100 Founding Developers: 85% share, permanent</li>
         <li>Public developer profile and merit score</li>
       </ul>
+      <a href="/submit-plugin.html" class="who-cta">Submit a Plugin →</a>
     </div>
     <div class="who-card">
       <div class="who-icon">🤖</div>
@@ -612,7 +618,7 @@
     <p>Sign up free. 20 calls/day across 15 APIs. No credit card.<br>Submit your own plugins when you're ready.</p>
     <div class="cta-actions">
       <a href="/signup.html" class="hero-cta">Get API access →</a>
-      <a href="/submit" class="hero-secondary">Submit a plugin</a>
+      <a href="/submit-plugin.html" class="hero-secondary">Submit a plugin</a>
     </div>
     <p style="margin-top:20px;font-size:13px;color:var(--dim)">Already have an account? <a href="/signup.html">Sign in →</a></p>
   </div>
@@ -623,7 +629,7 @@
   <div class="footer-links">
     <a href="/dashboard.html">Dashboard</a>
     <a href="/upgrade.html">Pricing</a>
-    <a href="/submit">Submit plugin</a>
+    <a href="/submit-plugin.html">Submit plugin</a>
     <a href="#">Docs</a>
     <a href="#">Privacy</a>
   </div>
