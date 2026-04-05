@@ -1,6 +1,6 @@
 # SwarmSpace Backend & Infrastructure
 
-**Last Updated:** 2026-03-23
+**Last Updated:** 2026-04-04
 
 ---
 
@@ -60,25 +60,22 @@ If you implement a Firebase-backed submit/admin review flow, use one consistent 
 
 Collection: `plugin_submissions`
 
-- **Create:** any authenticated user can create a submission for themselves
-- **Read/update:** only admin email can read/update submissions
-- **Delete:** deny from client
+- **Create:** authenticated user only if `request.resource.data.developer_uid == request.auth.uid` and `status == "pending"`.
+- **Read:** owner only (`resource.data.developer_uid == request.auth.uid`).
+- **Update / delete:** denied from clients; admin workflows use server-side or Admin SDK.
 
-Use these minimum Firestore rules (replace admin email):
+**Indexes:** `firebase.json` registers `firestore.indexes.json`. Composite index: `plugin_submissions` — `developer_uid` ASC, `submitted_at` DESC (for the portal history query).
+
+Canonical rules live in root `firestore.rules`; excerpt:
 
 ```rules
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /plugin_submissions/{submissionId} {
-      allow create: if request.auth != null
-        && request.resource.data.submitterUid == request.auth.uid
-        && request.resource.data.submitterEmail == request.auth.token.email;
-      allow read, update: if request.auth != null
-        && request.auth.token.email == "admin@example.com";
-      allow delete: if false;
-    }
-  }
+match /plugin_submissions/{docId} {
+  allow create: if request.auth != null
+                && request.resource.data.developer_uid == request.auth.uid
+                && request.resource.data.status == "pending";
+  allow read: if request.auth != null
+              && resource.data.developer_uid == request.auth.uid;
+  allow update, delete: if false;
 }
 ```
 
@@ -113,6 +110,7 @@ service cloud.firestore {
 | `/` | `/index.html` |
 | `/signup` | `/signup.html` |
 | `/submit` | `/submit.html` |
+| *(direct)* | `/submit-plugin.html` (no rewrite; linked from app pages) |
 | `/admin-submissions` | `/admin-submissions.html` |
 | `/upgrade` | `/upgrade.html` |
 | `/dashboard` | `/dashboard.html` |

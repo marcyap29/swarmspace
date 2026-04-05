@@ -1,7 +1,7 @@
 # SwarmSpace Documentation Context Guide
 
 **Version:** 1.0.0
-**Last Updated:** March 1, 2026
+**Last Updated:** April 4, 2026
 **Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
@@ -16,6 +16,7 @@
 | **README.md** | Setup guide (Firebase, Stripe, Vercel) | `README.md` |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | `SWARMSPACE_API_CONTEXT.md` |
 | **architecture.md** | SwarmStore architecture & hosting | `architecture.md` |
+| **Docs/RULE.md** | Cursor/agent rules (API, security, workflows) | `Docs/RULE.md` |
 | **Docs/CONFIGURATION_MANAGEMENT.md** | Docs inventory and change tracking | `Docs/CONFIGURATION_MANAGEMENT.md` |
 | **Docs/CHANGELOG.md** | Version history | `Docs/CHANGELOG.md` |
 | **Docs/FEATURES.md** | Feature list | `Docs/FEATURES.md` |
@@ -39,12 +40,12 @@
 ```
 swarmspace/
 ├── overview.md         ← Orientation for users and agents
-├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html
+├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── vercel.json
 ├── SWARMSPACE_API_CONTEXT.md, architecture.md
 └── Docs/
-    ├── claude.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
+    ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
     ├── backend.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
     └── bugtracker/
 ```
@@ -191,6 +192,7 @@ For each change, update the appropriate documents (only where relevant):
 - `SWARMSPACE_API_CONTEXT.md` — API reference for LUMARA integration
 - `architecture.md` — SwarmStore architecture and hosting
 - `Docs/claude.md` — context guide and role definitions
+- `Docs/RULE.md` — Cursor/agent rules for SwarmSpace
 - `Docs/CONFIGURATION_MANAGEMENT.md` — docs inventory and change log
 - `Docs/CHANGELOG.md` — version history
 - `Docs/FEATURES.md` — feature catalog

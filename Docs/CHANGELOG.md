@@ -1,7 +1,24 @@
 # SwarmSpace Changelog
 
-**Version:** 1.1.3  
-**Last Updated:** 2026-03-23
+**Version:** 1.1.4  
+**Last Updated:** 2026-04-04
+
+---
+
+## [1.1.4] - 2026-04-04
+
+### Added
+
+- **`submit-plugin.html`** — Developer submission portal (manifest fields, endpoint probe, history table); writes `plugin_submissions` with `developer_uid`, `status: pending`, `submitted_at`. Linked from landing and dashboard.
+- **`Docs/RULE.md`** — Cursor/agent rules for SwarmSpace (API context, security, doc workflows).
+- **`firestore.indexes.json`** — Composite index on `plugin_submissions` (`developer_uid` ASC, `submitted_at` DESC); registered in `firebase.json`.
+
+### Changed
+
+- **`firestore.rules`** — `plugin_submissions`: creates limited to `developer_uid` + `status == pending`; developers may read their own rows; client update/delete denied (admin via server tooling).
+- **`signup.html`** — Post-auth redirect accepts safe `?redirect=` targets, including `/submit-plugin.html` and shorthand `submit-plugin`.
+- **`submit.html`** — Writes `developer_uid` on create so documents satisfy `plugin_submissions` security rules alongside legacy submitter fields.
+- **Documentation** — README, FEATURES, backend, CONFIGURATION_MANAGEMENT, claude.md quick reference, bugtracker reference table updated for the above (doc-config-git-backup sync).
 
 ---
 
