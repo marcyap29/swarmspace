@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — PRISM Context Minimization</title>
+  <meta name="description" content="Technical reference for PRISM, the privacy and context-minimization architecture used across LUMARA and SwarmSpace." />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
+      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
+      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
+      --orange:#fb923c; --purple:#9b6dff;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --mono:'SF Mono','JetBrains Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.65; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+```
+nav {
+  position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 40px;
+  background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+.nav-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+.btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px; font-size:13px; color:var(--muted); }
+.btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+.btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+.btn-primary:hover { opacity:.9; text-decoration:none; }
+
+.page { max-width:900px; margin:0 auto; padding:56px 40px 80px; }
+.section-label {
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
+  text-transform:uppercase; background:rgba(91,91,214,.08);
+  border:1px solid rgba(91,91,214,.2); border-radius:20px;
+  padding:4px 12px; margin-bottom:20px;
+}
+h1 { font-size:clamp(28px,4.5vw,44px); font-weight:800; letter-spacing:-1px; line-height:1.12; margin-bottom:14px; }
+.subtitle { font-size:17px; color:var(--muted); max-width:720px; margin-bottom:40px; line-height:1.6; }
+h2 { font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:48px 0 16px; }
+h2:first-of-type { margin-top:36px; }
+h3 { font-size:16px; font-weight:700; margin:28px 0 10px; color:var(--text); }
+.lead { font-size:15px; color:var(--muted); margin-bottom:16px; max-width:720px; }
+p { font-size:14px; color:var(--muted); margin-bottom:14px; max-width:720px; }
+ul { margin:12px 0 18px 20px; color:var(--muted); font-size:14px; }
+li { margin-bottom:8px; }
+li strong { color:var(--text); font-weight:600; }
+
+.table-wrap { overflow-x:auto; margin:20px 0 28px; border:1px solid var(--border); border-radius:12px; }
+table { width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
+th { text-align:left; font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface); }
+td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--muted); vertical-align:top; }
+tr:last-child td { border-bottom:none; }
+td:first-child { color:var(--text); font-weight:600; width:34%; }
+code { font-family:var(--mono); font-size:12px; color:var(--accent2); }
+
+.code-block {
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:18px 20px; margin:16px 0 24px; overflow-x:auto;
+}
+.code-block pre { font-family:var(--mono); font-size:12px; color:var(--muted); line-height:1.7; white-space:pre; }
+.code-block .key { color:var(--accent2); }
+.code-block .val { color:var(--green); }
+.code-block .comment { color:var(--dim); }
+
+.limitations {
+  margin-top:24px; padding:22px 24px;
+  border:1px solid rgba(251,146,60,.35);
+  border-radius:14px;
+  background:rgba(251,146,60,.06);
+}
+.limitations h3 { font-size:15px; font-weight:700; color:var(--orange); margin-bottom:12px; }
+.limitations p, .limitations li { font-size:13px; color:var(--muted); }
+.limitations ul { margin-bottom:0; }
+
+.refs { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-top:28px; }
+.refs h3 { font-size:14px; font-weight:700; margin-bottom:14px; }
+.refs ul { list-style:none; margin:0; padding:0; }
+.refs li { margin-bottom:10px; font-size:13px; color:var(--muted); }
+.refs li:last-child { margin-bottom:0; }
+
+footer { border-top:1px solid var(--border); padding:36px 40px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; max-width:1100px; margin:0 auto; }
+footer p { font-size:13px; color:var(--dim); }
+.footer-links { display:flex; flex-wrap:wrap; gap:20px; }
+.footer-links a { font-size:13px; color:var(--dim); }
+
+@media(max-width:640px){
+  nav{padding:14px 20px;}
+  .page{padding:40px 20px 64px;}
+  footer{flex-direction:column;align-items:flex-start;padding:28px 20px;}
+}
+```
+
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">SwarmSpace</a>
+  <div class="nav-actions">
+    <a href="/" class="btn-ghost">Home</a>
+    <a href="/upgrade.html" class="btn-ghost">Pricing</a>
+    <a href="/submit-plugin.html" class="btn-ghost">Submit plugin</a>
+    <a href="/signup.html" class="btn-primary">Get API access →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="section-label">Developer Docs</div>
+  <h1>PRISM</h1>
+  <p class="subtitle">The privacy and context-minimization architecture used across LUMARA and SwarmSpace. This page is for developers building plugins and security reviewers evaluating the platform. PRISM is a proper noun and is not expanded as an acronym.</p>
+
+  <h2>1. What PRISM is</h2>
+  <p>PRISM is the privacy architecture that governs how user data flows through SwarmSpace and LUMARA. Its core principle: plugins receive the minimum necessary context to perform their function. Enforcement is structural wherever possible — the system is designed so that undeclared data paths are not available to plugin code, not merely disallowed by policy.</p>
+  <p>Three enforcement boundaries work together:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Boundary</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Manifest declaration</td>
+          <td>The plugin declares required context in <code>privacy_data_required</code>. That list is the contract for what may ever enter the call.</td>
+        </tr>
+        <tr>
+          <td>Sandbox enforcement</td>
+          <td>A Cloudflare Dynamic Worker V8 isolate runs the invocation. Only the declared subset is injected into the <code>context</code> parameter the plugin receives.</td>
+        </tr>
+        <tr>
+          <td>Network control</td>
+          <td><code>globalOutbound: null</code> (default posture) blocks all outbound network access except hostnames allowlisted in <code>network_domains</code> on the manifest.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Structural vs policy:</strong> Context shape, sandbox APIs, outbound fetch allowlists, and credential injection at the network layer are structural. Safety review, Developer Agreement terms, runtime anomaly review, and third-party API compliance are policy and contract — they complement structural enforcement rather than replace it.</p>
+
+  <h2>2. Context minimization</h2>
+  <p class="lead">When LUMARA invokes a SwarmSpace plugin, the full user context — CHRONICLE profile, journal-derived material, behavioral signals — is not passed wholesale to the plugin.</p>
+
+  <ol style="margin:12px 0 18px 22px; color:var(--muted); font-size:14px; max-width:720px;">
+    <li style="margin-bottom:10px;">LUMARA reads <code>privacy_data_required</code> from the plugin manifest.</li>
+    <li style="margin-bottom:10px;">LUMARA extracts only those fields from the user context it holds locally.</li>
+    <li style="margin-bottom:10px;">That subset is sent to SwarmSpace as part of the invocation.</li>
+    <li style="margin-bottom:10px;">The Dynamic Worker sandbox receives only that subset in its <code>context</code> argument.</li>
+    <li style="margin-bottom:10px;">Plugin code has no supported mechanism to request additional CHRONICLE fields mid-flight. Undeclared channels are outside the exposed API.</li>
+  </ol>
+
+  <h3>What the plugin receives — weather plugin (declares location only)</h3>
+  <div class="code-block"><pre><span class="comment">// privacy_data_required: ["location"]</span>
+{
+  <span class="key">"query"</span>: <span class="val">"What's the weather like this afternoon?"</span>,
+  <span class="key">"context"</span>: {
+    <span class="key">"location"</span>: <span class="val">"San Diego, CA"</span>
+  },
+  <span class="key">"metadata"</span>: {
+    <span class="key">"caller"</span>: <span class="val">"lumara"</span>,
+    <span class="key">"request_id"</span>: <span class="val">"7b2c9f1a-4e8d-4b3c-9f01-123456789abc"</span>,
+    <span class="key">"tier"</span>: <span class="val">"free"</span>
+  }
+}</pre></div>
+
+  <p>The plugin does not receive the user's name, journal text, full CHRONICLE graph, or any undeclared field. Those values are never attached at the client minimization step and are not injected by the worker.</p>
+
+  <h3>What the plugin receives — research plugin (declares no personal context)</h3>
+  <div class="code-block"><pre><span class="comment">// privacy_data_required: ["none"]</span>
+{
+  <span class="key">"query"</span>: <span class="val">"Summarize recent papers on transformer scaling laws"</span>,
+  <span class="key">"context"</span>: {},
+  <span class="key">"metadata"</span>: {
+    <span class="key">"caller"</span>: <span class="val">"lumara"</span>,
+    <span class="key">"request_id"</span>: <span class="val">"9d0e5a33-1111-2222-3333-444455556666"</span>,
+    <span class="key">"tier"</span>: <span class="val">"free"</span>
+  }
+}</pre></div>
+
+  <h2>3. Sandbox enforcement</h2>
+  <p>Each plugin call executes inside a Cloudflare Dynamic Worker V8 isolate. Each invocation runs in its own isolate with no shared mutable state between concurrent calls or between different plugins. Only platform-declared bindings and APIs are exposed — the plugin cannot import arbitrary modules, open raw sockets, or reach internal SwarmSpace services outside the published worker surface.</p>
+  <p><strong>Network control:</strong> Default posture is <code>globalOutbound: null</code>. Outbound HTTP(S) is permitted only to origins whose hostnames appear in the manifest <code>network_domains</code> array. Fetches to other hosts are blocked at the platform layer, not only caught by review.</p>
+  <p><strong>Credential injection:</strong> SwarmSpace holds secrets for third-party APIs and attaches authorization at the network boundary. Plugin code issues a standard <code>fetch()</code>; the API key is injected transparently. The raw secret is not exposed to plugin bytecode.</p>
+  <p><strong>Runtime monitoring:</strong> Executions are observable. Outbound targets, volume, latency, and response shapes are compared to declared behavior. Anomalies feed logging and human or automated review. Monitoring is operational enforcement, not a substitute for the structural blocks.</p>
+
+  <h2>4. Behavioral manifest fields</h2>
+  <p>Three fields on your manifest determine how PRISM and the orchestrator treat your plugin in automated and chained execution contexts. Declare these accurately — they are verified during sandbox testing.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>is_read_only</code></td>
+          <td>Plugin only reads data. Does not write to external systems, send messages, or modify state. Read-only plugins auto-approve in scheduled <code>auto</code> execution mode.</td>
+        </tr>
+        <tr>
+          <td><code>is_destructive</code></td>
+          <td>Plugin modifies, deletes, publishes, or sends data to external systems. Destructive plugins require explicit user confirmation even inside an already-approved workflow chain, and are blocked entirely in headless <code>auto</code> mode.</td>
+        </tr>
+        <tr>
+          <td><code>headless</code></td>
+          <td>Plugin is designed to run without a user-facing confirmation step. Required for Durable Object dispatch. Verified tier only. Incompatible with <code>is_destructive: true</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>5. PRISM for recurring agents</h2>
+  <p>Recurring agents running on Cloudflare Durable Objects follow a strict boundary on what may be stored versus what is fetched fresh at each execution.</p>
+  <ul>
+    <li><strong>Stored in the Durable Object:</strong> Last-run output snapshot (for delta computation), schedule configuration, alarm trigger metadata, run history needed to operate the schedule.</li>
+    <li><strong>Not stored in the Durable Object:</strong> Full personal context, CHRONICLE payloads, behavioral models, journal entries, or other rich user state.</li>
+  </ul>
+  <p>On each scheduled execution, the DO requests fresh context from LUMARA at run time, injects it into the workflow run, uses it for synthesis, then discards it. Personal context exists only for the duration of that execution path — it is not durably held in the DO as a user profile cache.</p>
+
+  <h2>6. PRISM for catalogue discovery</h2>
+  <p>When LUMARA calls SwarmSpace's proactive discovery endpoint (<code>/catalogue/updates</code>), interest tags are derived on the client from CHRONICLE and related local signals. SwarmSpace receives tag hashes, not raw CHRONICLE documents. With only hashed tags, SwarmSpace cannot reconstruct the user's full profile from that request. LUMARA performs additional relevance filtering using full local context before surfacing goal cards.</p>
+
+  <h2 id="limitations">7. What PRISM does not do</h2>
+  <div class="limitations">
+    <h3>Scope and honest limitations</h3>
+    <ul>
+      <li><strong>Transport encryption</strong> — PRISM does not replace TLS. Traffic relies on HTTPS as normal.</li>
+      <li><strong>End-to-end encryption of stored data</strong> — PRISM is not an E2EE store. Server-side encryption and E2EE are separate concerns.</li>
+      <li><strong>User overrides</strong> — PRISM does not stop a user from voluntarily sharing more context when the product offers that control. Minimization is the default, not an absolute against user intent.</li>
+      <li><strong>Third-party endpoints</strong> — PRISM does not audit how external APIs declared in <code>network_domains</code> handle data after the request leaves SwarmSpace. The Developer Agreement and vendor terms address this contractually.</li>
+      <li><strong>Indirect prompt injection</strong> — Content returned from the open web or other untrusted sources fetched at runtime can still influence model behavior. Runtime monitoring, review, and agreements mitigate abuse; residual risk remains an industry-wide problem not fully solved by PRISM alone.</li>
+    </ul>
+  </div>
+
+  <h2>8. Developer obligations</h2>
+  <ul>
+    <li><strong>Declare <code>privacy_data_required</code> honestly.</strong> Request only fields your implementation actually uses. Over-declaration is a safety-review failure.</li>
+    <li><strong>Declare <code>network_domains</code> completely.</strong> Any hostname contacted during normal operation must appear. Undeclared egress is blocked structurally where the sandbox applies.</li>
+    <li><strong>Avoid exfiltration side channels.</strong> Encoding user data into URLs or bodies to declared domains in ways that violate policy is a manifest honesty violation. Runtime monitoring targets such patterns.</li>
+    <li><strong>Comply with the Developer Agreement.</strong> Including third-party API ToS and data handling clauses.</li>
+    <li><strong>Do not retain user context</strong> beyond the API call unless explicitly declared, user-authorized, and approved through review.</li>
+  </ul>
+  <p>Violations can result in rejection, de-listing, or account action regardless of technical minimization.</p>
+
+  <div class="refs">
+    <h3>Related documentation</h3>
+    <ul>
+      <li><a href="/security.html">Security &amp; Trust Architecture</a> — full OWASP mapping, trust tiers, review process, and honest limitations</li>
+      <li><a href="https://github.com/marcyap29/swarmspace/blob/main/DEVELOPER_GUIDE.md">Developer Guide</a> — manifest specification, endpoint contract, submission flow</li>
+      <li><a href="https://owasp.org/www-project-agentic-skills-top-10/" rel="noopener noreferrer">OWASP Agentic Skills Top 10</a></li>
+      <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026" rel="noopener noreferrer">OWASP Top 10 for Agentic Applications (2026)</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>SwarmSpace by Orbital AI — 2026</p>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/upgrade.html">Pricing</a>
+    <a href="/submit-plugin.html">Submit plugin</a>
+    <a href="/security.html">Security</a>
+    <a href="/prism.html">Docs</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+</footer>
+
+</body>
+</html>
