@@ -5,7 +5,7 @@
 
 ## Top Priority
 
-> _[ Your top priority item here ]_
+> **Plan Agent (Two-Phase Execution)** — Add a planning phase to SwarmSpace agent execution. Before an agent runs, it produces a structured plan showing which tools it will use. User reviews, edits, approves, then execution begins. Backend: `workers/agent-worker/` (deployed). Flutter UI: see `workers/agent-worker/FLUTTER_IMPLEMENTATION.md` for the LUMARA implementation prompt.
 
 ---
 
