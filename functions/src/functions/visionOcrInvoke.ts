@@ -15,7 +15,6 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
-import { ImageAnnotatorClient } from "@google-cloud/vision";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const SWARMSPACE_INTERNAL_TOKEN = defineSecret("SWARMSPACE_INTERNAL_TOKEN");
@@ -77,6 +76,7 @@ export const visionOcrInvoke = onRequest(
 
     try {
       if (mode === "ocr") {
+        const { ImageAnnotatorClient } = await import("@google-cloud/vision");
         const client = new ImageAnnotatorClient();
         const [result] = await client.textDetection({ image: { content: imageBuffer } });
         const text = result.fullTextAnnotation?.text?.trim() ?? "";
