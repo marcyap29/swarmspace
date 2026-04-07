@@ -32,6 +32,11 @@
 - [ ] Progressive workflow discovery (CHRONICLE-driven surfacing)
 - [ ] Custom chain builder UI
 
+### Plan Agent Enhancements
+- [ ] Add custom user API key support to Plan Agent worker
+- [ ] Enhance plugin registry with capabilities, example queries, and privacy flags
+- [ ] Implement plan validation mode for editing workflows
+
 ### Infrastructure
 - [ ] Firestore composite index on `stripe_customer_id`
 - [ ] API key uniqueness enforcement in Firestore
