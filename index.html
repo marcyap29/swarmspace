@@ -9,12 +9,12 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
-      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
-      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
-      --orange:#fb923c; --purple:#9b6dff;
-      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-      --mono:'SF Mono','Fira Code',monospace;
+      --bg:#0a0a0f; --surface:#13131E; --surface2:#1A1A2C; --border:#1E1E35; --border2:#2A2A3E;
+      --text:#e8e8f0; --muted:#7A7A9A; --dim:#44445A;
+      --accent:#5b5bd6; --accent2:#5B5BD6; --green:#34d399;
+      --orange:#FB923C; --purple:#5B5BD6;
+      --font:'Inter',-apple-system,sans-serif;
+      --mono:'JetBrains Mono','Fira Code',monospace;
     }
     html { scroll-behavior:smooth; }
     body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.6; }
@@ -90,18 +90,18 @@ section { padding:96px 40px; max-width:1100px; margin:0 auto; }
 .step-title { font-size:16px; font-weight:700; margin-bottom:8px; }
 .step-body { font-size:13px; color:var(--muted); line-height:1.6; }
 
-.progression { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:56px; }
-.prog-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
-.prog-card.active { border-color:var(--accent); }
-.prog-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.08em; padding:3px 10px; border-radius:20px; margin-bottom:16px; }
-.prog-tag.now { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.25); }
-.prog-tag.next { background:rgba(91,91,214,.12); color:var(--accent2); border:1px solid rgba(91,91,214,.25); }
-.prog-tag.later { background:rgba(155,109,255,.12); color:var(--purple); border:1px solid rgba(155,109,255,.25); }
-.prog-card p { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
-.prog-card ul { list-style:none; }
-.prog-card li { font-size:13px; color:var(--muted); padding:5px 0; border-bottom:1px solid var(--border); }
-.prog-card li:last-child { border-bottom:none; }
-.prog-card li::before { content:"→ "; color:var(--accent2); }
+    .progression { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:56px; }
+    .prog-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+    .prog-card.active { border-color:var(--accent); }
+    .prog-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.08em; padding:3px 10px; border-radius:20px; margin-bottom:16px; }
+    .prog-tag.now { background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.25); }
+    .prog-tag.next { background:rgba(91,91,214,.12); color:var(--accent2); border:1px solid rgba(91,91,214,.25); }
+    .prog-tag.later { background:rgba(91,91,214,.12); color:var(--purple); border:1px solid rgba(91,91,214,.25); }
+    .prog-card p { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+    .prog-card ul { list-style:none; }
+    .prog-card li { font-size:13px; color:var(--muted); padding:5px 0; border-bottom:1px solid var(--border); }
+    .prog-card li:last-child { border-bottom:none; }
+    .prog-card li::before { content:"→ "; color:var(--accent2); }
 
 .apis-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:48px; }
 .api-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; }
@@ -187,8 +187,7 @@ footer p { font-size:13px; color:var(--dim); }
     <a href="#platform">Platform</a>
     <a href="#trust">Trust</a>
     <a href="#for-who">For who</a>
-    <a href="/security.html">Security</a>
-    <a href="/submit-plugin.html">Submit a plugin</a>
+    <a href="/submit-plugin">Submit a plugin</a>
   </div>
   <div class="nav-actions">
     <a href="/upgrade.html" class="btn-ghost">Pricing</a>
@@ -619,7 +618,7 @@ footer p { font-size:13px; color:var(--dim); }
     <p>Sign up free. 20 calls/day across 15 APIs. No credit card.<br>Submit your own plugins when you're ready.</p>
     <div class="cta-actions">
       <a href="/signup.html" class="hero-cta">Get API access →</a>
-      <a href="/submit-plugin.html" class="hero-secondary">Submit a plugin</a>
+      <a href="/submit-plugin" class="hero-secondary">Submit a plugin</a>
     </div>
     <p style="margin-top:20px;font-size:13px;color:var(--dim)">Already have an account? <a href="/signup.html">Sign in →</a></p>
   </div>
@@ -630,10 +629,9 @@ footer p { font-size:13px; color:var(--dim); }
   <div class="footer-links">
     <a href="/dashboard.html">Dashboard</a>
     <a href="/upgrade.html">Pricing</a>
-    <a href="/submit-plugin.html">Submit plugin</a>
-    <a href="/security.html">Security</a>
-    <a href="/prism.html">PRISM</a>
-    <a href="/privacy.html">Privacy</a>
+    <a href="/submit-plugin">Submit plugin</a>
+    <a href="#">Docs</a>
+    <a href="#">Privacy</a>
   </div>
 </footer>
 
