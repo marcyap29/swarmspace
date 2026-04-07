@@ -3,7 +3,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { GEMINI_API_KEY } from "../config";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { enforceAuth, checkJournalEntryLimit, checkChatLimit } from "../authGuard";
 import { checkUnifiedDailyLimit } from "../rateLimiter";
 
@@ -71,6 +70,7 @@ export const proxyGemini = onCall(
         throw new HttpsError("internal", "Gemini API key not configured");
       }
 
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
         model: "gemini-3-flash-preview",

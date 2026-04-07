@@ -15,7 +15,6 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const SWARMSPACE_INTERNAL_TOKEN = defineSecret("SWARMSPACE_INTERNAL_TOKEN");
 const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
@@ -90,6 +89,7 @@ export const visionOcrInvoke = onRequest(
         res.status(500).json({ error: "Gemini not configured" });
         return;
       }
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
       const imagePart = {
