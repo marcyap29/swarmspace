@@ -1,7 +1,7 @@
 # SwarmSpace Documentation Context Guide
 
 **Version:** 1.0.0
-**Last Updated:** April 4, 2026
+**Last Updated:** April 6, 2026
 **Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
@@ -23,6 +23,8 @@
 | **Docs/backend.md** | Backend (API, Vercel, Firebase) | `Docs/backend.md` |
 | **DEVELOPER_GUIDE.md** | Plugin manifest & submission reference | `DEVELOPER_GUIDE.md` |
 | **Docs/PRISM.md** | PRISM / privacy logging reference | `Docs/PRISM.md` |
+| **Docs/PRIVACY.md** | Privacy policy (Markdown) | `Docs/PRIVACY.md` |
+| **prism.html** / **privacy.html** | Public PRISM and privacy pages | site root |
 | **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
 | **Documentation, Config & Git Backup** | Universal prompt for docs, config, and backup sync | This file: section below |
 
@@ -42,14 +44,14 @@
 ```
 swarmspace/
 ├── overview.md         ← Orientation for users and agents
-├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html
+├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html
 ├── DEVELOPER_GUIDE.md
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── vercel.json
 ├── SWARMSPACE_API_CONTEXT.md, architecture.md
 └── Docs/
     ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
-    ├── backend.md, PRISM.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
+    ├── backend.md, PRISM.md, PRIVACY.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
     └── bugtracker/
 ```
 
@@ -202,7 +204,10 @@ For each change, update the appropriate documents (only where relevant):
 - `Docs/backend.md` — backend services
 - `DEVELOPER_GUIDE.md` — plugin manifest and submission reference
 - `Docs/PRISM.md` — PRISM reference
+- `Docs/PRIVACY.md` — privacy policy (Markdown)
 - `security.html` — security & trust architecture (public page)
+- `prism.html` — PRISM public reference page
+- `privacy.html` — privacy policy (public page)
 - `Docs/git.md` — git workflow
 - `Docs/SECURITY_CHECKLIST.md` — security checklist
 - `Docs/UI_UX.md` — UI/UX patterns

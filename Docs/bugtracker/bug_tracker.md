@@ -1,7 +1,7 @@
 # SwarmSpace Bug Tracker
 
 **Version:** 1.0.0  
-**Last Updated:** 2026-04-04  
+**Last Updated:** 2026-04-06  
 **Record count:** 0 individual bug records in [records/](records/)
 
 ---
@@ -46,3 +46,4 @@ Detailed bug reports live in [records/](records/). Use the standardized format f
 |--------------|---------|------------|-------|
 | Plugin submission portal, Firestore rules, indexes, RULE.md, doc sync | 1.1.4 | — | See CHANGELOG [1.1.4] |
 | Admin `plugin_submissions`, security page, developer guide, PRISM docs | 1.1.5 | — | See CHANGELOG [1.1.5]; merged to `main` |
+| prism/privacy HTML, PRIVACY.md, Functions lazy-load + firebase-functions 7.2.3 | 1.1.6 | — | See CHANGELOG [1.1.6] |

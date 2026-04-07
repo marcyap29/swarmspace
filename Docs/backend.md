@@ -1,6 +1,6 @@
 # SwarmSpace Backend & Infrastructure
 
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-06
 
 ---
 
@@ -40,6 +40,12 @@ Plugin registry.
 | Stripe | Checkout, subscriptions, webhooks | Stripe API |
 | Vercel | Hosting, serverless functions | Vercel |
 | API (external) | swarmspaceRouter, swarmspacePluginStatus | Firebase Cloud Functions |
+
+### Firebase Cloud Functions (`functions/`)
+
+- **Package:** `firebase-functions` **^7.2.3** (see `functions/package.json`).
+- **Deploy discovery:** Large dependencies (`@google-cloud/vision`, `@google/generative-ai`) are loaded with **dynamic `import()`** inside handlers where used (e.g. `visionOcrInvoke`, `proxyGemini`) so Firebase’s deploy-time module discovery stays within timeout.
+- **Scripts:** `functions/deploy-functions.sh` (executable) for targeted deploys when used in your workflow.
 
 ---
 
@@ -104,6 +110,8 @@ Canonical rules live in root `firestore.rules`.
 | `/submit` | `/submit.html` |
 | *(direct)* | `/submit-plugin.html` (no rewrite; linked from app pages) |
 | *(direct)* | `/security.html` (no rewrite; linked from app pages) |
+| *(direct)* | `/prism.html` (no rewrite; linked from app pages) |
+| *(direct)* | `/privacy.html` (no rewrite; linked from app pages) |
 | `/admin-submissions` | `/admin-submissions.html` |
 | `/upgrade` | `/upgrade.html` |
 | `/dashboard` | `/dashboard.html` |

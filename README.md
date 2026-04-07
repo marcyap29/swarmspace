@@ -151,11 +151,14 @@ swarmspace/
 ├── reset-password.html ← Complete password reset from Firebase email link
 ├── faq.html            ← FAQ
 ├── security.html       ← Security & trust architecture (public)
+├── prism.html          ← PRISM context minimization (public)
+├── privacy.html        ← Privacy policy (public)
+├── Privacy.md          ← Privacy policy (Markdown; paired with Docs/PRIVACY.md)
 ├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
 ├── .cursorrules        ← Cursor rules (API context, tiers, never commit keys)
 ├── Docs/
 │   ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
-│   ├── backend.md, PRISM.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
+│   ├── backend.md, PRISM.md, PRIVACY.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
 │   └── bugtracker/
 ├── api/
 │   ├── create-checkout.js   ← Stripe checkout session
