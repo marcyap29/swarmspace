@@ -45,7 +45,7 @@ Plugin registry.
 
 - **Package:** `firebase-functions` **^7.2.3** (see `functions/package.json`).
 - **Deploy discovery:** Large dependencies (`@google-cloud/vision`, `@google/generative-ai`) are loaded with **dynamic `import()`** inside handlers where used (e.g. `visionOcrInvoke`, `proxyGemini`) so Firebase’s deploy-time module discovery stays within timeout.
-- **Scripts:** `functions/deploy-functions.sh` (executable) for targeted deploys when used in your workflow.
+- **Scripts:** `scripts/deploy-functions.sh` (executable) for targeted deploys when used in your workflow.
 
 ---
 
