@@ -12,7 +12,7 @@
 ## Pending Tasks
 
 ### Infrastructure Deployment
-- [ ] Merge `claude/review-swarmspace-backlog-HQOlM` branch into `main`
+- [x] Merge `claude/review-swarmspace-backlog-HQOlM` branch into `main`
 
 ### Community Launch
 - [ ] Create DEVELOPER_GUIDE.md — step-by-step guide for building a SwarmSpace plugin
