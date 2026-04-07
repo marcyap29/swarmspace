@@ -1,7 +1,24 @@
 # SwarmSpace Changelog
 
-**Version:** 1.1.5  
-**Last Updated:** 2026-04-04
+**Version:** 1.1.6  
+**Last Updated:** 2026-04-06
+
+---
+
+## [1.1.6] - 2026-04-06
+
+### Added
+
+- **`prism.html`** — Public PRISM context-minimization reference (linked from landing, privacy, and security footers).
+- **`privacy.html`** — Public privacy policy page; cross-links PRISM and security pages.
+- **`Docs/PRIVACY.md`** and **`Privacy.md`** — Markdown privacy policy (companion to the HTML page).
+
+### Changed
+
+- **`index.html`** — Navigation and footer updates for PRISM and privacy routes.
+- **`security.html`** — Content updates; footer links corrected (`/security.html`, `/prism.html`, `/privacy.html`).
+- **`functions`** — Lazy `import()` for `@google-cloud/vision` and `@google/generative-ai` in `visionOcrInvoke` and `proxyGemini` so Firebase deploy discovery stays within timeout; `firebase-functions` bumped to **^7.2.3**; `deploy-functions.sh` executable bit set.
+- **Documentation** — README file tree; FEATURES; backend Functions note; CONFIGURATION_MANAGEMENT; claude.md; bugtracker (doc-config-git-backup).
 
 ---
 

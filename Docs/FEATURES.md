@@ -1,7 +1,7 @@
 # SwarmSpace Features
 
-**Version:** 1.1.5  
-**Last Updated:** 2026-04-04
+**Version:** 1.1.6  
+**Last Updated:** 2026-04-06
 
 ---
 
@@ -11,7 +11,7 @@
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| Landing page | 7 free APIs, upgrade CTA | ✅ |
+| Landing page | 7 free APIs, upgrade CTA; nav/footer links to PRISM and privacy pages | ✅ |
 | User auth | Signup/login via Firebase: email signup + OAuth (Google, GitHub); forgot password + reset page | ✅ |
 | Unified account model | One account, API key (`ss_` prefix), developer_mode toggle | ✅ |
 | Developer dashboard | Plugin submission, status; API key reveal/copy/regenerate; API usage examples (JSON, cURL, JS) | ✅ |
@@ -23,6 +23,8 @@
 | Submit plugin portal (`submit-plugin.html`) | Full manifest-style flow, endpoint probe, submission history; same `plugin_submissions` collection; landing + dashboard links | ✅ |
 | Admin submissions (`/admin-submissions`) | Allowlisted reviewer; list/filter/search on **`plugin_submissions`**; approve / needs info / reject → Firestore | ✅ |
 | Security & trust (`security.html`) | OWASP Agentic Top 10 mapping, PRISM, trust tiers; linked from main nav and dashboard | ✅ |
+| PRISM reference (`prism.html`) | Public technical page for context minimization; links to `Docs/PRISM.md` and privacy | ✅ |
+| Privacy policy (`privacy.html` + `Docs/PRIVACY.md`) | Public policy; Markdown companion in `Docs/` and root `Privacy.md` | ✅ |
 | Developer guide (`DEVELOPER_GUIDE.md`) | Manifest specification, JSON Schema, endpoint and submission guidance for plugin authors | ✅ |
 
 ### Integrations

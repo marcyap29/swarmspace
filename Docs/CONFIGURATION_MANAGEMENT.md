@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-04-04  
+**Last Updated:** 2026-04-06  
 **Status:** ✅ Synced
 
 ---
@@ -27,6 +27,8 @@ Tracks changes between the repository codebase and documentation, ensuring docs 
 | **Docs/backend.md** | Backend (API, Vercel, Firebase) | Backend structure |
 | **DEVELOPER_GUIDE.md** | Manifest spec, schemas, submission checklist | Plugin authors |
 | **Docs/PRISM.md** | Privacy / activity logging reference | Security, compliance |
+| **Docs/PRIVACY.md** | Privacy policy (Markdown) | Legal / product |
+| **prism.html** / **privacy.html** | Public PRISM and privacy pages | Site visitors |
 | **Docs/bugtracker/** | Bug tracker | Known issues, fixes |
 
 ---
@@ -48,21 +50,26 @@ When running a doc sync or release:
 | Document | Location | Last Reviewed | Status | Notes |
 |----------|----------|---------------|--------|-------|
 | overview.md | root | 2026-03-01 | ✅ Synced | |
-| README.md | root | 2026-04-04 | ✅ Synced | Firebase submit/admin; file structure |
+| README.md | root | 2026-04-06 | ✅ Synced | Firebase submit/admin; file structure |
 | SWARMSPACE_API_CONTEXT.md | root | — | ✅ Synced | |
 | architecture.md | root | — | ✅ Synced | |
 | submit.html | root | 2026-04-04 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` (legacy shape + `developer_uid`) |
-| submit-plugin.html | root | 2026-04-04 | ✅ Synced | Primary submit portal; `plugin_submissions` + index-backed history query |
+| submit-plugin.html | root | 2026-04-06 | ✅ Synced | Primary submit portal; `plugin_submissions`; client-sorted history |
 | Docs/RULE.md | Docs/ | 2026-04-04 | ✅ Synced | Cursor/agent guidance |
 | admin-submissions.html | root | 2026-04-04 | ✅ Synced | `/admin-submissions`; `plugin_submissions` review UI |
-| security.html | root | 2026-04-04 | ✅ Synced | Security & trust architecture (static page) |
+| security.html | root | 2026-04-06 | ✅ Synced | Security & trust architecture (static page) |
+| prism.html | root | 2026-04-06 | ✅ Synced | Public PRISM reference |
+| privacy.html | root | 2026-04-06 | ✅ Synced | Public privacy policy |
+| Privacy.md | root | 2026-04-06 | ✅ Synced | MD privacy policy (paired with Docs/PRIVACY.md) |
+| Docs/PRIVACY.md | Docs/ | 2026-04-06 | ✅ Synced | Privacy policy (Markdown) |
 | DEVELOPER_GUIDE.md | root | 2026-04-04 | ✅ Synced | Developer / manifest reference |
 | Docs/PRISM.md | Docs/ | 2026-04-04 | ✅ Synced | PRISM reference |
-| Docs/claude.md | Docs/ | 2026-04-04 | ✅ Synced | |
-| Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-03-23 | ✅ Synced | |
-| Docs/CHANGELOG.md | Docs/ | 2026-04-04 | ✅ Synced | |
-| Docs/FEATURES.md | Docs/ | 2026-04-04 | ✅ Synced | |
-| Docs/backend.md | Docs/ | 2026-04-04 | ✅ Synced | |
+| Docs/claude.md | Docs/ | 2026-04-06 | ✅ Synced | |
+| Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-04-06 | ✅ Synced | |
+| Docs/CHANGELOG.md | Docs/ | 2026-04-06 | ✅ Synced | |
+| Docs/FEATURES.md | Docs/ | 2026-04-06 | ✅ Synced | |
+| Docs/backend.md | Docs/ | 2026-04-06 | ✅ Synced | |
+| functions/ | root | 2026-04-06 | ✅ Synced | Cloud Functions; lazy SDK loads for deploy |
 | Docs/git.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/SECURITY_CHECKLIST.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/UI_UX.md | Docs/ | 2026-03-01 | ✅ Synced | |
@@ -71,6 +78,14 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-04-06 — Doc-config-git-backup (prism/privacy pages, Functions lazy-load)
+
+**Action:** Ran **Documentation, Configuration Management and Git Backup** on `main` after commits through `5b4e12b` (public PRISM/privacy HTML, index/security updates, Functions deploy fixes).
+
+**Drift addressed:** CHANGELOG stopped at 1.1.5; new static pages and `functions` dependency/import changes undocumented; `security.html` footer had broken links.
+
+**Changes:** CHANGELOG **1.1.6**; README file tree; FEATURES; backend Functions note; CONFIG inventory; claude.md; bugtracker; `security.html` footer fix.
 
 ### 2026-04-04 — Merge `developer-guide` → `main`
 
