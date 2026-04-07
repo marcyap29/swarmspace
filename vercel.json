@@ -8,6 +8,7 @@
     { "source": "/marketplace", "destination": "/marketplace.html" },
     { "source": "/thankyou", "destination": "/thankyou.html" },
     { "source": "/upgrade", "destination": "/upgrade.html" },
-    { "source": "/earnings", "destination": "/earnings.html" }
+    { "source": "/earnings", "destination": "/earnings.html" },
+    { "source": "/submit-plugin", "destination": "/submit-plugin.html" }
   ]
 }

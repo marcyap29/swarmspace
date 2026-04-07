@@ -6,17 +6,17 @@
   <title>SwarmSpace — Get API access</title>
   <style>
     :root {
-      --bg:#0A0A0F; --surface:#13131E; --border:#1E1E35; --border2:#2A2A3E;
-      --purple:#5B5BD6; --green:#34D399; --orange:#FB923C; --red:#FF6B6B;
-      --text:#E8E8F0; --muted:#7A7A9A; --dim:#44445A;
+      --bg:#0A0A0F; --surface:#13131E; --surface2:#1A1A2C;
+      --border:#1E1E35; --purple:#5B5BD6; --green:#34D399;
+      --orange:#FB923C; --text:#E8E8F0; --muted:#7A7A9A; --dim:#44445A;
       --mono:'JetBrains Mono','Fira Code',monospace;
-      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --red:#FF6B6B;
     }
     * { box-sizing:border-box; margin:0; padding:0; }
     html { scroll-behavior:smooth; }
     body {
       background:var(--bg); color:var(--text);
-      font-family:var(--font); line-height:1.6;
+      font-family:'Inter',-apple-system,sans-serif; line-height:1.6;
       min-height:100vh; display:flex; flex-direction:column;
     }
     nav {
@@ -81,14 +81,14 @@
     .tab-btn {
       flex:1; padding:9px; border:none; border-radius:8px;
       font-size:13px; font-weight:600; cursor:pointer;
-      background:none; color:var(--muted); font-family:var(--font); transition:all .15s;
+      background:none; color:var(--muted); font-family:'Inter',-apple-system,sans-serif; transition:all .15s;
     }
     .tab-btn.active { background:var(--surface); color:var(--text); }
     .oauth-btn {
       display:flex; align-items:center; justify-content:center; gap:10px;
       width:100%; padding:12px; border-radius:10px; font-size:14px; font-weight:600;
-      cursor:pointer; border:1px solid var(--border2); background:var(--bg);
-      color:var(--text); font-family:var(--font); transition:all .15s;
+      cursor:pointer; border:1px solid #2A2A3E; background:var(--bg);
+      color:var(--text); font-family:'Inter',-apple-system,sans-serif; transition:all .15s;
       margin-bottom:10px;
     }
     .oauth-btn:hover { border-color:var(--purple); background:rgba(91,91,214,.06); }
@@ -103,14 +103,14 @@
     .form-input {
       width:100%; background:var(--bg); border:1px solid var(--border);
       border-radius:9px; padding:11px 14px; color:var(--text);
-      font-size:14px; font-family:var(--font); outline:none; transition:border-color .15s;
+      font-size:14px; font-family:'Inter',-apple-system,sans-serif; outline:none; transition:border-color .15s;
     }
     .form-input:focus { border-color:var(--purple); }
     .form-input::placeholder { color:var(--dim); }
     .btn-submit {
       width:100%; background:var(--purple); color:white; border:none;
       border-radius:10px; padding:13px; font-size:15px; font-weight:700;
-      cursor:pointer; font-family:var(--font); transition:opacity .15s; margin-top:6px;
+      cursor:pointer; font-family:'Inter',-apple-system,sans-serif; transition:opacity .15s; margin-top:6px;
     }
     .btn-submit:hover { opacity:.88; }
     .btn-submit:disabled { opacity:.5; cursor:not-allowed; }
