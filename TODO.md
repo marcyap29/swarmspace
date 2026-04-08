@@ -15,13 +15,24 @@
 - [x] Merge `claude/review-swarmspace-backlog-HQOlM` branch into `main`
 
 ### Community Launch
-- [ ] Create DEVELOPER_GUIDE.md — step-by-step guide for building a SwarmSpace plugin
+- [x] Create DEVELOPER_GUIDE.md — step-by-step guide for building a SwarmSpace plugin
 - [ ] Draft Developer Agreement (legal) — Prinz Law Office, La Jolla
 - [ ] Identify 20-30 target developers from LinkedIn/Substack for personal outreach
 - [ ] Write personal outreach messages — Founding Developer pitch (85% share, 100 spots)
 - [ ] Open Founding Developer programme registration
 - [ ] Seed at least one real post in every Swarm before public launch
 - [ ] Publish AST10 compliance page on swarmspace.vercel.app
+
+### Developer Guide Fixes (before outreach)
+- [ ] Remove Experimental trust tier from DEVELOPER_GUIDE.md (Section 6, JSON Schema) and architecture.md — only Community and Verified at launch
+- [ ] Standardize `privacy_data_required` naming to dot-notation (`user.display_name`, `chronicle.interests`) across DEVELOPER_GUIDE.md and architecture.md
+- [ ] Add user context field vocabulary table to DEVELOPER_GUIDE.md Section 10 (PRISM) — developers can't declare fields they don't know exist
+- [ ] Add manifest behavioral fields (`is_read_only`, `is_destructive`, `is_concurrency_safe`, `headless`) to DEVELOPER_GUIDE.md Section 3 — required for Durable Object dispatch; `schedulable` already present
+- [ ] Expand workflow composition coverage — add revenue compounding detail, real /research route example, output-chaining explanation
+- [ ] Add specific error responses from swarmspaceRouter (403 quota, 403 tier, 502 timeout) to DEVELOPER_GUIDE.md Section 4
+- [ ] Add testing/sandbox instructions — Firebase auth token, curl against swarmspaceRouter, sandbox environment status
+- [ ] Add changelog/versioning guidance — update submission process, content_hash updates, re-review for breaking changes
+- [ ] Verify all outreach URLs resolve: submit-plugin, earnings, GitHub repo, developer@orbitalai.net mailbox
 
 ### Platform Mechanics
 - [ ] Swarms UI — per-plugin, per-workflow community spaces
