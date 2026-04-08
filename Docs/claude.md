@@ -12,6 +12,8 @@
 
 | Document | Purpose | Path |
 |----------|---------|------|
+| **planner.md** | Active planning scratch pad — current tasking | `planner.md` |
+| **backlog.md** | Backlog items and future features | `backlog.md` |
 | **overview.md** | SwarmSpace purpose, flow, and orientation for users/agents | `overview.md` |
 | **README.md** | Setup guide (Firebase, Stripe, Vercel) | `README.md` |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | `SWARMSPACE_API_CONTEXT.md` |
@@ -30,6 +32,26 @@
 
 ---
 
+## Task Management SOP
+
+### `planner.md` (root)
+
+Used for planning out tasking in pursuit of developing functions taken from prompts from the user. This is a scratch pad to create a list of items that need to be achieved to meet the queries and tasks assigned by the user. You can clean this and add to this at will to help you plan out and keep track of your tasking. **At startup, always look at this file first to identify where you left off in terms of work.**
+
+### `backlog.md` (root)
+
+This is where any and all backlog items and future features are stored that you are not working on at the moment. Future items and large items are stored here, and as time goes on they may get refined further or taken off, but that will be with feedback and review of the user. **When there is no tasking in `planner.md`, pull tasking from this file.**
+
+### Workflow
+
+1. On startup: read `planner.md` to pick up where you left off.
+2. If `planner.md` is empty or all items are done: pull the next priority items from `backlog.md` into `planner.md`.
+3. As you work: update `planner.md` to reflect progress, add notes, check off completed items.
+4. When a planner item is fully done: remove it from `planner.md`. Do not move it back to `backlog.md`.
+5. New future work or large items raised during a session go into `backlog.md`, not `planner.md`.
+
+---
+
 ## Core Documentation
 
 ### 📖 SwarmSpace Overview
@@ -43,6 +65,8 @@
 ### 📁 File Structure
 ```
 swarmspace/
+├── planner.md          ← Active planning scratch pad (read on startup)
+├── backlog.md          ← Backlog items and future features
 ├── overview.md         ← Orientation for users and agents
 ├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html
 ├── DEVELOPER_GUIDE.md
@@ -193,6 +217,8 @@ For each change, update the appropriate documents (only where relevant):
 
 ### Reference files (SwarmSpace)
 
+- `planner.md` — active planning scratch pad (read on startup)
+- `backlog.md` — backlog items and future features
 - `README.md` — project overview and setup
 - `SWARMSPACE_API_CONTEXT.md` — API reference for LUMARA integration
 - `architecture.md` — SwarmStore architecture and hosting
