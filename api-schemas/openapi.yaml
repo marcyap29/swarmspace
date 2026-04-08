@@ -1,0 +1,341 @@
+openapi: 3.0.3
+info:
+  title: SwarmSpace Backend API
+  description: SwarmSpace provides backend infrastructure for AI agent execution and plugin management
+  version: 1.0.0
+  contact:
+    name: SwarmSpace API Support
+    url: https://swarmspace.ai
+
+servers:
+  - url: https://swarmspace-agent-worker.orbitalai.workers.dev
+    description: Plan Agent Service
+  - url: https://us-central1-arc-epi.cloudfunctions.net
+    description: Plugin Router Service
+
+paths:
+  /agent/plan:
+    post:
+      summary: Generate execution plan
+      description: Generate a structured execution plan for an AI agent task
+      tags: [Plan Agent]
+      security:
+        - FirebaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task, tier]
+              properties:
+                task:
+                  type: string
+                  description: The task for the agent to plan
+                  example: "Research the latest developments in AI"
+                tier:
+                  $ref: '#/components/schemas/UserTier'
+      responses:
+        '200':
+          description: Plan generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: string
+                    enum: [plan]
+                  plan:
+                    $ref: '#/components/schemas/AgentPlan'
+
+  /agent/execute:
+    post:
+      summary: Execute approved plan
+      description: Execute a previously generated and approved plan step by step
+      tags: [Plan Agent]
+      security:
+        - FirebaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task, approved_plan, tier]
+              properties:
+                task:
+                  type: string
+                  description: Original task description
+                approved_plan:
+                  $ref: '#/components/schemas/AgentPlan'
+                tier:
+                  $ref: '#/components/schemas/UserTier'
+      responses:
+        '200':
+          description: Plan executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: string
+                    enum: [execution]
+                  result:
+                    $ref: '#/components/schemas/ExecutionResult'
+
+  /swarmspaceRouter:
+    post:
+      summary: Invoke plugin
+      description: Invoke any SwarmSpace plugin with tier enforcement and quota management
+      tags: [Plugin Router]
+      security:
+        - FirebaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [plugin_id, params]
+                  properties:
+                    plugin_id:
+                      type: string
+                      description: ID of the plugin to invoke
+                      example: "brave-search"
+                    params:
+                      type: object
+                      description: Plugin-specific parameters
+                      example:
+                        query: "latest AI research"
+      responses:
+        '200':
+          description: Plugin invoked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PluginInvocationResponse'
+
+components:
+  securitySchemes:
+    FirebaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Firebase ID token
+
+  schemas:
+    UserTier:
+      type: string
+      enum: [free, standard, premium]
+      description: User subscription tier
+
+    PrivacyTier:
+      type: string
+      enum: [anonymous, user_content, structured_personal]
+      description: |
+        Privacy sensitivity level:
+        - anonymous: No personal data processed
+        - user_content: User-generated content (queries, URLs)
+        - structured_personal: Sensitive personal data (images, documents)
+
+    AgentPlan:
+      type: object
+      required: [goal, clarifications, steps, tools_required, estimated_tool_calls, requires_premium, tier_gate, requires_consent, privacy_sensitive_tools]
+      properties:
+        goal:
+          type: string
+          description: One sentence summary of what will be accomplished
+        clarifications:
+          type: array
+          items:
+            type: string
+          description: Questions before proceeding (empty if none)
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanStep'
+        tools_required:
+          type: array
+          items:
+            type: string
+          description: List of plugin IDs needed
+        estimated_tool_calls:
+          type: integer
+          minimum: 0
+          description: Estimated number of plugin calls
+        requires_premium:
+          type: boolean
+          description: True if any premium tools are required
+        tier_gate:
+          type: boolean
+          description: True if plan is blocked by user tier
+        requires_consent:
+          type: boolean
+          description: True if any privacy-sensitive tools require consent
+        privacy_sensitive_tools:
+          type: array
+          items:
+            type: string
+          description: List of privacy-sensitive plugin IDs
+
+    PlanStep:
+      type: object
+      required: [step, description, tool, rationale]
+      properties:
+        step:
+          type: integer
+          minimum: 1
+          description: Step number in sequence
+        description:
+          type: string
+          description: What this step accomplishes
+        tool:
+          type: string
+          nullable: true
+          description: Plugin ID to use (null for reasoning steps)
+        rationale:
+          type: string
+          description: Why this tool/order is needed
+
+    ExecutionResult:
+      type: object
+      required: [goal, steps, total_duration_ms, tools_called, tools_succeeded, tools_failed, synthesis]
+      properties:
+        goal:
+          type: string
+          description: Original goal from the plan
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepResult'
+        total_duration_ms:
+          type: integer
+          description: Total execution time in milliseconds
+        tools_called:
+          type: integer
+          description: Number of plugins invoked
+        tools_succeeded:
+          type: integer
+          description: Number of successful plugin calls
+        tools_failed:
+          type: integer
+          description: Number of failed plugin calls
+        synthesis:
+          type: string
+          nullable: true
+          description: Final synthesized result
+
+    StepResult:
+      type: object
+      required: [step, tool, status, data, duration_ms]
+      properties:
+        step:
+          type: integer
+          description: Step number
+        tool:
+          type: string
+          nullable: true
+          description: Plugin used (null for reasoning steps)
+        status:
+          type: string
+          enum: [success, error, skipped]
+        data:
+          type: object
+          description: Step execution result
+        error:
+          type: string
+          nullable: true
+          description: Error message if status is error
+        duration_ms:
+          type: integer
+          description: Step execution time in milliseconds
+
+    SwarmSpaceQuota:
+      type: object
+      required: [limit, used, remaining]
+      properties:
+        limit:
+          type: integer
+          description: Daily quota limit
+        used:
+          type: integer
+          description: Quota used today
+        remaining:
+          type: integer
+          description: Quota remaining today
+        resetsAt:
+          type: string
+          format: date-time
+          description: When quota resets (ISO 8601)
+
+    PluginInvocationResponse:
+      type: object
+      required: [success, plugin_id]
+      properties:
+        success:
+          type: boolean
+          description: Whether the plugin call succeeded
+        plugin_id:
+          type: string
+          description: ID of the invoked plugin
+        data:
+          type: object
+          description: Plugin response data (if successful)
+        error:
+          type: string
+          description: Error message (if failed)
+        quota:
+          $ref: '#/components/schemas/SwarmSpaceQuota'
+        execution_time_ms:
+          type: integer
+          description: Plugin execution time in milliseconds
+
+    PluginConfig:
+      type: object
+      required: [id, workerUrl, requiredTier, capabilities, description, exampleQuery, privacyTier, dataTypes]
+      properties:
+        id:
+          type: string
+          description: Unique plugin identifier
+        workerUrl:
+          type: string
+          format: uri
+          description: Cloudflare Worker URL
+        requiredTier:
+          $ref: '#/components/schemas/UserTier'
+        capabilities:
+          type: array
+          items:
+            type: string
+          description: List of plugin capabilities
+        description:
+          type: string
+          description: Human-readable plugin description
+        exampleQuery:
+          type: string
+          description: Example usage query
+        privacyTier:
+          $ref: '#/components/schemas/PrivacyTier'
+        dataTypes:
+          type: array
+          items:
+            type: string
+          description: Types of data processed
+        timeout:
+          type: integer
+          description: Timeout in milliseconds
+        rateLimit:
+          type: object
+          description: Rate limiting configuration
+          properties:
+            requests:
+              type: integer
+            window:
+              type: string
+              description: Time window (e.g., "1m", "1h", "1d")

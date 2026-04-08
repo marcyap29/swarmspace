@@ -2,7 +2,7 @@
 // Receives a task + tier, calls gemini-flash with a restricted system prompt,
 // returns a structured AgentPlan JSON object.
 
-import { Tier, getToolsForTier, formatToolListForPrompt, planRequiresPremium } from "./tiers";
+import { Tier, getToolsForTier, formatToolListForPrompt, planRequiresPremium, planRequiresConsent } from "./tiers";
 
 export interface AgentPlan {
   goal: string;
@@ -12,6 +12,8 @@ export interface AgentPlan {
   estimated_tool_calls: number;
   requires_premium: boolean;
   tier_gate: boolean;
+  requires_consent: boolean; // New: indicates if any tools require user consent
+  privacy_sensitive_tools: string[]; // New: list of privacy-sensitive tools used
 }
 
 export interface PlanStep {
@@ -103,6 +105,8 @@ function buildFallbackPlan(rawResponse: string, task: string): AgentPlan {
     estimated_tool_calls: 0,
     requires_premium: false,
     tier_gate: false,
+    requires_consent: false,
+    privacy_sensitive_tools: [],
   };
 }
 
@@ -162,6 +166,20 @@ export async function generatePlan(
   );
   plan.requires_premium = requiresPremium;
   plan.tier_gate = requiresPremium && tier !== "premium";
+
+  // Apply consent requirements
+  const requiresConsent = planRequiresConsent(plan.tools_required || []);
+  plan.requires_consent = requiresConsent;
+
+  // Identify privacy-sensitive tools for consent UI
+  const tools = getToolsForTier(tier);
+  const privacySensitiveTools = tools
+    .filter(tool =>
+      (plan.tools_required || []).includes(tool.id) &&
+      tool.privacyTier !== "anonymous"
+    )
+    .map(tool => tool.id);
+  plan.privacy_sensitive_tools = privacySensitiveTools;
 
   return plan;
 }
