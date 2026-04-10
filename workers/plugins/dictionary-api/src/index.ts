@@ -29,7 +29,12 @@ export default {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
-      const body = (await request.json()) as { word?: string };
+      let body: { word?: string };
+      try {
+        body = (await request.json()) as { word?: string };
+      } catch {
+        return jsonResponse({ error: "Invalid JSON body" }, 400);
+      }
 
       const word = body.word;
       if (!word) {

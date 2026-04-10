@@ -1,10 +1,192 @@
 # SwarmSpace Documentation Context Guide
 
-**Version:** 1.0.0
-**Last Updated:** April 6, 2026
+**Version:** 1.1.0
+**Last Updated:** April 9, 2026
 **Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
+
+---
+
+## Standard Operating Procedures (SOPs)
+
+SOPs are the **repeatable procedures** for consistent, high-quality work. Refer to these before starting any task.
+
+---
+
+### SOP-TASK — Implementation task (default)
+
+| Step | Action |
+|------|--------|
+| 1 | **Understand** — Restate the goal, constraints, and definition of done. |
+| 2 | **Analyze** — Map components, dependencies, risks, and affected areas (code, docs, backend). |
+| 3 | **Plan** — Outline steps; flag unknowns and verification (tests, manual checks). |
+| 4 | **Align** — If the user asked to approve before execution, **present the plan and wait**. If they want you to proceed, continue. |
+| 5 | **Execute** — Implement the smallest change that satisfies the request; match repo conventions. |
+| 6 | **Verify** — Run linters/tests or static analysis when available; fix new issues you introduced. |
+| 7 | **Summarize** — Short recap: what changed, where, and how to validate. |
+
+---
+
+### SOP-ORCH — Complex or multi-area work (orchestrator pattern)
+
+Use when the task spans many files, needs parallel concerns (e.g. UI + API + docs), or the user explicitly wants agent-style breakdown.
+
+| Step | Action |
+|------|--------|
+| 1 | **Lead agent** — Analyze the prompt, produce a **definition of done**, and decompose into sub-tasks. |
+| 2 | **Sub-agents** — Assign coherent slices (e.g. one area per sub-task); avoid overlapping ownership. |
+| 3 | **Review agent** — After sub-tasks complete, check against the definition of done; list gaps or approve. |
+| 4 | **Close out** — Integrate results, one coherent commit or PR description, and a final **implementation review** for the user. |
+
+*Note: In single-threaded chat, simulate this sequence explicitly in your reasoning and output.*
+
+---
+
+### SOP-BUG — Before coding in risky areas
+
+1. Open `bugtracker/bug_tracker.md` (or project index).
+2. Skim entries for the subsystem you touch.
+3. Read `records/…` when an entry matches.
+4. Do not contradict documented fixes without explicit user approval.
+
+---
+
+### SOP-DEBUG — Error diagnosis and fixing
+
+Use for **build failures, test/CI failures, missing files, environment skew, flaky behavior**.
+
+| Step | Action |
+|------|--------|
+| 1 | **Ground** — Confirm the **project root** for this stack (monorepos: app vs `packages/`). Run commands from that directory. |
+| 2 | **Evidence** — Collect the **exact command**, **cwd**, and **verbatim** output from the **first** `error`/`Error`/`fatal` through **~30–50 lines** after (not a summary). |
+| 3 | **Triage** — Fix the **first** genuine failure; later lines are often cascades. Use the triage table below. |
+| 4 | **Environment** — If relevant, capture toolchain versions. Run stack-appropriate **clean + reinstall** from the correct root. |
+| 5 | **Workspace** — Put needed files **in the workspace** or attach/paste. **Quote paths** that contain spaces. |
+| 6 | **Secrets** — Files that are gitignored (`.env`, keystores, etc.) must be restored from a **secure** channel; do not invent production credentials. |
+| 7 | **Verify** — Re-run the **same** failing command before declaring the issue fixed. |
+
+#### Triage: map symptoms to where to look
+
+| Symptom class | Likely layers | First checks |
+|---------------|---------------|--------------|
+| **Cannot find module / import / URI** | Source layout, wrong root, deleted files, codegen not run | Resolve path from repo root; search for symbol; run code generation |
+| **Build input file not found** | IDE project file vs disk path | Compare project reference to actual path |
+| **Package / dependency resolution** | Registry, lockfile, private feed auth | Clean + reinstall; compare lockfile to CI |
+| **Compiler / type errors after merge** | API drift, duplicate types, feature flags | Fix **first** error line — rest often clears |
+| **Tests pass locally, fail in CI** | Version drift, env vars, OS paths | Match images/versions; dump env; reduce flake |
+| **Runtime only** (crash, 401, wrong config) | Config files, secrets, feature flags, wrong bundle ID | Trace config loading; compare identifiers |
+| **Intermittent / flaky** | Timing, race, network, shared state | Stabilize with minimal repro; logging; shrink surface |
+| **Mass git deletions or dirty tree** | Intentional cleanup vs broken checkout | Ask: "Is this expected?" before restoring paths |
+
+#### One-shot debug message (paste into chat)
+
+```text
+Debug using SOP-DEBUG in claude.md.
+- Project root: [...]
+- Command: [...]
+- Cwd: [...]
+- Verbatim output (from first error, ~40 lines): [...]
+- What changed before this broke: [...]
+- Versions if relevant: [...]
+Fix the first real error; quote paths with spaces; re-run the same command to verify.
+```
+
+---
+
+### SOP-DOC — Documentation, configuration management, and git backup
+
+**Role ID:** `doc-config-git-backup` — keep docs accurate, single source of truth, commits backed by documentation.
+
+#### When to run
+
+- After a release or large merge
+- On request ("doc sync", "git backup sync", "drift check")
+- Whenever prompts, architecture, or features change materially
+
+#### Orchestrator order (do not skip)
+
+| Order | Phase | Purpose |
+|-------|-------|---------|
+| 1 | **Prompt References** | Audit LLM prompts vs `PROMPT_REFERENCES.md`; update `PROMPT_TRACKER.md` if needed. Skip only if the repo has no LLM prompts. |
+| 2 | **Doc inventory & drift** | Compare repo vs docs; short drift report (what docs lag). |
+| 3 | **Core artifacts** | Update README, CHANGELOG, ARCHITECTURE, FEATURES, backend, bugtracker index as applicable. |
+| 4 | **Configuration & consolidation** *(optional)* | Deduplicate, archive obsolete docs, fix links — only when explicitly requested. |
+| 5 | **Git backup sync** | `git log` / `git diff` vs last documented version; bump versions; **commit + push** doc (and code if in scope). |
+| 6 | **Reviewer** | Run reviewer checklist below; output pass/fail. |
+
+#### Reviewer checklist
+
+- [ ] Prompt catalog in sync (if project uses prompts).
+- [ ] Drift report addressed or "no drift" justified.
+- [ ] Core docs versioned; no invented facts.
+- [ ] Bug tracker / recent-changes table updated if required.
+- [ ] Commit message clear; push done if sync requested.
+
+---
+
+### SOP-PROMPT — Prompt catalog maintenance
+
+When adding or changing model prompts, system strings, or JSON "gate" prompts:
+
+1. Search codebase for prompt definitions (`systemPrompt`, `system =`, template files, etc.).
+2. Reconcile with `PROMPT_REFERENCES.md`.
+3. Append `PROMPT_TRACKER.md` and bump catalog version when entries change.
+4. Log in `CONFIGURATION_MANAGEMENT.md` if used.
+
+---
+
+### SOP-PLAN — Working with planner.md and backlog.md
+
+These two files keep work organized across sessions and prevent losing track of tasks or long-term direction.
+
+#### planner.md — Active scratchpad
+
+- **Purpose:** Short-term task tracking. Any and all plans, sub-tasks, and in-progress work for features you are actively working on (or about to start) go here.
+- **Write to it** as soon as you begin planning a feature. Break the feature into concrete tasks/sub-tasks.
+- **Cross off** completed tasks (use `~~strikethrough~~` or `- [x]`).
+- **Wipe clean** when all tasks for a feature are done — the planner is for active work only, not a history log.
+- **Never skip** checking Planner.md at the start of a session — if it has content, resume from where you left off.
+
+#### backlog.md — Long-term feature backlog
+
+- **Purpose:** Long-term, ordered backlog of future ideas and features agreed upon with the user.
+- **Add to it** whenever you and the user agree on a feature for future development.
+- **Pull from it** when choosing the next thing to work on — it keeps you oriented toward the project's long-term goals.
+- **Format:** One feature per line or section, with a brief description and optionally a priority or status tag.
+- **Do not remove** items without user approval; mark them as deferred or move to an archive section instead.
+
+#### Workflow
+
+1. At session start, read `Planner.md` — if it has active tasks, resume them.
+2. When starting a new feature, write the plan into `Planner.md` before coding.
+3. As you complete tasks, cross them off in `Planner.md`.
+4. When a feature is fully done, cross it off and wipe `Planner.md` clean.
+5. When discussing future work with the user, add agreed features to `backlog.md`.
+6. When picking up new work, check `backlog.md` for the next priority item.
+
+---
+
+## Cross-Repo Integration: LUMARA ↔ SwarmSpace
+
+Both repos deploy Cloud Functions to the **same Firebase project (`arc-epi`)** using different codebase labels (`default` for LUMARA, `swarmspace` for SwarmSpace).
+
+**Before adding/modifying a Cloud Function**, check `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` for ownership. SwarmSpace owns plugin routing. LUMARA owns core app functions. Duplicates must be synced or consolidated.
+
+### Ownership Rules
+
+- **SwarmSpace owns:** `swarmspaceRouter`, `swarmspacePluginStatus`, `swarmspacePluginCatalog`, `newsDataInvoke`, `visionOcrInvoke`, `updateUserModelConfig`, and any future plugin/agent functions.
+- **LUMARA owns:** Core app functions (journal, chat, LLM proxies, Stripe, throttle, subscription, API tokens).
+- **SwarmSpace will add functions over time** as developers submit plugins and new agent capabilities ship. Any new SwarmSpace function must be registered in `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md`.
+
+### Sync Mechanism
+
+`swarmspacePluginCatalog` is the live discovery channel. LUMARA calls it to get the current list of available plugins, tiers, and capabilities. When SwarmSpace adds/removes/updates plugins or chains:
+1. Update the `PLUGIN_REGISTRY` in `swarmspaceRouter.ts`
+2. The catalog function automatically reflects changes
+3. LUMARA discovers updates via its next `swarmspacePluginCatalog` call
+
+For structural changes (new functions, ownership changes), update `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` so both repos stay aligned.
 
 ---
 
@@ -28,7 +210,11 @@
 | **Docs/PRIVACY.md** | Privacy policy (Markdown) | `Docs/PRIVACY.md` |
 | **prism.html** / **privacy.html** | Public PRISM and privacy pages | site root |
 | **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
-| **Documentation, Config & Git Backup** | Universal prompt for docs, config, and backup sync | This file: section below |
+| **PROMPT_TRACKER.md** | Prompt change log | `PROMPT_TRACKER.md` |
+| **PROMPT_REFERENCES.md** | Prompt catalog | `PROMPT_REFERENCES.md` |
+| **Planner.md** | Active task scratchpad (short-term) | `Planner.md` |
+| **backlog.md** | Long-term feature backlog | `backlog.md` |
+| **LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md** | Cross-repo function ownership & sync | `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` |
 
 ---
 
@@ -54,15 +240,15 @@ This is where any and all backlog items and future features are stored that you 
 
 ## Core Documentation
 
-### 📖 SwarmSpace Overview
+### SwarmSpace Overview
 - **overview.md** — Purpose, user flow, account model, orientation for users and AI agents.
 - **README.md** — Setup, deploy, test flow. Firebase, Stripe, Vercel env vars.
 - **SWARMSPACE_API_CONTEXT.md** — Endpoints (swarmspaceRouter, swarmspacePluginStatus), tiers (Free/Standard/Premium), request schemas. Auth: Firebase ID token. Never commit API keys.
 
-### 🏗️ Architecture
+### Architecture
 - **architecture.md** — SwarmStore plugin format, hosting (Cloudflare Workers/R2/D1), security protocols. Broader vision; current app is Vercel + Firebase + Stripe.
 
-### 📁 File Structure
+### File Structure
 ```
 swarmspace/
 ├── planner.md          ← Active planning scratch pad (read on startup)
@@ -83,22 +269,29 @@ swarmspace/
 
 ## Documentation Update Rules
 
-When asked to update documentation:
-1. Update documents listed in this file
-2. Version documents as necessary
-3. Replace outdated context
-4. Keep changelog if present
-5. **Role:** For the full Documentation, Configuration Management, and Git Backup role, see the section below.
+When updating documentation:
+
+1. Update all documents listed in the Quick Reference that are affected.
+2. Version documents as necessary.
+3. Replace outdated context.
+4. Archive deprecated content to `docs/archive/` or equivalent.
+5. Update `CONFIGURATION_MANAGEMENT.md` with any significant doc changes.
+6. For releases: follow **SOP-DOC** (orchestrator order + reviewer checklist).
+
+---
+
+## Role prompt block (doc-config-git-backup)
+
+Paste or attach for AI tools that use structured role metadata:
+
+```
+name: doc-config-git-backup
+description: Documentation & Configuration Manager — keeps docs accurate and consolidated, maintains single source of truth, ensures every git push is backed by up-to-date documentation; runs prompt-reference audit when applicable; uses SOP-DOC in claude.md.
+```
 
 ---
 
 ## Documentation, Configuration Management and Git Backup
-
-```
-name: doc-config-git-backup
-description: Documentation & Configuration Manager — keeps docs accurate and consolidated, maintains single source of truth, and ensures every git push is backed by up-to-date documentation.
-model: opus
-```
 
 ### Role
 
@@ -250,6 +443,8 @@ For each change, update the appropriate documents (only where relevant):
 - **Match existing style:** Follow each document's conventions.
 - **Be thorough:** Account for all relevant changed files in the docs.
 - **Be fast:** Sync/backup is a sync task, not a creative writing exercise.
+- **Fix first, verify after:** When debugging, always fix the first real error and re-run the same command to confirm.
+- **Smallest change wins:** Implement the minimum that satisfies the request; do not refactor unrelated code.
 
 ---
 
@@ -270,4 +465,94 @@ For each change, update the appropriate documents (only where relevant):
 
 ---
 
+## Autonomous Technical Issue Investigation Template
+
+"I need you to run a complete, continuous investigation of [ISSUE DESCRIPTION]. Please work autonomously through all analysis paths and provide your top 5 conclusions.
+
+### Investigation Authority
+
+You have full autonomy to:
+- Read any files in the repository/codebase
+- Search the web for related issues and solutions
+- Analyze all documentation, logs, and archives
+- Test different scenarios and code paths
+- Make reasonable assumptions and follow investigation threads
+- Use any analysis tools needed for comprehensive evaluation
+
+### NO ACTION RESTRICTION
+
+CRITICAL: You are authorized to ANALYZE and INVESTIGATE only. Do NOT:
+- Modify any code files or configurations
+- Deploy any changes or run builds
+- Execute any fixes or solutions
+- Make any edits to the system
+- Take any corrective actions
+
+You may only READ, SEARCH, and ANALYZE. All implementations must be approved first.
+
+### Investigation Framework
+
+1. **Root Cause Analysis**
+   - Trace complete execution/failure paths
+   - Identify all potential failure points
+   - Check for [RELEVANT PATTERNS: race conditions, timeouts, resource issues, etc.]
+   - Verify recent changes and their impact
+
+2. **Historical Analysis**
+   - Search documentation/bug trackers for similar issues
+   - Look for resolved problems that might have regressed
+   - Review [RELEVANT ARCHIVES: logs, tickets, changelogs]
+   - Identify patterns in past failures
+
+3. **External Research**
+   - Search for "[TECHNOLOGY STACK]" + "[ISSUE SYMPTOMS]" solutions
+   - Research known issues with [RELEVANT APIS/SERVICES]
+   - Look up [FRAMEWORK/PLATFORM] integration problems
+   - Check community discussions and bug reports
+
+4. **System Integration Analysis**
+   - Check [RELEVANT CONFIGS: security, permissions, networking]
+   - Analyze [RELEVANT CHAINS: data flow, API calls, dependencies]
+   - Look for [RELEVANT BOTTLENECKS: performance, memory, connections]
+   - Examine [RELEVANT COMPONENTS] for conflicts
+
+5. **Alternative Failure Scenarios**
+   - Consider [ENVIRONMENTAL FACTORS: network, platform, resources]
+   - Check for [PLATFORM-SPECIFIC ISSUES]
+   - Look for [RESOURCE CONSTRAINTS: memory, CPU, storage]
+   - Examine recent [ARCHITECTURAL/DEPENDENCY CHANGES]
+
+### Customization Variables
+
+Replace these placeholders with your specific context:
+- [ISSUE DESCRIPTION]: Brief description of the problem
+- [TECHNOLOGY STACK]: Main technologies involved
+- [ISSUE SYMPTOMS]: Observable behaviors
+- [RELEVANT PATTERNS]: Common failure patterns for your domain
+- [RELEVANT ARCHIVES]: Specific logs/documentation to check
+- [RELEVANT APIS/SERVICES]: External dependencies
+- [FRAMEWORK/PLATFORM]: Development platform
+- [RELEVANT CONFIGS]: Configuration areas to examine
+- [RELEVANT CHAINS]: Process flows to analyze
+- [RELEVANT BOTTLENECKS]: Performance areas to check
+- [RELEVANT COMPONENTS]: System components to examine
+- [ENVIRONMENTAL FACTORS]: Context-specific factors
+- [PLATFORM-SPECIFIC ISSUES]: Platform constraints
+- [RESOURCE CONSTRAINTS]: System resource limitations
+- [ARCHITECTURAL/DEPENDENCY CHANGES]: Recent modifications
+
+### Required Deliverable
+
+Provide your TOP 5 MOST LIKELY CONCLUSIONS with:
+- Root cause explanation
+- Evidence supporting the conclusion
+- Specific fix recommendations (for approval only)
+- Implementation risk/confidence level
+- Priority ranking
+
+Work continuously and comprehensively. Provide complete technical analysis. NO ACTIONS WITHOUT APPROVAL."
+
+---
+
 *SwarmSpace — Developer dashboard and plugin marketplace. API layer for LUMARA.*
+*Version 1.1.0 — SOPs adapted from LUMARA/ARC doc-config workflow.*

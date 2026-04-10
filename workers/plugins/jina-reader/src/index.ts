@@ -30,10 +30,12 @@ export default {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
-      const body = (await request.json()) as {
-        url?: string;
-        summarize?: boolean;
-      };
+      let body: { url?: string };
+      try {
+        body = (await request.json()) as { url?: string };
+      } catch {
+        return jsonResponse({ error: "Invalid JSON body" }, 400);
+      }
 
       const targetUrl = body.url;
       if (!targetUrl) {
@@ -72,12 +74,17 @@ export default {
       };
 
       const result = data.data ?? data;
+      const entry = result as Record<string, unknown>;
 
       return jsonResponse({
-        title: (result as Record<string, unknown>).title,
-        content: (result as Record<string, unknown>).content,
-        url: (result as Record<string, unknown>).url,
-        description: (result as Record<string, unknown>).description,
+        results: [
+          {
+            title: entry.title,
+            content: entry.content,
+            url: entry.url,
+            description: entry.description,
+          },
+        ],
         source: "jina-reader",
         count: 1,
       });
