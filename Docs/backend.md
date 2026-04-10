@@ -117,3 +117,150 @@ Canonical rules live in root `firestore.rules`.
 | `/dashboard` | `/dashboard.html` |
 | `/marketplace` | `/marketplace.html` |
 | `/thankyou` | `/thankyou.html` |
+
+---
+
+## Outcome Packages (Planned)
+
+**Status:** Defined | **Priority:** After Discovery Agent (Idea 1) ships | **Added:** April 2026
+
+### Overview
+
+Outcome Packages are pre-configured bundles of SwarmSpace workflows and plugins sold as a single product that delivers a specific result. Instead of selling individual plugin calls or workflow runs, sell "Competitive Intelligence Suite" or "Content Creator Kit." Each package bundles multiple workflows, configures them for a specific persona, and includes recurring agent variants where applicable.
+
+This is the Dream Team concept from the backlog, reframed as a purchasable product with its own landing page, pricing, and onboarding flow.
+
+**Example:** A "Personal Trainer AI" package includes a client check-in workflow (scheduled), a workout log generator, a nutrition research chain, and a progress tracking agent. The trainer buys the package, and the outcome is a functioning AI-assisted training practice.
+
+### Market Validation
+
+1. **Niche-specific workflow templates convert better than generic offerings.** A "Personal Trainer AI" package outperforms a generic "Health & Fitness Bundle" even targeting fewer people
+2. **Outcome-based pricing (~30% SaaS adoption).** Customers pay more when value is framed as a complete solution
+3. **Tiered bundles (Starter/Pro/Complete)** with good-better-best positioning create natural expansion paths
+
+| Source | Pattern | Application |
+|---|---|---|
+| FlowHunt marketplace | Pre-built agent templates as complete solutions | Each Outcome Package = complete solution for a persona |
+| n8n Self-Hosted AI Starter Kit | Bundles tools as single installable unit | One purchase, fully configured, no assembly |
+| Zapier Agent templates | Pre-configured multi-step automations, NL config | Pre-configured chains, user customizes via CHRONICLE context |
+| agenticaipricing.com | Essential/Professional/Enterprise tiers | Free preview / Pro / Premium per package |
+
+### Starter Packages (5)
+
+#### Package 1: Competitive Intelligence Suite
+- **Persona:** Founders, product managers, marketing leads
+- **Workflows:** `/competitor`, `/news-brief`, `/tech-scout`, `/market-scan`
+- **Recurring Agents:** Weekly Competitor Diff, Daily News Briefing, Trend Spotter alerts
+- **CHRONICLE:** User tells LUMARA competitors once; every workflow uses that context
+- **Free Preview:** One-shot `/competitor` run | **Pro ($15/mo):** All 4 + recurring on mobile | **Premium ($20/mo):** + CHRONICLE personalization
+
+#### Package 2: Content Creator Kit
+- **Persona:** Solo creators, indie writers, small marketing teams
+- **Workflows:** `/content-brief`, `/research`, `/news-brief`, `/marketing`
+- **Recurring Agents:** Daily trend feed, Weekly content calendar seed
+- **CHRONICLE:** Writing voice, topic interests, audience profile shape every output
+- **Free Preview:** One-shot `/content-brief` | **Pro:** All 4 + trending alerts | **Premium:** + CHRONICLE voice calibration + recurring calendar
+
+#### Package 3: Research & Academic Suite
+- **Persona:** Graduate students, researchers, analysts, consultants
+- **Workflows:** `/academic`, `/research`, `/fact-check`, `/health-research`
+- **Recurring Agents:** Weekly literature watch (keyword alerts), Monthly field review
+- **CHRONICLE:** Research interests, citation preferences, methodological notes
+- **Free Preview:** One-shot `/research` | **Pro:** All 4 + literature alerts | **Premium:** + CHRONICLE-enriched summaries
+
+#### Package 4: Startup Founder Pack
+- **Persona:** Early-stage founders, solo entrepreneurs, indie hackers
+- **Workflows:** `/competitor`, `/market-scan`, `/tech-scout`, `/plugins`, `/content-brief`
+- **Recurring Agents:** Weekly competitor diff, Market pulse (monthly), Tech landscape shifts
+- **CHRONICLE:** Company description, product positioning, target market feed all outputs
+- **Free Preview:** One-shot `/competitor` | **Pro:** All 5 + recurring intelligence | **Premium:** + full CHRONICLE strategic framing
+
+#### Package 5: Location & Travel Intelligence
+- **Persona:** Digital nomads, relocation researchers, travel planners, real estate investors
+- **Workflows:** `/location-brief`, `/market-scan`, `/research`, `/news-brief`
+- **Recurring Agents:** Monthly location pulse, News alerts for target cities
+- **Free Preview:** One-shot `/location-brief` | **Pro:** Multi-location + recurring | **Premium:** + CHRONICLE priorities (cost of living, climate, visa) weight outputs
+
+### Prerequisites
+
+| Prerequisite | Status | Blocks |
+|---|---|---|
+| 404/405 Worker fixes | IMMEDIATE BLOCKER | Packages are workflow bundles. Workflows broken until Workers wired. |
+| At least 3 workflows working E2E | BLOCKED on 404/405 | Cannot sell packages of things that don't work. |
+| Credit system enforcement | LIVE | Package pricing maps to credits. |
+| swarmspacePluginCatalog | LIVE | Package display pulls from this. |
+| Discovery Agent (Idea 1) shipped | NOT STARTED | Primary funnel into packages. Ship Idea 1 first. |
+| Durable Object prototype | NOT STARTED | Recurring variants are the premium differentiator. At least one DO needed for launch. |
+
+### Data Model
+
+**Firestore collection:** `packages`
+
+```json
+{
+  "packageId": "string",
+  "name": "string",
+  "description": "string",
+  "persona": "string",
+  "includedWorkflows": ["route slugs"],
+  "includedPlugins": ["plugin slugs"],
+  "recurringAgents": ["agent definitions"],
+  "tiers": {
+    "free": { "description": "...", "price": 0 },
+    "pro": { "description": "...", "price": 15 },
+    "premium": { "description": "...", "price": 20 }
+  },
+  "featured": "boolean",
+  "sortOrder": "integer",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
+}
+```
+
+**Cloud Function:** `swarmspacePackageCatalog` — returns all packages sorted by sortOrder, no auth required.
+
+**Constraints:**
+- Packages curated by Orbital AI, not user-created (editorial, not UGC)
+- Package tiers map 1:1 to existing SwarmSpace tiers (Free/Pro/Premium)
+- No package editor UI for v1. Seed via Firestore console or scripts
+
+### Implementation Phases
+
+#### Phase 1: Package Data Model & Catalogue (1 day)
+- Create `packages` Firestore collection
+- Create `swarmspacePackageCatalog` Cloud Function
+- Seed 5 starter packages
+
+#### Phase 2: Package Landing Pages (2-3 days)
+- `/packages.html` master listing (grid of cards: name, persona, workflow count, tier badges, CTA)
+- `/package.html?id={packageId}` detail page (full description, workflow list, recurring capabilities, tier comparison, signup/upgrade CTA)
+- Add "Packages" to main nav
+- "Try this now (free)" buttons route through discovery agent
+- "Popular Packages" section on homepage below discovery agent
+- Static HTML, no build step. Data loaded from `swarmspacePackageCatalog`
+
+#### Phase 3: Discovery Agent Package Awareness (1 day)
+- Extend `swarmspaceDiscoveryAgent` to query `swarmspacePackageCatalog`
+- If chain matches a package's `includedWorkflows`, add `matchedPackage` to response
+- If user intent maps to a persona, prioritize showing matching package over custom chain
+
+#### Phase 4: Package Onboarding Flow (1-2 days)
+- `/signup.html?package={packageId}` parameter
+- Dashboard welcome screen showing package workflows + "Run your first workflow" CTA
+- Store `selectedPackage` on `developers/{uid}` (UI personalization, not purchase)
+- Surface package workflows prominently on dashboard
+- Upgrade prompt on recurring agents for free-tier users
+
+**Total estimated: 5-7 days.** Critical path: Discovery Agent (Idea 1) should ship first.
+
+### Cross-Idea Sequencing
+
+| Week | Idea 1 (Discovery Agent) | Idea 2 (Outcome Packages) |
+|---|---|---|
+| Pre-work | Fix 404/405 blockers | Package specs defined (this document) |
+| Week 1 | Phase 1: Cloud Function | Phase 1: Data model + seed Firestore |
+| Week 2 | Phase 2: Homepage chat UI | Phase 2: Package pages (after Idea 1 UI patterns) |
+| Week 3 | Phase 3: Chain-to-signup handoff | Phase 3: Package-aware agent + Phase 4: Onboarding |
+| Week 4 | Polish, test full flow | Polish, connect both ideas end-to-end |
+
+Both ideas converge in Week 3 when the discovery agent becomes package-aware. From that point, the front-page agent is both a standalone conversion tool and the entry point into outcome packages.

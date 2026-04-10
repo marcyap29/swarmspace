@@ -76,6 +76,14 @@
     .refs li { margin-bottom:10px; font-size:13px; color:var(--muted); }
     .refs li:last-child { margin-bottom:0; }
 
+    .transparency-note {
+      display:inline-block; font-size:11px; font-weight:600;
+      color:var(--orange); background:rgba(251,146,60,.10);
+      border:1px solid rgba(251,146,60,.25); border-radius:6px;
+      padding:2px 8px; margin-left:6px; vertical-align:middle;
+      letter-spacing:.03em; text-transform:uppercase;
+    }
+
     footer { border-top:1px solid var(--border); padding:36px 40px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; max-width:1100px; margin:0 auto; }
     footer p { font-size:13px; color:var(--dim); }
     .footer-links { display:flex; flex-wrap:wrap; gap:20px; }
@@ -128,48 +136,48 @@
       <tbody>
         <tr>
           <td>Untrusted plugin execution</td>
-          <td><strong>Dynamic Worker (V8 isolate) sandboxing.</strong> Each invocation runs in an isolate with only declared APIs exposed. Millisecond-level cold start, megabyte-scale memory, no shared mutable state between calls. Undeclared platform surfaces are unavailable, not only “disallowed.”</td>
+          <td><strong>V8 isolate sandboxing.</strong> <span class=”transparency-note”>Partially implemented</span> Plugin workers run on Cloudflare Workers (V8 isolates), providing process-level isolation. Custom API surface restriction for third-party plugin code is planned.</td>
         </tr>
         <tr>
           <td>Credential exposure</td>
-          <td><strong>Injection at the network boundary.</strong> Platform-managed keys are attached via HTTP filtering at egress. Plugin code issues <code>fetch</code>; it does not receive raw secrets to log, embed in responses, or exfiltrate.</td>
+          <td><strong>Credential injection.</strong> <span class="transparency-note">Planned</span> Credential injection at the network boundary is a planned architecture goal. Currently, platform-managed keys are provided to first-party workers via environment variables.</td>
         </tr>
         <tr>
           <td>Excessive data access</td>
-          <td><strong>PRISM context minimization.</strong> Only fields listed in <code>privacy_data_required</code> are included in <code>context</code>. LUMARA extracts that subset client-side; the worker receives nothing else through the supported path. Enforcement is structural at the sandbox boundary, not an honor-system policy.</td>
+          <td><strong>PRISM context minimization.</strong> <span class="transparency-note">Partially implemented</span> PRISM context minimization is partially implemented. The router logs privacy metadata and manifests declare <code>privacy_data_required</code> fields. Consent-based blocking is planned.</td>
         </tr>
         <tr>
           <td>Undeclared network access</td>
-          <td><strong><code>globalOutbound: null</code></strong> by default. Only hostnames in <code>network_domains</code> are allowlisted for outbound calls. Other destinations fail at the platform layer.</td>
+          <td><strong>Network domain restriction.</strong> <span class="transparency-note">Planned</span> Network domain restriction via manifest-declared allowlists is a designed security control, planned for the third-party plugin execution layer.</td>
         </tr>
         <tr>
           <td>Unverified developer identity</td>
-          <td><strong>Human safety review</strong> before Community listing. <strong>Developer Agreement</strong> (accepted in the submission flow) includes indemnification, prompt-injection liability, and third-party API terms warranties. Every listed plugin has passed an identity and policy gate.</td>
+          <td><strong>Submission review.</strong> <span class="transparency-note">In development</span> A submission form and admin review interface exist. The Developer Agreement is presented during submission. Review enforcement is currently manual.</td>
         </tr>
         <tr>
           <td>Indirect prompt injection</td>
-          <td><strong>Runtime behavioral monitoring</strong> in the sandbox, manifest disclosure for external content sources, and contractual terms in the Developer Agreement. Residual risk remains; see <a href="#limitations">Honest limitations</a>.</td>
+          <td><strong>Behavioral monitoring.</strong> <span class="transparency-note">Planned</span> Plugin call metadata is logged for auditing. Runtime behavioral monitoring within the sandbox is planned. Manifest disclosure for external content sources and contractual terms in the Developer Agreement provide additional coverage. Residual risk remains; see <a href="#limitations">Honest limitations</a>.</td>
         </tr>
         <tr>
           <td>No quality assurance</td>
-          <td><strong>Merit-based Verified tier.</strong> Monthly composite score (upvotes, call volume, retention, developer activity, error rate). Placement is earned from signals, not purchased.</td>
+          <td><strong>Merit-based Verified tier.</strong> <span class="transparency-note">Planned</span> A merit-based Verified tier with composite scoring is planned. Scoring criteria are designed but not yet implemented.</td>
         </tr>
         <tr>
           <td>Plugin integrity drift</td>
-          <td><strong><code>content_hash</code></strong> on the manifest for submitted artifacts. Hash recorded at review; changes are detected on later review cycles. Verified listings use additional signing and integrity checks as specified in operations.</td>
+          <td><strong>Manifest integrity.</strong> <span class="transparency-note">Planned</span> Manifest content hashing and cryptographic signing are planned for third-party plugin submissions.</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <h2>3. Trust tiers</h2>
-  <p>SwarmSpace exposes three trust tiers. Agents (or their orchestrators) can filter calls by tier before execution.</p>
+  <h2>3. Trust tiers</h2> <span class="transparency-note">Partially implemented</span>
+  <p>SwarmSpace currently implements <strong>subscription-based access tiers</strong> (Free, Standard, Premium) that gate which plugins a user can invoke. Trust-based quality tiers are planned as a separate dimension:</p>
   <ul>
-    <li><strong>Verified</strong> — Sandboxed execution, human review, cryptographic signing on the verified pipeline. Suitable for plugins that receive personal context. Subject to monthly merit review for continued placement.</li>
-    <li><strong>Community</strong> — Passed safety review. Free to end users. Standard catalogue placement. Appropriate for well-scoped tools with clear manifests.</li>
-    <li><strong>Experimental</strong> — Clearly flagged in catalogue and APIs. Limited context access. Intended for prototypes; conservative agents can exclude this tier entirely.</li>
+    <li><strong>Verified</strong> <span class="transparency-note">Planned</span> — Intended for plugins that pass merit-based review and are suitable for receiving personal context. Criteria are designed but not yet enforced.</li>
+    <li><strong>Community</strong> <span class="transparency-note">Planned</span> — Intended for plugins that pass safety review. Standard catalogue placement with clear manifests.</li>
+    <li><strong>Experimental</strong> <span class="transparency-note">Planned</span> — Intended for prototypes, clearly flagged in catalogue and APIs. Limited context access; conservative agents would exclude this tier entirely.</li>
   </ul>
-  <p>A cautious integration can restrict execution to <strong>Verified-only</strong> plugins regardless of what the user’s subscription allows.</p>
+  <p>Once trust tiers are implemented, a cautious integration will be able to restrict execution to <strong>Verified-only</strong> plugins regardless of the user’s subscription tier.</p>
 
   <h2>4. The review process</h2>
   <ol style="margin:12px 0 18px 22px; color:var(--muted); font-size:14px; max-width:720px;">

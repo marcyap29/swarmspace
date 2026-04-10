@@ -30,11 +30,12 @@ export default {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
-      const body = (await request.json()) as {
-        query?: string;
-        type?: string;
-        limit?: number;
-      };
+      let body: { query?: string; type?: string; limit?: number };
+      try {
+        body = (await request.json()) as { query?: string; type?: string; limit?: number };
+      } catch {
+        return jsonResponse({ error: "Invalid JSON body" }, 400);
+      }
 
       const query = body.query;
       if (!query) {

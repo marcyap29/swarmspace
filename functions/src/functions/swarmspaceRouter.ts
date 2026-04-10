@@ -352,7 +352,7 @@ function writePluginActivityLog(entry: {
   privacy_required: boolean;
   consent_given: boolean;
   data_fields_sent: string[];
-  result: "success" | "error";
+  result: "success" | "error" | "blocked";
   error_message?: string;
 }): void {
   const db = getFirestore();
@@ -452,8 +452,32 @@ export const swarmspaceRouter = onCall(
         consent_given: false,
         ts: new Date().toISOString(),
       });
-      // Allow through for now; client can send _prism_consent: true when user approved.
-      // Future: throw HttpsError("permission-denied", "Privacy consent required for this plugin") to block.
+      logger.warn(`PRISM: Blocking unconsented privacy-requiring plugin call`, {
+        plugin_id,
+        userId,
+        hasSensitivePayload: true,
+        consentGiven: false,
+      });
+      writePluginActivityLog({
+        user_id: userId,
+        plugin_id,
+        plugin_name: plugin.description,
+        user_tier: userTier,
+        privacy_required: true,
+        consent_given: false,
+        data_fields_sent: dataFieldsSent,
+        result: "blocked",
+        error_message: "PRISM consent not provided",
+      });
+      throw new HttpsError(
+        "permission-denied",
+        "This plugin requires access to sensitive data. Please provide consent before proceeding.",
+        {
+          code: "PRISM_CONSENT_REQUIRED",
+          plugin_id,
+          privacy_data_required: true,
+        }
+      );
     } else {
       logger.info("prism_transaction", {
         phase: "pre_invoke",
