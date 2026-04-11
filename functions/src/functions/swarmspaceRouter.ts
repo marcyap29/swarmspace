@@ -28,6 +28,7 @@ import { loadUserLlmSettings } from "../userLlmSettings";
 import { LLM_SETTINGS_ENCRYPTION_KEY } from "../config";
 
 const PLUGIN_ACTIVITY_COLLECTION = "plugin_activity_log";
+const CATALOG_VERSION = "2026-04-10T18:00:00Z";
 
 // ── Secrets ────────────────────────────────────────────────────────────────────
 // Set these once via Firebase CLI:
@@ -60,6 +61,12 @@ interface PluginConfig {
   costTier?: Tier;
   /** PRISM: when true, intercept expects consent or sensitive-payload handling */
   privacy_data_required?: boolean;
+  owner: string;
+  author: { name: string; type: "first-party" | "developer" };
+  pricing: { model: "included" | "per_call" | "subscription"; cost_per_call: number | null };
+  version: string;
+  deployed_at: string;
+  rateLimits: { free: number; standard: number; premium: number | null };
 }
 
 const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
@@ -72,6 +79,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["llm", "synthesis", "writing"],
     description: "Fast AI synthesis for writing and drafting",
     exampleQuery: "Draft a LinkedIn post about my latest project",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "brave-search": {
     workerUrl: "https://swarmspace-plugin-brave-search.orbitalai.workers.dev",
@@ -79,6 +92,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["web_search", "general"],
     description: "Privacy-focused web search",
     exampleQuery: "What are the latest developments in AI?",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "semantic-scholar": {
     workerUrl: "https://swarmspace-plugin-semantic-scholar.orbitalai.workers.dev",
@@ -86,6 +105,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["academic_search", "research", "papers"],
     description: "Academic paper and citation search",
     exampleQuery: "Find papers on transformer architectures",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "weather": {
     workerUrl: "https://swarmspace-plugin-weather.orbitalai.workers.dev",
@@ -93,6 +118,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["weather", "real_time"],
     description: "Current weather and forecasts",
     exampleQuery: "What's the weather in San Francisco?",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "wikipedia": {
     workerUrl: "https://swarmspace-plugin-wikipedia.orbitalai.workers.dev",
@@ -100,6 +131,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["knowledge", "encyclopedia", "general"],
     description: "Wikipedia knowledge base",
     exampleQuery: "Who invented the transistor?",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "currency": {
     workerUrl: "https://swarmspace-plugin-currency.orbitalai.workers.dev",
@@ -107,6 +144,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["currency", "exchange_rates", "real_time"],
     description: "Currency exchange rates",
     exampleQuery: "What is EUR to USD right now?",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "news": {
     workerUrl: "https://us-central1-arc-epi.cloudfunctions.net/newsDataInvoke",
@@ -114,6 +157,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["news", "real_time", "headlines"],
     description: "Latest news and headlines (NewsData.io)",
     exampleQuery: "Top tech news today",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   // ── New free tier plugins ──────────────────────────────────────────────────
   "arxiv": {
@@ -122,6 +171,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["academic_search", "preprints", "research"],
     description: "Scientific preprints from arXiv",
     exampleQuery: "Recent LLM alignment papers",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "pubmed": {
     workerUrl: "https://swarmspace-plugin-pubmed.orbitalai.workers.dev",
@@ -129,6 +184,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["biomedical", "research", "clinical"],
     description: "Biomedical literature from PubMed/NCBI",
     exampleQuery: "Sleep and HRV studies",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-10T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "nominatim": {
     workerUrl: "https://swarmspace-plugin-nominatim.orbitalai.workers.dev",
@@ -136,6 +197,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["geocoding", "location", "maps"],
     description: "Geocoding via OpenStreetMap",
     exampleQuery: "Coords for La Jolla, CA",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-10T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "rest-countries": {
     workerUrl: "https://swarmspace-plugin-rest-countries.orbitalai.workers.dev",
@@ -143,6 +210,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["geography", "country_data", "reference"],
     description: "Country data and geography",
     exampleQuery: "Info about Japan",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-10T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "github-public": {
     workerUrl: "https://swarmspace-plugin-github-public.orbitalai.workers.dev",
@@ -150,6 +223,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["developer_tools", "repositories", "open_source"],
     description: "Public GitHub repo and developer data",
     exampleQuery: "Stars on bytedance/deer-flow",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-10T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "hackernews": {
     workerUrl: "https://swarmspace-plugin-hackernews.orbitalai.workers.dev",
@@ -157,6 +236,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["tech_news", "community", "discussions"],
     description: "Tech community discussions from Hacker News",
     exampleQuery: "HN posts about MCP today",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-10T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "dictionary-api": {
     workerUrl: "https://swarmspace-plugin-dictionary-api.orbitalai.workers.dev",
@@ -164,6 +249,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["language", "definitions", "reference"],
     description: "Word definitions and etymology",
     exampleQuery: "Define interoperability",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-10T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "jina-reader": {
     workerUrl: "https://swarmspace-plugin-jina-reader.orbitalai.workers.dev",
@@ -171,6 +262,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["url_fetch", "content_extraction", "reading"],
     description: "Fetch and extract any URL content",
     exampleQuery: "Read https://example.com",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-10T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   // ── Standard tier ($30/mo) ─────────────────────────────────────────────────
   "vision-ocr": {
@@ -180,6 +277,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     description: "Extract text (OCR) or understand images with Vision API + Gemini",
     exampleQuery: "Extract text from this screenshot / Describe this image",
     privacy_data_required: true,
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "url-reader": {
     workerUrl: "https://swarmspace-plugin-url-reader.orbitalai.workers.dev",
@@ -188,6 +291,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     description: "Fetch and extract content from URLs",
     exampleQuery: "Read and summarize this article: https://...",
     privacy_data_required: true,
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "media-upload": {
     workerUrl: "https://swarmspace-media-upload.orbitalai.workers.dev",
@@ -196,6 +305,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     description: "Upload image and get a public URL (24h TTL)",
     exampleQuery: "Upload image for sharing",
     privacy_data_required: true,
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-15T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "tavily-search": {
     workerUrl: "https://swarmspace-plugin-tavily-search.orbitalai.workers.dev",
@@ -203,6 +318,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["web_search", "ai_optimized", "research"],
     description: "AI-optimized search for research",
     exampleQuery: "Deep research on quantum computing applications",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-15T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   // ── Premium tier ──────────────────────────────────────────────────────────
   "exa-search": {
@@ -211,6 +332,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["neural_search", "semantic", "research"],
     description: "Neural semantic search",
     exampleQuery: "Find content similar to this concept",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-15T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "perplexity-sonar": {
     workerUrl: "https://swarmspace-plugin-perplexity-sonar.orbitalai.workers.dev",
@@ -218,6 +345,12 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["web_search", "answer_synthesis", "research"],
     description: "Real-time answer synthesis from the web",
     exampleQuery: "Explain the current state of fusion energy",
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-03-15T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "social-publisher": {
     workerUrl: "https://swarmspace-social-publisher.orbitalai.workers.dev",
@@ -226,8 +359,78 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     description: "Publish drafts to LinkedIn, Bluesky, Threads, and more via Late.com",
     exampleQuery: "Publish this draft to my connected accounts",
     privacy_data_required: true,
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-04-01T00:00:00Z",
+    rateLimits: { free: 20, standard: 500, premium: 500 },
   },
 };
+
+// ── Chain Definitions ─────────────────────────────────────────────────────────
+// Curated orchestrator workflows — extracted from workers/orchestrator/src/index.js
+// Plugin IDs use router names (not orchestrator-internal names):
+//   newsapi -> news, exchange-rates -> currency, open-meteo -> weather
+
+interface ChainDefinition {
+  route: string;
+  name: string;
+  plugins: string[];
+  description: string;
+  endpoint: string;
+}
+
+const CHAIN_DEFINITIONS: ChainDefinition[] = [
+  { route: "/research", name: "Deep Research",
+    plugins: ["brave-search", "wikipedia", "semantic-scholar", "gemini-flash"],
+    description: "Web search + Wikipedia + academic papers, synthesized by Gemini",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/research" },
+  { route: "/competitor", name: "Competitive Analysis",
+    plugins: ["brave-search", "news", "hackernews", "gemini-flash"],
+    description: "Competitive intelligence from web, news, and tech community",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/competitor" },
+  { route: "/marketing", name: "Marketing Brief",
+    plugins: ["brave-search", "news", "gemini-flash"],
+    description: "Content marketing brief with trending themes and calendar suggestions",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/marketing" },
+  { route: "/plugins", name: "Plugin Discovery",
+    plugins: ["brave-search", "github-public", "gemini-flash"],
+    description: "API and plugin ecosystem analysis with integration patterns",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/plugins" },
+  { route: "/academic", name: "Academic Research",
+    plugins: ["semantic-scholar", "arxiv", "pubmed", "gemini-flash"],
+    description: "Deep academic literature review across multiple databases",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/academic" },
+  { route: "/news-brief", name: "News Brief",
+    plugins: ["news", "hackernews", "brave-search", "gemini-flash"],
+    description: "Multi-source news intelligence briefing",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/news-brief" },
+  { route: "/market-scan", name: "Market Scan",
+    plugins: ["brave-search", "news", "currency", "gemini-flash"],
+    description: "Financial and market overview with exchange rate context",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/market-scan" },
+  { route: "/location-brief", name: "Location Brief",
+    plugins: ["nominatim", "weather", "rest-countries", "wikipedia", "gemini-flash"],
+    description: "Geographic intelligence with weather, country data, and context",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/location-brief" },
+  { route: "/health-research", name: "Health Research",
+    plugins: ["pubmed", "semantic-scholar", "wikipedia", "gemini-flash"],
+    description: "Biomedical research summary with clinical evidence assessment",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/health-research" },
+  { route: "/tech-scout", name: "Tech Scout",
+    plugins: ["github-public", "hackernews", "brave-search", "arxiv", "gemini-flash"],
+    description: "Technology evaluation with community adoption and maturity assessment",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/tech-scout" },
+  { route: "/fact-check", name: "Fact Check",
+    plugins: ["brave-search", "wikipedia", "semantic-scholar", "dictionary-api", "gemini-flash"],
+    description: "Multi-source fact verification with confidence rating",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/fact-check" },
+  { route: "/content-brief", name: "Content Brief",
+    plugins: ["brave-search", "wikipedia", "news", "gemini-flash"],
+    description: "Content creation brief with research, outline, and data points",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/content-brief" },
+];
 
 // ── Tier resolution ────────────────────────────────────────────────────────────
 // Maps your existing plan names to SwarmSpace tier names.
@@ -637,20 +840,65 @@ export const swarmspacePluginCatalog = onCall(
 
     const plugins = Object.entries(PLUGIN_REGISTRY).map(([pluginId, config]) => ({
       plugin_id: pluginId,
-      worker_url: config.workerUrl,
-      required_tier: config.requiredTier,
-      capabilities: config.capabilities,
       description: config.description,
-      example_query: config.exampleQuery,
+      required_tier: config.requiredTier,
       available: canAccessPlugin(userTier, config.requiredTier),
-      cost_tier: config.costTier ?? config.requiredTier,
+      owner: config.owner,
+      author: config.author,
+      capabilities: config.capabilities,
+      pricing: config.pricing,
       privacy_data_required: config.privacy_data_required === true,
+      version: config.version,
+      deployed_at: config.deployed_at,
+      rate_limits: config.rateLimits,
+      worker_url: config.workerUrl,
+      example_query: config.exampleQuery,
+      cost_tier: config.costTier ?? config.requiredTier,
     }));
 
     return {
       user_tier: userTier,
+      catalog_version: CATALOG_VERSION,
       plugins,
+      chains: CHAIN_DEFINITIONS,
       upgrade_url: "https://swarmspace.ai/upgrade",
     };
+  }
+);
+
+// ── Capabilities doc writer (admin-only) ──────────────────────────────────────
+// Writes swarmspace_capabilities/current to Firestore so LUMARA can listen
+// for real-time updates when plugins or chains change.
+
+export const swarmspaceWriteCapabilities = onCall(
+  {},
+  async (request) => {
+    const { userId } = await enforceAuth(request);
+    const email = request.auth?.token?.email as string | undefined;
+    if (!isAdminEmail(email)) {
+      throw new HttpsError("permission-denied", "Admin only");
+    }
+
+    const allCapabilities = new Set<string>();
+    Object.values(PLUGIN_REGISTRY).forEach(p => p.capabilities.forEach(c => allCapabilities.add(c)));
+
+    const pluginIds = Object.keys(PLUGIN_REGISTRY);
+
+    const doc = {
+      catalog_version: CATALOG_VERSION,
+      plugin_count: pluginIds.length,
+      plugin_ids: pluginIds,
+      chain_count: CHAIN_DEFINITIONS.length,
+      chain_routes: CHAIN_DEFINITIONS.map(c => c.route),
+      capabilities: Array.from(allCapabilities).sort(),
+      updated_at: FieldValue.serverTimestamp(),
+      updated_by: userId,
+    };
+
+    const db = getFirestore();
+    await db.collection("swarmspace_capabilities").doc("current").set(doc);
+
+    logger.info("swarmspace_capabilities/current written", { plugin_count: doc.plugin_count });
+    return { success: true, ...doc };
   }
 );
