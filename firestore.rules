@@ -79,6 +79,14 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── swarmspace_capabilities/{docId} ────────────────────────────
+    // Plugin catalog sync for LUMARA real-time listener.
+    // Any authenticated user can read; writes are Admin SDK only.
+    match /swarmspace_capabilities/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
     // ── users/{uid} ──────────────────────────────────────────────────
     // Web dashboard user docs (created by signup.html).
     // Owner can read and write their own doc.
