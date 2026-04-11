@@ -19,73 +19,40 @@ When a plugin is invoked, the Firebase Cloud Function (`swarmspaceRouter`) forwa
 ```json
 {
   "schema_version": "1.0",
-  "id": "com.example.plugin-name",
-  "name": "Human-readable plugin name",
+  "id": "brave-search",
+  "name": "Privacy-focused web search",
   "version": "1.0.0",
   "capability": "Natural language description of what this plugin does. Primary semantic search target.",
-  "trust_tier": "verified|community|experimental",
-  "trust_score": 9.4,
-  "endpoint": "https://swarmspace-plugin-example.orbitalai.workers.dev",
-  "health_endpoint": "https://swarmspace-plugin-example.orbitalai.workers.dev/health",
-  "latency_class": "low|medium|high",
+  "trust_tier": "community|verified",
+  "endpoint": "https://swarmspace-plugin-brave-search.orbitalai.workers.dev",
+  "health_endpoint": "https://swarmspace-plugin-brave-search.orbitalai.workers.dev/health",
   "pricing": {
-    "model": "free|per_call|subscription",
-    "free_tier": 100,
-    "cost_per_call_usd": 0.001
+    "model": "included|per_call|subscription",
+    "cost_per_call": null
   },
-  "data_required": ["user.name"],
-  "data_never_stored": true,
-  "auth_method": "oauth2|api_key|none",
-  "input_schema": { /* JSON Schema */ },
-  "output_schema": { /* JSON Schema */ },
-  "tags": ["category1", "category2"],
-  "mcp_compatible": true,
-  "canonical_url": "https://swarmspace.io/plugins/your-plugin",
-  "agent_summary": "One-sentence description optimized for agent-to-agent passing. Include what it does and trust tier.",
+  "privacy_data_required": false,
+  "auth_method": "api_key|none",
+  "tags": ["web_search", "general"],
   "developer": {
-    "name": "Developer or org name",
-    "email": "contact@yourdomain.com",
-    "website": "https://yourdomain.com"
+    "name": "Orbital AI",
+    "type": "first-party"
   },
-  "created_at": "2026-02-01T00:00:00Z",
-  "updated_at": "2026-02-15T00:00:00Z",
-
-  // AST10 additions:
-  "network_permissions": {
-    "mode": "allowlist",
-    "allowed_domains": ["api.example.com", "cdn.example.com"],
-    "denied_domains": []
-  },
-  "content_hash": "sha256:abc123...",
-  "scan_status": {
-    "scanner": "swarmspace-scanner",
-    "scanner_version": "1.0.0",
-    "scan_date": "2026-03-15T00:00:00Z",
-    "result": "pass",
-    "findings": []
-  },
-  "risk_tier": "L0",
-  "deny_write": {
-    "identity_files": true,
-    "memory_files": true,
-    "context_files": true,
-    "exceptions": []
-  },
-  "version_pinning": {
-    "dependencies_hash": "sha256:def456...",
-    "pinned_at": "2026-03-15T00:00:00Z"
-  }
+  "deployed_at": "2026-03-01T00:00:00Z"
 }
 ```
 
-#### OWASP AST10 Field Reference
+> **Note:** The manifest format above reflects the current implementation. Plugin IDs use slug format (e.g., `brave-search`), not reverse-domain notation. Fields like `network_permissions`, `content_hash`, `scan_status`, `deny_write`, and `version_pinning` are designed for future AST10 compliance but are not yet enforced at runtime. See `Docs/OWASP_AST10_COMPLIANCE.md` for implementation status.
 
-- **`network_permissions`** (AST03 — Over-Privileged Skills): Replaces binary `network: true/false` with explicit domain allowlist/denylist. Mode can be `allowlist` or `denylist`.
-- **`content_hash`** (AST01/AST02 — Malicious Skills / Supply Chain): SHA-256 hash of manifest content, verified at listing and runtime. Any modification invalidates the hash.
-- **`scan_status`** (AST08 — Poor Scanning): Behavioral/semantic scan result, not just schema validation. Records scanner version, date, result, and any findings.
-- **`risk_tier`** (AST09 — No Governance): `L0`=safe, `L1`=low, `L2`=elevated, `L3`=destructive. Gates which trust tiers can access which risk tiers.
-- **`deny_write`** (AST03): Explicit write protection for identity, memory, and context files. Default deny. Maps to LUMARA's CHRONICLE and PRISM layers.
-- **`version_pinning`** (AST07 — Update Drift): Dependency hash for verified plugins. Alerts when a previously-scanned plugin updates without re-review.
+#### Planned AST10 Manifest Fields (not yet implemented)
+
+These fields are designed but not yet enforced. They will be added to the manifest schema as enforcement is built:
+
+- **`network_permissions`** (AST03): Domain allowlist/denylist for outbound network access
+- **`content_hash`** (AST01/AST02): SHA-256 hash of manifest content for integrity verification
+- **`scan_status`** (AST08): Behavioral/semantic scan results
+- **`risk_tier`** (AST09): `L0`=safe through `L3`=destructive, gates trust tier access
+- **`deny_write`** (AST03): Write protection for identity, memory, and context files
+- **`version_pinning`** (AST07): Dependency hash for update drift detection
 
 **Why JSON, not YAML?**
 - JSON is natively parseable by every language without dependencies
@@ -126,6 +93,8 @@ Static HTML pages deployed on Vercel with URL rewrites configured in `vercel.jso
 |---|---|---|
 | `swarmspaceRouter` | Main plugin invocation endpoint | 25s |
 | `swarmspacePluginStatus` | Plugin availability check | 10s |
+| `swarmspacePluginCatalog` | Enriched plugin/chain discovery for LUMARA | 10s |
+| `swarmspaceWriteCapabilities` | Admin: writes capabilities doc for real-time sync | 10s |
 
 `swarmspaceRouter` URL: `https://us-central1-arc-epi.cloudfunctions.net/swarmspaceRouter`
 
@@ -152,16 +121,18 @@ Each plugin runs as a Cloudflare Worker at `swarmspace-plugin-{plugin_id}.orbita
 
 ---
 
-## 3. Plugin Registry — 22 Plugins Across 3 Tiers
+## 3. Plugin Registry — 21 Plugins Across 3 Tiers
 
 ### Free Tier (15 plugins)
-`gemini-flash`, `brave-search`, `semantic-scholar`, `jina-reader`, `open-meteo`, `newsapi`, `wikipedia`, `exchange-rates`, `arxiv`, `pubmed`, `nominatim`, `rest-countries`, `github-public`, `hackernews`, `dictionary-api`
+`gemini-flash`, `brave-search`, `semantic-scholar`, `weather`, `wikipedia`, `currency`, `news`, `arxiv`, `pubmed`, `nominatim`, `rest-countries`, `github-public`, `hackernews`, `dictionary-api`, `jina-reader`
 
-### Standard Tier (3 plugins)
-`tavily-search`, `url-reader`, `groq-inference`
+### Standard Tier (4 plugins)
+`vision-ocr`, `url-reader`, `media-upload`, `tavily-search`, `social-publisher`
 
-### Premium Tier (4 plugins)
-`exa-search`, `perplexity-sonar`, `gemini-3-1-pro`, `gpt-oss-120b`
+### Premium Tier (2 plugins)
+`exa-search`, `perplexity-sonar`
+
+> **Note:** Plugin IDs use slug format. The orchestrator uses internal aliases for some plugins: `newsapi` → `news`, `exchange-rates` → `currency`, `open-meteo` → `weather`. The canonical IDs above match `PLUGIN_REGISTRY` in `swarmspaceRouter.ts`.
 
 ### Pricing Plans
 
@@ -178,19 +149,11 @@ Each plugin runs as a Cloudflare Worker at `swarmspace-plugin-{plugin_id}.orbita
 
 SwarmSpace is a trust layer for an ecosystem of AI agent capabilities. Security is the core value proposition.
 
-### 4.1 Manifest Signing (Verified Tier)
+### 4.1 Manifest Signing (Verified Tier) — Planned
 
-All Verified tier plugins have cryptographically signed manifests using Ed25519:
+> **Status: Designed, not implemented.** No Ed25519 signing code exists in the codebase. This is planned for when the platform accepts third-party Verified tier submissions.
 
-```
-Developer submits manifest
-  → SwarmSpace signs with private key: Ed25519
-  → Signature stored in manifest: "swarmspace_signature": "..."
-  → Agents verify signature against SwarmSpace public key before activation
-  → Any manifest modification invalidates signature immediately
-```
-
-Why Ed25519: fast, small signatures, widely supported, immune to timing attacks.
+Verified tier plugins will have cryptographically signed manifests using Ed25519. Any manifest modification will invalidate the signature.
 
 ### 4.2 Plugin Submission Security
 
@@ -215,10 +178,9 @@ The `swarmspaceRouter` function enforces:
 
 Plugins can potentially be used as a vector for prompt injection attacks. Mitigations:
 
-- Plugin outputs must conform to declared `output_schema` — agents reject out-of-schema responses
 - Plugin outputs are treated as untrusted data, not as instructions
-- LUMARA wraps plugin results in explicit context: "The following is data returned by an external plugin:" before presenting to the LLM
-- Verified tier review includes prompt injection resistance testing
+- LUMARA wraps plugin results in explicit context before presenting to the LLM
+- Output schema validation and prompt injection resistance testing are planned for Verified tier
 
 ### 4.5 Trust Revocation
 
@@ -285,12 +247,14 @@ LUMARA is the primary consumer of SwarmSpace. The `SwarmSpaceClient` (Flutter) c
 
 ## 6. Current State
 
-- **22 plugins live** across free, standard, and premium tiers
+- **21 plugins live** across free, standard, and premium tiers
+- **12 orchestrator workflows** chaining plugins into curated multi-step routes
 - **Firebase + Vercel + Cloudflare** stack fully deployed and operational
-- **LUMARA integration** active as primary consumer with tier-aware routing
+- **LUMARA integration** active as primary consumer with tier-aware routing and enriched catalog (chains, pricing, capabilities)
 - **Stripe billing** handling subscriptions for Pro and LUMARA Premium plans
 - **Plugin submission pipeline** accepting community submissions via submit.html with admin review at admin-submissions.html
-- **Ed25519 signing** implemented for Verified tier manifests
+- **PRISM consent enforcement** active — unconsented privacy-requiring calls are blocked
+- **Ed25519 signing** designed for Verified tier manifests (not yet implemented)
 
 ---
 
