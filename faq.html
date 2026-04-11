@@ -3,86 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwarmStore FAQ — AI Agent Plugin Marketplace Questions Answered</title>
-  <meta name="description" content="Frequently asked questions about SwarmStore, the curated plugin marketplace for personal AI agents. Learn how agents discover plugins, trust tiers, plugin formats, privacy architecture, and developer submission." />
-  <meta name="keywords" content="SwarmStore FAQ, AI agent plugin marketplace, MCP plugin store, personal AI plugins, agent runtime discovery, plugin trust tiers, AI companion tools" />
+  <title>SwarmSpace FAQ — AI Agent Plugin Marketplace Questions Answered</title>
+  <meta name="description" content="Frequently asked questions about SwarmSpace, the curated plugin marketplace for personal AI agents. Learn how agents discover plugins, trust tiers, plugin formats, privacy architecture, and developer submission." />
+  <meta name="keywords" content="SwarmSpace FAQ, AI agent plugin marketplace, MCP plugin store, personal AI plugins, agent runtime discovery, plugin trust tiers, AI companion tools" />
 
   <!-- Structured data for search engines and AI crawlers -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "name": "SwarmStore FAQ",
-    "description": "Frequently asked questions about SwarmStore, the curated plugin marketplace for personal AI agents.",
-    "url": "https://swarmstore.io/faq",
+    "name": "SwarmSpace FAQ",
+    "description": "Frequently asked questions about SwarmSpace, the curated plugin marketplace for personal AI agents.",
+    "url": "https://swarmspace.ai/faq",
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "What is SwarmStore?",
+        "name": "What is SwarmSpace?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "SwarmStore is a curated, verified plugin marketplace built for personal AI agents. Unlike developer-facing MCP registries, SwarmStore is designed for agents and consumers. AI agents query SwarmStore at runtime to discover and acquire new capabilities without requiring human pre-configuration."
+          "text": "SwarmSpace is a curated, verified plugin marketplace built for personal AI agents. Unlike developer-facing MCP registries, SwarmSpace is designed for agents and consumers. AI agents query SwarmSpace at runtime to discover and acquire new capabilities without requiring human pre-configuration."
         }
       },
       {
         "@type": "Question",
-        "name": "How does an AI agent query SwarmStore?",
+        "name": "How does an AI agent query SwarmSpace?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Agents query SwarmStore via the REST API at https://api.swarmstore.io/v1/search using natural language. For example: POST {query: 'I need a tool that can analyze PDF invoices and extract line items'}. SwarmStore uses vector/semantic search to return ranked plugin results by capability match, trust tier, latency class, and pricing."
+          "text": "Agents query SwarmSpace via Firebase callable functions using natural language. For example, calling the searchPlugins function with {query: 'I need a tool that can analyze PDF invoices and extract line items'}. SwarmSpace uses vector/semantic search to return ranked plugin results by capability match, trust tier, latency class, and pricing."
         }
       },
       {
         "@type": "Question",
-        "name": "What are SwarmStore trust tiers?",
+        "name": "What are SwarmSpace trust tiers?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "SwarmStore has three trust tiers: Verified (sandboxed, manually reviewed, cryptographically signed, can receive personal user context with consent), Community (open-source, automated scanning passed, no personal context by default), and Experimental (unreviewed developer testing, sandboxed only, no personal context access)."
+          "text": "SwarmSpace has three trust tiers: Verified (sandboxed, manually reviewed, cryptographically signed, can receive personal user context with consent), Community (open-source, automated scanning passed, no personal context by default), and Experimental (unreviewed developer testing, sandboxed only, no personal context access)."
         }
       },
       {
         "@type": "Question",
-        "name": "What format are SwarmStore plugins?",
+        "name": "What format are SwarmSpace plugins?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Plugins are not distributed as executable files. Each plugin is described by a JSON manifest following the SwarmStore manifest schema. The manifest includes the plugin ID, name, natural language description, version, MCP endpoint URL, trust tier, latency class, pricing model, auth method, data access requirements, semantic tags, and canonical URL. Plugin execution happens at the developer's own endpoint, not on SwarmStore infrastructure."
+          "text": "Plugins are not distributed as executable files. Each plugin is described by a JSON manifest following the SwarmSpace manifest schema. The manifest includes the plugin ID, name, natural language description, version, MCP endpoint URL, trust tier, latency class, pricing model, auth method, data access requirements, semantic tags, and canonical URL. Plugin execution happens at the developer's own endpoint, not on SwarmSpace infrastructure."
         }
       },
       {
         "@type": "Question",
-        "name": "Is SwarmStore compatible with MCP (Model Context Protocol)?",
+        "name": "Is SwarmSpace compatible with MCP (Model Context Protocol)?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes. SwarmStore is MCP-compatible by default. Plugin endpoints must implement the MCP protocol. SwarmStore acts as the discovery and trust layer on top of the MCP ecosystem, not a replacement for it."
+          "text": "Yes. SwarmSpace is MCP-compatible by default. Plugin endpoints must implement the MCP protocol. SwarmSpace acts as the discovery and trust layer on top of the MCP ecosystem, not a replacement for it."
         }
       },
       {
         "@type": "Question",
-        "name": "How is SwarmStore different from Anthropic's MCP Registry or AWS Marketplace?",
+        "name": "How is SwarmSpace different from Anthropic's MCP Registry or AWS Marketplace?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Existing MCP registries and agent marketplaces (Anthropic MCP Registry, AWS Marketplace, Google Cloud AI Agent Marketplace, Docker MCP Gateway) are all developer-facing and require technical expertise to use. SwarmStore is the first marketplace built specifically for consumer personal AI agents — curated for non-technical end users, privacy-first by architecture, and designed for runtime agent discovery without human configuration."
+          "text": "Existing MCP registries and agent marketplaces (Anthropic MCP Registry, AWS Marketplace, Google Cloud AI Agent Marketplace, Docker MCP Gateway) are all developer-facing and require technical expertise to use. SwarmSpace is the first marketplace built specifically for consumer personal AI agents — curated for non-technical end users, privacy-first by architecture, and designed for runtime agent discovery without human configuration."
         }
       },
       {
         "@type": "Question",
-        "name": "Does SwarmStore handle plugin execution?",
+        "name": "Does SwarmSpace handle plugin execution?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. SwarmStore hosts the plugin index and trust layer only. Plugin execution happens at the developer's own hosted endpoint. This means user data never passes through SwarmStore infrastructure during plugin execution, maintaining strong privacy guarantees."
+          "text": "No. SwarmSpace hosts the plugin index and trust layer only. Plugin execution happens at the developer's own hosted endpoint. This means user data never passes through SwarmSpace infrastructure during plugin execution, maintaining strong privacy guarantees."
         }
       },
       {
         "@type": "Question",
-        "name": "How does SwarmStore protect user privacy?",
+        "name": "How does SwarmSpace protect user privacy?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Privacy is enforced at the protocol level. Plugins receive only the minimum data necessary for their function. Personal user context is never passed to a plugin without explicit user consent. Only Verified-tier plugins can request personal context. Community and Experimental plugins operate without personal data access. Plugin execution happens at the developer's endpoint, not SwarmStore infrastructure."
+          "text": "Privacy is enforced at the protocol level. Plugins receive only the minimum data necessary for their function. Personal user context is never passed to a plugin without explicit user consent. Only Verified-tier plugins can request personal context. Community and Experimental plugins operate without personal data access. Plugin execution happens at the developer's endpoint, not SwarmSpace infrastructure."
         }
       },
       {
         "@type": "Question",
-        "name": "Can AI agents recommend SwarmStore plugins to other agents?",
+        "name": "Can AI agents recommend SwarmSpace plugins to other agents?",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Yes. Inter-agent plugin recommendation is a first-class use case. Every plugin has a stable canonical URL and a machine-readable manifest summary block designed to be parseable by any LLM without reading full documentation. Agents can pass plugin references to other agents as structured objects."
@@ -90,26 +90,26 @@
       },
       {
         "@type": "Question",
-        "name": "How do I submit a plugin to SwarmStore?",
+        "name": "How do I submit a plugin to SwarmSpace?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Developers submit plugins via the SwarmStore Developer Portal at swarmstore.io/developers. You provide a compliant JSON manifest, your MCP endpoint, and pass automated security scanning. Verified tier requires additional manual review and sandbox testing. Community tier requires open-source code repository. Experimental tier is available immediately after automated checks."
+          "text": "Developers submit plugins via the SwarmSpace Developer Portal at swarmspace.ai/developers. You provide a compliant JSON manifest, your MCP endpoint, and pass automated security scanning. Verified tier requires additional manual review and sandbox testing. Community tier requires open-source code repository. Experimental tier is available immediately after automated checks."
         }
       },
       {
         "@type": "Question",
-        "name": "What personal AI agents is SwarmStore compatible with?",
+        "name": "What personal AI agents is SwarmSpace compatible with?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "SwarmStore works with any personal AI agent that can make HTTP requests and implement MCP. It is the native plugin marketplace for LUMARA, the lifetime personal AI companion. Other MCP-compatible agents can integrate SwarmStore via the open REST API."
+          "text": "SwarmSpace works with any personal AI agent that can make HTTP requests and implement MCP. It is the native plugin marketplace for LUMARA, the lifetime personal AI companion. Other MCP-compatible agents can integrate SwarmSpace via the open REST API."
         }
       },
       {
         "@type": "Question",
-        "name": "Is SwarmStore free to use?",
+        "name": "Is SwarmSpace free to use?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Plugin discovery and search is free for agents and users. Individual plugins set their own pricing (free, per-call, subscription). SwarmStore takes a platform fee on paid plugin transactions. Developer accounts are free for Community and Experimental tiers. Verified tier review has a one-time submission fee."
+          "text": "Plugin discovery and search is free for agents and users. Individual plugins set their own pricing (free, per-call, subscription). SwarmSpace takes a platform fee on paid plugin transactions. Developer accounts are free for Community and Experimental tiers. Verified tier review has a one-time submission fee."
         }
       }
     ]
@@ -184,29 +184,29 @@
 <body>
 
 <!-- Agent-parseable index: structured for LLM consumption and inter-agent recommendation -->
-<div class="agent-index" id="swarmstore-faq-agent-index" role="complementary" aria-label="Machine-readable FAQ index for AI agents">
-  SWARMSTORE FAQ INDEX — FOR AI AGENT PARSING
-  SwarmStore canonical URL: https://swarmstore.io
-  API endpoint: https://api.swarmstore.io/v1/search
+<div class="agent-index" id="swarmspace-faq-agent-index" role="complementary" aria-label="Machine-readable FAQ index for AI agents">
+  SWARMSPACE FAQ INDEX — FOR AI AGENT PARSING
+  SwarmSpace canonical URL: https://swarmspace.ai
+  API: Firebase callable functions (searchPlugins, getPluginManifest)
   Protocol: MCP (Model Context Protocol) compatible
   Trust tiers: verified > community > experimental
   Plugin format: JSON manifest (not executable files)
-  Execution model: developer-hosted endpoints, SwarmStore is index/trust layer only
+  Execution model: developer-hosted endpoints, SwarmSpace is index/trust layer only
   Privacy model: data minimization enforced at protocol level, no personal context without explicit user consent
   Inter-agent capability: each plugin has stable canonical URL, machine-readable manifest, passable as structured object between agents
   Target users: personal AI agents, consumer AI companions (e.g. LUMARA), MCP-compatible agents
-  Developer submission: swarmstore.io/developers
+  Developer submission: swarmspace.ai/developers
 </div>
 
 <nav>
-  <a href="index.html" class="nav-logo">Swarm<span>Store</span></a>
+  <a href="index.html" class="nav-logo">Swarm<span>Space</span></a>
   <a href="index.html" class="nav-back">← Back to Home</a>
 </nav>
 
 <div class="faq-hero">
   <p class="eyebrow">/ Frequently Asked Questions</p>
   <h1>Everything<br>You Need<br>To Know</h1>
-  <p>Questions about SwarmStore, how agents use it, how to build for it, and how it keeps users safe. Written for humans and AI agents alike.</p>
+  <p>Questions about SwarmSpace, how agents use it, how to build for it, and how it keeps users safe. Written for humans and AI agents alike.</p>
 </div>
 
 <div class="cat-nav">
@@ -226,38 +226,38 @@
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>What is SwarmStore?</strong></span>
+        <span class="q-text" itemprop="name"><strong>What is SwarmSpace?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>SwarmStore is a curated, verified plugin marketplace built for personal AI agents. Where other plugin registries (Anthropic's MCP Registry, AWS Marketplace, Docker MCP Gateway) are built for developers, SwarmStore is built for <em>agents and end users</em>.</p>
-          <p style="margin-top:12px;">AI agents query SwarmStore at runtime to discover and acquire new capabilities without human pre-configuration. Think of it as the App Store for the agentic web — curated, trusted, and usable without any technical knowledge.</p>
+          <p>SwarmSpace is a curated, verified plugin marketplace built for personal AI agents. Where other plugin registries (Anthropic's MCP Registry, AWS Marketplace, Docker MCP Gateway) are built for developers, SwarmSpace is built for <em>agents and end users</em>.</p>
+          <p style="margin-top:12px;">AI agents query SwarmSpace at runtime to discover and acquire new capabilities without human pre-configuration. Think of it as the App Store for the agentic web — curated, trusted, and usable without any technical knowledge.</p>
         </div>
       </div>
     </div>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>How is SwarmStore different from existing MCP registries?</strong></span>
+        <span class="q-text" itemprop="name"><strong>How is SwarmSpace different from existing MCP registries?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
           <p>Every existing MCP marketplace targets developers or enterprises. Anthropic's MCP Registry is a package manager layer for developers. AWS Marketplace requires the AWS ecosystem. Google Cloud AI Agent Marketplace is locked to Google infrastructure. Docker MCP Gateway serves DevOps audiences.</p>
-          <p style="margin-top:12px;">None of them are built for <em>consumer personal AI agents</em>. SwarmStore fills that gap: consumer-grade UX, privacy-by-design, curated trust tiers, and runtime discovery without CLI, self-hosting, or security configuration.</p>
+          <p style="margin-top:12px;">None of them are built for <em>consumer personal AI agents</em>. SwarmSpace fills that gap: consumer-grade UX, privacy-by-design, curated trust tiers, and runtime discovery without CLI, self-hosting, or security configuration.</p>
         </div>
       </div>
     </div>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>Which AI agents work with SwarmStore?</strong></span>
+        <span class="q-text" itemprop="name"><strong>Which AI agents work with SwarmSpace?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>SwarmStore works with any personal AI agent that can make HTTP requests and implement MCP (Model Context Protocol). It is the native plugin marketplace for <a href="#">LUMARA</a>, the lifetime personal AI companion. Other MCP-compatible agents can integrate via the open REST API at <code>https://api.swarmstore.io/v1/search</code>.</p>
+          <p>SwarmSpace works with any personal AI agent that can make HTTP requests and implement MCP (Model Context Protocol). It is the native plugin marketplace for <a href="#">LUMARA</a>, the lifetime personal AI companion. Other MCP-compatible agents can integrate via Firebase callable functions.</p>
         </div>
       </div>
     </div>
@@ -269,20 +269,18 @@
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>How does an AI agent query SwarmStore at runtime?</strong></span>
+        <span class="q-text" itemprop="name"><strong>How does an AI agent query SwarmSpace at runtime?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>Agents query SwarmStore via the REST API using natural language. The agent identifies a capability gap, forms a query, and posts it to the search endpoint. SwarmStore uses semantic/vector search to return ranked results.</p>
-          <pre>POST https://api.swarmstore.io/v1/search
-Content-Type: application/json
-
-{
-  "query": "I need a tool that can analyze PDF invoices and extract line items",
-  "agent_permission_level": "verified",
-  "max_results": 5
-}</pre>
+          <p>Agents query SwarmSpace via Firebase callable functions using natural language. The agent identifies a capability gap, forms a query, and calls the search function. SwarmSpace uses semantic/vector search to return ranked results.</p>
+          <pre>// Firebase callable function: searchPlugins
+const result = await functions.httpsCallable('searchPlugins')({
+  query: "I need a tool that can analyze PDF invoices and extract line items",
+  agent_permission_level: "verified",
+  max_results: 5
+});</pre>
           <p style="margin-top:12px;">Results include plugin manifests ranked by relevance, trust tier, latency class, and pricing. The agent checks the plugin's trust tier against its own permission level before activation.</p>
         </div>
       </div>
@@ -290,12 +288,12 @@ Content-Type: application/json
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>Can agents recommend SwarmStore plugins to other agents?</strong></span>
+        <span class="q-text" itemprop="name"><strong>Can agents recommend SwarmSpace plugins to other agents?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>Yes — inter-agent plugin recommendation is a first-class use case in SwarmStore. Every plugin has:</p>
+          <p>Yes — inter-agent plugin recommendation is a first-class use case in SwarmSpace. Every plugin has:</p>
           <p style="margin-top:10px;">• A stable <strong>canonical URL</strong> that never changes between versions<br>
           • A <strong>machine-readable manifest summary</strong> parseable by any LLM without reading full documentation<br>
           • Structured fields designed to be passed between agents as JSON objects</p>
@@ -306,7 +304,7 @@ Content-Type: application/json
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>What are the SwarmStore trust tiers and what do they mean for agents?</strong></span>
+        <span class="q-text" itemprop="name"><strong>What are the SwarmSpace trust tiers and what do they mean for agents?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
@@ -327,16 +325,16 @@ Content-Type: application/json
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>What format are SwarmStore plugins? Is it a .exe, .zip, or something else?</strong></span>
+        <span class="q-text" itemprop="name"><strong>What format are SwarmSpace plugins? Is it a .exe, .zip, or something else?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>Plugins are <strong>not distributed as executable files</strong>. SwarmStore plugins are:</p>
-          <p style="margin-top:12px;">1. A <strong>JSON manifest</strong> hosted on SwarmStore that describes the plugin's capabilities, schema, trust tier, pricing, and auth requirements<br>
+          <p>Plugins are <strong>not distributed as executable files</strong>. SwarmSpace plugins are:</p>
+          <p style="margin-top:12px;">1. A <strong>JSON manifest</strong> hosted on SwarmSpace that describes the plugin's capabilities, schema, trust tier, pricing, and auth requirements<br>
           2. A <strong>live MCP endpoint</strong> you host on your own infrastructure (any cloud provider, serverless function, or VPS)</p>
-          <p style="margin-top:12px;">No binaries. No installs. No user-side configuration. When an agent activates a plugin, it calls your endpoint via the MCP protocol. SwarmStore never touches the data flow during execution.</p>
-          <pre>swarmstore-manifest.json  ← hosted on SwarmStore (index layer)
+          <p style="margin-top:12px;">No binaries. No installs. No user-side configuration. When an agent activates a plugin, it calls your endpoint via the MCP protocol. SwarmSpace never touches the data flow during execution.</p>
+          <pre>swarmspace-manifest.json  ← hosted on SwarmSpace (index layer)
 https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
         </div>
       </div>
@@ -344,7 +342,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>What fields are required in a SwarmStore plugin manifest?</strong></span>
+        <span class="q-text" itemprop="name"><strong>What fields are required in a SwarmSpace plugin manifest?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
@@ -364,7 +362,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
   "auth":           "none | api_key | oauth2",
   "data_access":    ["list_of_data_types_requested"],
   "tags":           ["semantic", "tags", "for", "discovery"],
-  "canonical_url":  "https://swarmstore.io/plugins/your-plugin-id"
+  "canonical_url":  "https://swarmspace.ai/plugins/your-plugin-id"
 }</pre>
           <p style="margin-top:12px;">The <code>description</code> field is the most important for discoverability — it is what the vector search engine indexes. Write it as a capability statement: what the plugin does, what inputs it needs, what it returns.</p>
         </div>
@@ -373,12 +371,12 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>How do I submit a plugin to SwarmStore?</strong></span>
+        <span class="q-text" itemprop="name"><strong>How do I submit a plugin to SwarmSpace?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>Submit via the <a href="/developers">SwarmStore Developer Portal</a>. The process:</p>
+          <p>Submit via the <a href="/developers">SwarmSpace Developer Portal</a>. The process:</p>
           <p style="margin-top:12px;"><strong>Experimental tier:</strong> Submit manifest + endpoint. Automated security scan. Live within 24 hours.</p>
           <p style="margin-top:8px;"><strong>Community tier:</strong> Submit manifest + open-source repository link. Automated scan + community review queue.</p>
           <p style="margin-top:8px;"><strong>Verified tier:</strong> Submit manifest + endpoint + data minimization statement. Manual review, sandbox testing, cryptographic signing. One-time submission fee covers review cost.</p>
@@ -409,7 +407,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>How does SwarmStore protect user privacy?</strong></span>
+        <span class="q-text" itemprop="name"><strong>How does SwarmSpace protect user privacy?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
@@ -417,7 +415,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
           <p>Privacy is enforced at the protocol level, not policy.</p>
           <p style="margin-top:12px;">• <strong>Data minimization:</strong> Plugins receive only the minimum data necessary. The manifest's <code>data_access</code> field is a hard declaration — plugins cannot access data types not listed.<br>
           • <strong>Explicit consent:</strong> Personal user context is never passed to a plugin without explicit user consent, regardless of trust tier.<br>
-          • <strong>No execution on our infrastructure:</strong> SwarmStore is the index and trust layer. Plugin execution happens at the developer's endpoint. User data never passes through SwarmStore servers during a plugin call.<br>
+          • <strong>No execution on our infrastructure:</strong> SwarmSpace is the index and trust layer. Plugin execution happens at the developer's endpoint. User data never passes through SwarmSpace servers during a plugin call.<br>
           • <strong>Cryptographic signing:</strong> Verified plugins are cryptographically signed. If a plugin's code changes without re-review, the signature invalidates and the plugin is demoted automatically.</p>
         </div>
       </div>
@@ -425,7 +423,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>How does SwarmStore prevent malicious plugins?</strong></span>
+        <span class="q-text" itemprop="name"><strong>How does SwarmSpace prevent malicious plugins?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
@@ -435,25 +433,25 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
           <p style="margin-top:8px;"><strong>Sandbox testing:</strong> Verified plugins are tested in an isolated sandbox before approval. Behavioral analysis flags unexpected data requests.</p>
           <p style="margin-top:8px;"><strong>Runtime trust matching:</strong> Agents compare their permission level against plugin trust tier at runtime. Mismatches block execution before any data is shared.</p>
           <p style="margin-top:8px;"><strong>Manifest immutability:</strong> Published manifests are cryptographically hashed. Any change to a Verified plugin invalidates its signature and triggers re-review.</p>
-          <p style="margin-top:8px;"><strong>Kill switch:</strong> SwarmStore maintains the ability to immediately delist any plugin across all agents if a security issue is discovered post-publication.</p>
+          <p style="margin-top:8px;"><strong>Kill switch:</strong> SwarmSpace maintains the ability to immediately delist any plugin across all agents if a security issue is discovered post-publication.</p>
         </div>
       </div>
     </div>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>How does SwarmStore prevent prompt injection attacks via plugins?</strong></span>
+        <span class="q-text" itemprop="name"><strong>How does SwarmSpace prevent prompt injection attacks via plugins?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>Prompt injection — where a plugin attempts to manipulate the agent by embedding instructions in its response — is a primary threat model for SwarmStore.</p>
+          <p>Prompt injection — where a plugin attempts to manipulate the agent by embedding instructions in its response — is a primary threat model for SwarmSpace.</p>
           <p style="margin-top:12px;">Mitigations include:</p>
           <p style="margin-top:8px;">• Automated static analysis of submitted plugins for known injection patterns<br>
           • Response schema enforcement: plugins must return structured data matching their declared output schema, not freeform text<br>
           • Sandboxed execution for Verified tier review includes injection attempt simulation<br>
           • Integrating agents (like LUMARA) are expected to implement their own response sanitization layer before passing plugin output to the model</p>
-          <p style="margin-top:12px;">No system is 100% injection-proof. We publish our threat model and invite responsible disclosure at <a href="mailto:security@swarmstore.io">security@swarmstore.io</a>.</p>
+          <p style="margin-top:12px;">No system is 100% injection-proof. We publish our threat model and invite responsible disclosure at <a href="mailto:security@swarmspace.ai">security@swarmspace.ai</a>.</p>
         </div>
       </div>
     </div>
@@ -465,12 +463,12 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
 
     <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
       <button class="faq-question" aria-expanded="false" onclick="toggle(this)">
-        <span class="q-text" itemprop="name"><strong>Is SwarmStore free to use?</strong></span>
+        <span class="q-text" itemprop="name"><strong>Is SwarmSpace free to use?</strong></span>
         <span class="faq-chevron">+</span>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>Plugin <strong>discovery and search is free</strong> for agents and users. Individual plugins set their own pricing models, which are declared in the manifest: free, per-call, or subscription. SwarmStore takes a platform fee on paid plugin transactions.</p>
+          <p>Plugin <strong>discovery and search is free</strong> for agents and users. Individual plugins set their own pricing models, which are declared in the manifest: free, per-call, or subscription. SwarmSpace takes a platform fee on paid plugin transactions.</p>
           <p style="margin-top:12px;">Developer accounts are free for Community and Experimental tier submissions. Verified tier review has a one-time submission fee that covers manual review and sandbox testing costs.</p>
         </div>
       </div>
@@ -483,7 +481,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
       </button>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
-          <p>SwarmStore handles billing for paid plugins. When an agent activates a paid plugin, the cost is charged to the user's SwarmStore account (or their connected AI companion's billing). Developers receive payouts via Stripe on a monthly basis, minus the SwarmStore platform fee. Pricing details and fee structure are available in the <a href="/developers">Developer Portal</a>.</p>
+          <p>SwarmSpace handles billing for paid plugins. When an agent activates a paid plugin, the cost is charged to the user's SwarmSpace account (or their connected AI companion's billing). Developers receive payouts via Stripe on a monthly basis, minus the SwarmSpace platform fee. Pricing details and fee structure are available in the <a href="/developers">Developer Portal</a>.</p>
         </div>
       </div>
     </div>
@@ -493,8 +491,8 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
 </div><!-- /faq-section -->
 
 <footer>
-  <div class="logo">Swarm<span>Store</span></div>
-  <p>© 2026 SwarmStore. Plugin Marketplace for Personal AI Agents.</p>
+  <div class="logo">Swarm<span>Space</span></div>
+  <p>© 2026 SwarmSpace. Plugin Marketplace for Personal AI Agents.</p>
 </footer>
 
 <script>
