@@ -112,6 +112,37 @@
       text-align:center; padding:40px 20px; color:var(--muted); font-size:14px;
     }
 
+    /* ── VALIDATION PROGRESS ── */
+    .validation-progress {
+      margin-top:16px; padding:16px 18px; background:var(--bg);
+      border:1px solid var(--border); border-radius:10px; display:none;
+    }
+    .validation-progress.visible { display:block; }
+    .validation-progress .vp-title {
+      font-size:12px; font-family:var(--mono); font-weight:700;
+      color:var(--dim); text-transform:uppercase; letter-spacing:0.06em;
+      margin-bottom:10px;
+    }
+    .vp-item {
+      display:flex; align-items:center; gap:8px; font-size:13px;
+      color:var(--muted); padding:4px 0;
+    }
+    .vp-item .vp-icon { font-size:15px; min-width:20px; text-align:center; }
+    .vp-item .vp-icon.pass { color:var(--green); }
+    .vp-item .vp-icon.fail { color:#FF6B6B; }
+    .vp-item .vp-icon.warn { color:var(--orange); }
+    .vp-item .vp-icon.skip { color:var(--dim); }
+    .vp-item .vp-icon.pending { color:var(--dim); }
+    .vp-item .vp-detail {
+      font-family:var(--mono); font-size:11px; color:var(--dim); margin-left:auto;
+    }
+    .spinner-inline {
+      display:inline-block; width:14px; height:14px; border:2px solid var(--dim);
+      border-top-color:var(--purple); border-radius:50%;
+      animation:spin 0.6s linear infinite; vertical-align:middle;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
     /* ── SUCCESS PANEL ── */
     .success-panel {
       background:rgba(52,211,153,0.06); border:1px solid rgba(52,211,153,0.2);
@@ -164,6 +195,26 @@
       <p style="font-size:12px;color:var(--dim);">Initial safety review typically takes 2-3 business days.</p>
       <div style="margin-top:16px;">
         <a href="dashboard.html">View your dashboard &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Validation progress -->
+    <div class="validation-progress" id="validation-progress">
+      <div class="vp-title">Server-side validation</div>
+      <div class="vp-item" id="vp-manifest-fields">
+        <span class="vp-icon pending" id="vp-manifest-fields-icon">&#x25CB;</span>
+        <span>Checking manifest fields...</span>
+        <span class="vp-detail" id="vp-manifest-fields-detail"></span>
+      </div>
+      <div class="vp-item" id="vp-endpoint">
+        <span class="vp-icon pending" id="vp-endpoint-icon">&#x25CB;</span>
+        <span>Testing endpoint reachability...</span>
+        <span class="vp-detail" id="vp-endpoint-detail"></span>
+      </div>
+      <div class="vp-item" id="vp-manifest-url">
+        <span class="vp-icon pending" id="vp-manifest-url-icon">&#x25CB;</span>
+        <span>Fetching manifest URL...</span>
+        <span class="vp-detail" id="vp-manifest-url-detail"></span>
       </div>
     </div>
 
@@ -295,6 +346,8 @@
                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy }
                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getFunctions, httpsCallable }
+                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
 
   const app  = initializeApp({
     apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
@@ -304,8 +357,9 @@
     messagingSenderId: "563971839074",
     appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
   });
-  const auth = getAuth(app);
-  const db   = getFirestore(app);
+  const auth      = getAuth(app);
+  const db        = getFirestore(app);
+  const functions = getFunctions(app);
 
   let currentUser = null;
 
@@ -425,18 +479,63 @@
       return;
     }
 
-    // ── Endpoint reachability check (non-blocking) ──
-    if (endpointUrl) {
-      try {
-        await fetch(endpointUrl, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(5000) });
-      } catch (err) {
-        showMsg('msg-warning', 'Could not reach the endpoint URL. This will not block your submission, but please verify the URL is correct.');
-      }
+    // ── Server-side validation ──
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spinner-inline"></span> Validating...';
+
+    const vpProgress = document.getElementById('validation-progress');
+    vpProgress.classList.add('visible');
+    resetValidationProgress();
+
+    const submissionPayload = {
+      name: pluginName,
+      category: category,
+      description: description,
+      agent_guidance: agentGuidance || null,
+      endpoint_url: endpointUrl,
+      manifest_url: manifestUrl || null,
+      auth_method: authMethod,
+      pricing_model: pricingModel,
+      website: website || null,
+      semantic_tags: tagsArray,
+      privacy_data_required: privacyData || "none",
+      network_domains: networkDomainsArray
+    };
+
+    let validationResult;
+    try {
+      const validatePlugin = httpsCallable(functions, 'validatePluginSubmission');
+      const response = await validatePlugin(submissionPayload);
+      validationResult = response.data;
+    } catch (err) {
+      console.error('Validation call failed:', err);
+      showMsg('msg-error', 'Validation service unavailable: ' + escHtml(err.message) + '. Please try again.');
+      btnSubmit.innerHTML = 'Submit for review &rarr;';
+      btnSubmit.disabled = false;
+      vpProgress.classList.remove('visible');
+      return;
+    }
+
+    // Update validation progress UI from checks
+    updateValidationProgress(validationResult.checks || {});
+
+    // If validation returned blocking errors, stop
+    if (!validationResult.valid) {
+      const valErrors = (validationResult.errors || []).map(e => escHtml(e)).join('<br>');
+      showMsg('msg-error', '<strong>Validation failed:</strong><br>' + valErrors);
+      btnSubmit.innerHTML = 'Submit for review &rarr;';
+      btnSubmit.disabled = false;
+      return;
+    }
+
+    // Show any warnings but proceed
+    if (validationResult.warnings && validationResult.warnings.length > 0) {
+      const valWarnings = validationResult.warnings.map(w => escHtml(w)).join('<br>');
+      showMsg('msg-warning', '<strong>Warnings:</strong><br>' + valWarnings);
     }
 
     // ── Submit to Firestore ──
-    btnSubmit.disabled = true;
-    btnSubmit.textContent = 'Submitting...';
+    btnSubmit.innerHTML = '<span class="spinner-inline"></span> Submitting...';
 
     try {
       await addDoc(collection(db, 'plugin_submissions'), {
@@ -458,11 +557,13 @@
         submitted_at: serverTimestamp(),
         review_notes: null,
         reviewed_by: null,
-        reviewed_at: null
+        reviewed_at: null,
+        automated_checks: validationResult.checks || null
       });
 
       // Show success
       successPanel.classList.add('visible');
+      vpProgress.classList.remove('visible');
 
       // Clear form
       form.reset();
@@ -470,16 +571,71 @@
       // Refresh submissions
       loadSubmissions(currentUser);
 
-      btnSubmit.textContent = 'Submit for review \u2192';
+      btnSubmit.innerHTML = 'Submit for review &rarr;';
       btnSubmit.disabled = false;
 
     } catch (err) {
       console.error('Submission failed:', err);
       showMsg('msg-error', 'Submission failed: ' + escHtml(err.message) + '. Please try again.');
-      btnSubmit.textContent = 'Submit for review \u2192';
+      btnSubmit.innerHTML = 'Submit for review &rarr;';
       btnSubmit.disabled = false;
     }
   });
+
+  // ── Validation progress helpers ──
+  function resetValidationProgress() {
+    const items = ['manifest-fields', 'endpoint', 'manifest-url'];
+    items.forEach(id => {
+      const icon = document.getElementById('vp-' + id + '-icon');
+      const detail = document.getElementById('vp-' + id + '-detail');
+      icon.innerHTML = '&#x25CB;';
+      icon.className = 'vp-icon pending';
+      detail.textContent = '';
+    });
+  }
+
+  function setVPItem(id, status, detail) {
+    const icon = document.getElementById('vp-' + id + '-icon');
+    const detailEl = document.getElementById('vp-' + id + '-detail');
+    if (status === 'pass') {
+      icon.textContent = '\u2705';
+      icon.className = 'vp-icon pass';
+    } else if (status === 'fail') {
+      icon.textContent = '\u274C';
+      icon.className = 'vp-icon fail';
+    } else if (status === 'warn') {
+      icon.textContent = '\u26A0\uFE0F';
+      icon.className = 'vp-icon warn';
+    } else if (status === 'skip') {
+      icon.textContent = '\u23ED\uFE0F';
+      icon.className = 'vp-icon skip';
+    }
+    if (detail) detailEl.textContent = detail;
+  }
+
+  function updateValidationProgress(checks) {
+    // Manifest fields check
+    if (checks.manifest_fields !== undefined) {
+      setVPItem('manifest-fields', checks.manifest_fields.passed ? 'pass' : 'fail',
+        checks.manifest_fields.detail || '');
+    }
+    // Endpoint reachability check
+    if (checks.endpoint_reachability !== undefined) {
+      const ep = checks.endpoint_reachability;
+      const latencyStr = ep.latency_ms ? ep.latency_ms + 'ms' : '';
+      setVPItem('endpoint', ep.passed ? 'pass' : (ep.warning ? 'warn' : 'fail'),
+        latencyStr || ep.detail || '');
+    }
+    // Manifest URL fetch check
+    if (checks.manifest_url !== undefined) {
+      const mu = checks.manifest_url;
+      if (mu.skipped) {
+        setVPItem('manifest-url', 'skip', 'not provided');
+      } else {
+        setVPItem('manifest-url', mu.passed ? 'pass' : 'fail', mu.detail || '');
+      }
+    }
+  }
 
   // ── Enter key support: submit form on Enter in single-line inputs ──
   form.addEventListener('keydown', (e) => {

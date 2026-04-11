@@ -365,6 +365,125 @@
     flex-wrap: wrap;
   }
 
+  .checks-section {
+    grid-column: 1 / -1;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0.75rem;
+  }
+
+  .checks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.55rem;
+  }
+
+  .checks-header .detail-title {
+    margin-bottom: 0;
+  }
+
+  .checks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border: 1px solid var(--border);
+  }
+
+  .check-item.passed {
+    background: rgba(0,230,118,0.06);
+    border-color: rgba(0,230,118,0.22);
+  }
+
+  .check-item.failed {
+    background: rgba(255,82,82,0.07);
+    border-color: rgba(255,82,82,0.28);
+  }
+
+  .check-item.skipped {
+    background: var(--surface2);
+    border-color: var(--border);
+    color: var(--muted);
+  }
+
+  .check-icon {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    line-height: 1;
+    margin-top: 0.1rem;
+  }
+
+  .check-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+
+  .check-detail {
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  .check-errors {
+    margin-top: 0.3rem;
+    padding-left: 0.8rem;
+    font-size: 0.68rem;
+    color: #ff8a80;
+    line-height: 1.55;
+  }
+
+  .checks-none {
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 0.6rem 0;
+  }
+
+  .btn-checks {
+    font-size: 0.6rem;
+    padding: 0.35rem 0.65rem;
+    color: var(--amber);
+    background: var(--amber-ghost);
+    border-color: rgba(255,179,0,0.28);
+  }
+
+  .btn-checks:hover {
+    background: rgba(255,179,0,0.14);
+  }
+
+  .btn-checks:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .checks-spinner {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--amber);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 0.35rem;
+    vertical-align: middle;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
   .empty, .load-error {
     border: 1px dashed var(--border);
     padding: 2.1rem;
@@ -463,6 +582,10 @@
     doc,
     serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import {
+    getFunctions,
+    httpsCallable
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
 
   // TODO: Replace with your real Firebase config.
   const FIREBASE_CONFIG = {
@@ -485,6 +608,7 @@
   const app = initializeApp(FIREBASE_CONFIG);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const functions = getFunctions(app);
   const googleProvider = new GoogleAuthProvider();
 
   const state = {
@@ -691,6 +815,7 @@
         reviewedAt: resolveField(data, ["reviewed_at"], ""),
         reviewedBy: resolveField(data, ["reviewed_by"], ""),
         submittedAt: resolveField(data, ["submitted_at", "created_at"], ""),
+        automatedChecks: data.automated_checks || null,
         raw: data
       });
     });
@@ -837,6 +962,150 @@
     return block;
   }
 
+  function buildCheckItem(label, check) {
+    if (!check) {
+      const el = document.createElement("div");
+      el.className = "check-item skipped";
+      el.innerHTML = '<span class="check-icon">--</span><div><div class="check-label">' + label + '</div><div class="check-detail">Not available</div></div>';
+      return el;
+    }
+
+    const passed = check.passed === true;
+    const skipped = check.skipped === true;
+    const cssClass = skipped ? "skipped" : (passed ? "passed" : "failed");
+    const icon = skipped ? "--" : (passed ? "OK" : "FAIL");
+
+    const el = document.createElement("div");
+    el.className = "check-item " + cssClass;
+
+    let detail = check.message || check.detail || (passed ? "Passed" : "Failed");
+    if (check.status_code !== undefined) {
+      detail += " (" + check.status_code + ")";
+    }
+    if (check.latency_ms !== undefined) {
+      detail += " " + check.latency_ms + "ms";
+    }
+
+    let errorsHtml = "";
+    if (Array.isArray(check.errors) && check.errors.length > 0) {
+      errorsHtml = '<div class="check-errors">' + check.errors.map(function(e) { return "- " + e; }).join("<br>") + '</div>';
+    }
+
+    el.innerHTML = '<span class="check-icon mono" style="color:' + (skipped ? "var(--muted)" : (passed ? "var(--green)" : "var(--red)")) + '">' + icon + '</span>' +
+      '<div><div class="check-label">' + label + '</div><div class="check-detail">' + detail + '</div>' + errorsHtml + '</div>';
+    return el;
+  }
+
+  function buildChecksSection(item) {
+    const section = document.createElement("div");
+    section.className = "checks-section";
+
+    const header = document.createElement("div");
+    header.className = "checks-header";
+
+    const title = document.createElement("div");
+    title.className = "detail-title";
+    title.textContent = "Automated Validation Checks";
+    header.appendChild(title);
+
+    const runBtn = document.createElement("button");
+    runBtn.type = "button";
+    runBtn.className = "btn btn-checks";
+    runBtn.textContent = item.automatedChecks ? "Re-run Checks" : "Run Checks";
+    header.appendChild(runBtn);
+
+    section.appendChild(header);
+
+    const body = document.createElement("div");
+    body.id = "checks-body-" + item.id;
+
+    if (item.automatedChecks) {
+      renderChecksInto(body, item.automatedChecks);
+    } else {
+      const none = document.createElement("div");
+      none.className = "checks-none";
+      none.textContent = "No automated checks available. Click \"Run Checks\" to validate this submission.";
+      body.appendChild(none);
+    }
+
+    section.appendChild(body);
+
+    runBtn.addEventListener("click", function() {
+      runValidationChecks(item, runBtn, body);
+    });
+
+    return section;
+  }
+
+  function renderChecksInto(container, checks) {
+    container.innerHTML = "";
+    const grid = document.createElement("div");
+    grid.className = "checks-grid";
+
+    grid.appendChild(buildCheckItem("Schema Validation", checks.schema_validation || checks.schema));
+    grid.appendChild(buildCheckItem("Endpoint Reachability", checks.endpoint_reachability || checks.endpoint));
+    grid.appendChild(buildCheckItem("Manifest URL", checks.manifest_url || checks.manifest));
+    grid.appendChild(buildCheckItem("Response Shape", checks.response_shape || checks.response));
+
+    container.appendChild(grid);
+
+    if (checks.checked_at) {
+      const ts = document.createElement("div");
+      ts.style.cssText = "margin-top:0.45rem;font-size:0.62rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;";
+      ts.textContent = "Last checked: " + displayDate(checks.checked_at);
+      container.appendChild(ts);
+    }
+  }
+
+  async function runValidationChecks(item, btn, body) {
+    if (!isAdminUser(state.user)) return;
+
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="checks-spinner"></span>Running...';
+
+    try {
+      const callable = httpsCallable(functions, "validatePluginSubmission");
+      const result = await callable({
+        submissionId: item.id,
+        endpoint_url: item.endpointUrl,
+        manifest_url: item.manifestUrl,
+        name: item.pluginName,
+        description: item.description,
+        category: item.category,
+        auth_method: item.authMethod,
+        trust_tier: item.trustTier
+      });
+
+      const checks = result.data;
+
+      // Update item in local state
+      item.automatedChecks = checks;
+
+      // Persist to Firestore
+      try {
+        const ref = doc(db, "plugin_submissions", item.id);
+        await updateDoc(ref, { automated_checks: checks });
+      } catch (saveErr) {
+        console.warn("Could not persist checks to Firestore:", saveErr);
+      }
+
+      renderChecksInto(body, checks);
+      btn.textContent = "Re-run Checks";
+    } catch (err) {
+      console.error("Validation check failed:", err);
+      body.innerHTML = "";
+      const errDiv = document.createElement("div");
+      errDiv.className = "checks-none";
+      errDiv.style.color = "var(--red)";
+      errDiv.textContent = "Check failed: " + (err.message || "Unknown error");
+      body.appendChild(errDiv);
+      btn.textContent = origText;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   function renderList() {
     els.listArea.innerHTML = "";
 
@@ -954,6 +1223,8 @@
         details.appendChild(makeDetailBlock("Review notes", item.reviewNote));
         details.appendChild(makeDetailBlock("Reviewed by", item.reviewedBy));
         details.appendChild(makeDetailBlock("Reviewed at", displayDate(item.reviewedAt)));
+
+        details.appendChild(buildChecksSection(item));
 
         detailCell.appendChild(details);
         detailRow.appendChild(detailCell);

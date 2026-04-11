@@ -83,6 +83,7 @@ import {
 import { newsDataInvoke } from "./functions/newsDataInvoke";
 import { visionOcrInvoke } from "./functions/visionOcrInvoke";
 import { updateUserModelConfig } from "./functions/updateUserModelConfig";
+import { validatePluginSubmission } from "./functions/validatePluginSubmission";
 
 export { swarmspaceRouter };
 export { swarmspacePluginStatus };
@@ -91,3 +92,4 @@ export { swarmspaceWriteCapabilities };
 export { newsDataInvoke };
 export { visionOcrInvoke };
 export { updateUserModelConfig };
+export { validatePluginSubmission };

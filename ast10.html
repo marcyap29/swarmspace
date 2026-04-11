@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — OWASP AST10 Compliance Posture</title>
+  <meta name="description" content="How SwarmSpace maps to the OWASP Agentic Skills Top 10 framework: per-control compliance status, gaps, and timeline." />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
+      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
+      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
+      --orange:#fb923c; --purple:#9b6dff;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --mono:'SF Mono','JetBrains Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.65; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+    .btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px; font-size:13px; color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
+
+    .page { max-width:900px; margin:0 auto; padding:56px 40px 80px; }
+    .section-label {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
+      text-transform:uppercase; background:rgba(91,91,214,.08);
+      border:1px solid rgba(91,91,214,.2); border-radius:20px;
+      padding:4px 12px; margin-bottom:20px;
+    }
+    h1 { font-size:clamp(28px,4.5vw,44px); font-weight:800; letter-spacing:-1px; line-height:1.12; margin-bottom:14px; }
+    .subtitle { font-size:17px; color:var(--muted); max-width:720px; margin-bottom:40px; line-height:1.6; }
+    h2 { font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:48px 0 16px; }
+    h2:first-of-type { margin-top:36px; }
+    h3 { font-size:17px; font-weight:700; margin:0 0 10px; }
+    .lead { font-size:15px; color:var(--muted); margin-bottom:16px; max-width:720px; }
+    p { font-size:14px; color:var(--muted); margin-bottom:14px; max-width:720px; }
+    ul { margin:12px 0 18px 20px; color:var(--muted); font-size:14px; }
+    li { margin-bottom:8px; }
+    li strong { color:var(--text); font-weight:600; }
+
+    .table-wrap { overflow-x:auto; margin:20px 0 28px; border:1px solid var(--border); border-radius:12px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
+    th { text-align:left; font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface); }
+    td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--muted); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    td:first-child { color:var(--text); font-weight:600; width:34%; }
+    code { font-family:var(--mono); font-size:12px; color:var(--accent2); }
+
+    .limitations {
+      margin-top:24px; padding:22px 24px;
+      border:1px solid rgba(251,146,60,.35);
+      border-radius:14px;
+      background:rgba(251,146,60,.06);
+    }
+    .limitations h3 { font-size:15px; font-weight:700; color:var(--orange); margin-bottom:12px; }
+    .limitations p, .limitations li { font-size:13px; color:var(--muted); }
+    .limitations ul { margin-bottom:0; }
+
+    .refs { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-top:28px; }
+    .refs h3 { font-size:14px; font-weight:700; margin-bottom:14px; }
+    .refs ul { list-style:none; margin:0; padding:0; }
+    .refs li { margin-bottom:10px; font-size:13px; color:var(--muted); }
+    .refs li:last-child { margin-bottom:0; }
+
+    .transparency-note {
+      display:inline-block; font-size:11px; font-weight:600;
+      color:var(--orange); background:rgba(251,146,60,.10);
+      border:1px solid rgba(251,146,60,.25); border-radius:6px;
+      padding:2px 8px; margin-left:6px; vertical-align:middle;
+      letter-spacing:.03em; text-transform:uppercase;
+    }
+    .transparency-note.implemented {
+      color:var(--green); background:rgba(52,211,153,.10);
+      border-color:rgba(52,211,153,.25);
+    }
+    .transparency-note.partial {
+      color:var(--accent2); background:rgba(124,158,255,.10);
+      border-color:rgba(124,158,255,.25);
+    }
+    .transparency-note.designed {
+      color:var(--orange); background:rgba(251,146,60,.10);
+      border-color:rgba(251,146,60,.25);
+    }
+    .transparency-note.planned {
+      color:var(--dim); background:rgba(58,58,90,.15);
+      border-color:rgba(58,58,90,.4);
+    }
+
+    .control-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:14px; padding:24px 26px; margin:20px 0 28px;
+    }
+    .control-card h3 { font-size:16px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+    .control-card .sub-heading { font-size:13px; font-weight:700; color:var(--text); margin:14px 0 6px; }
+    .control-card p { font-size:13px; color:var(--muted); margin-bottom:10px; }
+    .control-card ul { font-size:13px; margin:8px 0 12px 18px; }
+
+    .legend {
+      display:flex; flex-wrap:wrap; gap:14px; margin:0 0 36px;
+      padding:16px 20px; background:var(--surface);
+      border:1px solid var(--border); border-radius:12px;
+    }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+
+    footer { border-top:1px solid var(--border); padding:36px 40px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; max-width:1100px; margin:0 auto; }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:20px; }
+    .footer-links a { font-size:13px; color:var(--dim); }
+
+    @media(max-width:640px){
+      nav{padding:14px 20px;}
+      .page{padding:40px 20px 64px;}
+      footer{flex-direction:column;align-items:flex-start;padding:28px 20px;}
+      .legend{flex-direction:column;gap:8px;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">SwarmSpace</a>
+  <div class="nav-actions">
+    <a href="/" class="btn-ghost">Home</a>
+    <a href="/security.html" class="btn-ghost">Security</a>
+    <a href="/submit-plugin.html" class="btn-ghost">Submit plugin</a>
+    <a href="/signup.html" class="btn-primary">Get API access &rarr;</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="section-label">Compliance</div>
+  <h1>OWASP Agentic Skills Top 10 &mdash; Compliance Posture</h1>
+  <p class="subtitle">How SwarmSpace maps to the <a href="https://owasp.org/www-project-agentic-skills-top-10/" rel="noopener noreferrer">OWASP AST10 framework</a> (v1.0, 2026 Edition). This page is for developers and security reviewers evaluating the platform.</p>
+
+  <!-- Status Legend -->
+  <div class="legend">
+    <div class="legend-item"><span class="transparency-note implemented">Implemented</span> Code exists and is enforced in production</div>
+    <div class="legend-item"><span class="transparency-note partial">Partially Implemented</span> Some controls enforced; gaps remain</div>
+    <div class="legend-item"><span class="transparency-note designed">Designed</span> Spec and architecture defined; no runtime enforcement</div>
+    <div class="legend-item"><span class="transparency-note planned">Planned</span> Acknowledged but not yet designed or built</div>
+  </div>
+
+  <!-- AST01 -->
+  <h2>AST01 &mdash; Malicious Skills</h2>
+  <div class="control-card">
+    <h3>Malicious Skills <span class="transparency-note designed">Designed</span></h3>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <p>The manifest spec includes Ed25519 signing and <code>content_hash</code> (SHA-256) fields for verifying plugin authenticity. Trust revocation is instant &mdash; removing a plugin from the index disables it universally with no uninstall needed, which is architecturally true today.</p>
+    <div class="sub-heading">Current gaps</div>
+    <p>No signing or verification code has been implemented yet. The Ed25519 and content-hash fields exist in the spec only. Until signing is enforced, authenticity verification depends on manual review during submission.</p>
+  </div>
+
+  <!-- AST02 -->
+  <h2>AST02 &mdash; Supply Chain Compromise</h2>
+  <div class="control-card">
+    <h3>Supply Chain Compromise <span class="transparency-note designed">Partially Designed</span></h3>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <p>The manifest spec includes Ed25519 signing and <code>content_hash</code> fields for integrity verification. Plugins are API endpoints, not installable code &mdash; there are no executable uploads, which eliminates an entire class of supply-chain vectors.</p>
+    <div class="sub-heading">Current gaps</div>
+    <p>No hash verification code exists yet. While the API-endpoint architecture avoids binary supply-chain risks, manifest integrity checking is spec-only and not enforced at runtime.</p>
+  </div>
+
+  <!-- AST03 -->
+  <h2>AST03 &mdash; Over-Privileged Skills</h2>
+  <div class="control-card">
+    <h3>Over-Privileged Skills <span class="transparency-note designed">Designed</span></h3>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <p>The manifest spec defines <code>network_permissions</code> (explicit domain allowlist replacing binary network on/off), <code>deny_write</code> (protects identity, memory, and context files), and <code>data_required</code> (declares what user data a plugin needs). These fields enable fine-grained least-privilege declarations.</p>
+    <div class="sub-heading">Current gaps</div>
+    <p>No code currently validates or enforces these constraints at execution time. The fields exist in the manifest schema but are not checked at the runtime layer. Until enforcement ships, privilege restriction depends on manual review.</p>
+  </div>
+
+  <!-- AST04 -->
+  <h2>AST04 &mdash; Inadequate Sandboxing</h2>
+  <div class="control-card">
+    <h3>Inadequate Sandboxing <span class="transparency-note partial">Partially Implemented</span></h3>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Insecure Metadata"</p>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li>Plugins run as isolated Cloudflare Workers &mdash; separate V8 isolates per request (real, enforced)</li>
+      <li>No shared state between plugins (architecturally true)</li>
+      <li>Plugins cannot access SwarmSpace infrastructure; only the reverse: the router calls plugins (real)</li>
+      <li>25-second execution timeout enforced (real)</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>Credential isolation is not yet scoped per-tenant. Plugin credentials are shared across tenants rather than isolated per-user context.</p>
+  </div>
+
+  <!-- AST05 -->
+  <h2>AST05 &mdash; Insecure Inter-Skill Communication</h2>
+  <div class="control-card">
+    <h3>Insecure Inter-Skill Communication <span class="transparency-note partial">Partially Implemented</span></h3>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Prompt Injection via Skills"</p>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li>All inter-service calls authenticated via <code>SWARMSPACE_INTERNAL_TOKEN</code> (real, enforced)</li>
+      <li>No direct plugin-to-plugin communication path exists (architecturally true)</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>Output schema validation is not yet implemented. Plugin responses are not validated against a declared schema before being passed to agents, which leaves a vector for malformed or adversarial output.</p>
+  </div>
+
+  <!-- AST06 -->
+  <h2>AST06 &mdash; Insufficient User Consent</h2>
+  <div class="control-card">
+    <h3>Insufficient User Consent <span class="transparency-note designed">Designed, Not Enforced</span></h3>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Weak Isolation"</p>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li>Manifest spec defines <code>privacy_data_required</code>, <code>data_required</code>, and <code>_prism_consent</code> fields for consent tracking</li>
+      <li>Consent passthrough exists in the router code but is not enforced as a gate</li>
+      <li>Activity log records plugin calls with privacy metadata (real)</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>Plugins can be invoked without confirmed consent. The consent passthrough is present in code but does not block execution when consent is missing. Until this is enforced as a hard gate, consent is advisory only.</p>
+  </div>
+
+  <!-- AST07 -->
+  <h2>AST07 &mdash; Update Drift</h2>
+  <div class="control-card">
+    <h3>Update Drift <span class="transparency-note designed">Designed</span></h3>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <p>The manifest spec includes a <code>version_pinning</code> field that enables consumers to lock to specific plugin versions. This is a prerequisite for safe updates and rollback.</p>
+    <div class="sub-heading">Current gaps</div>
+    <p>No pinning or version-check code exists yet. Alerting on plugin updates and re-review flagging are planned but not implemented. Plugins can change behavior between calls without any notification to consumers.</p>
+  </div>
+
+  <!-- AST08 -->
+  <h2>AST08 &mdash; Poor Scanning</h2>
+  <div class="control-card">
+    <h3>Poor Scanning <span class="transparency-note partial">Partially Addressed</span></h3>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li><code>scan_status</code> field records scanner version and results in the manifest</li>
+      <li>Schema validation on all submissions</li>
+      <li>LLM-based consistency analysis of <code>capability</code> vs <code>data_required</code> fields</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>A full behavioral and semantic scanning pipeline is not yet deployed. Plugin review is currently manual. Automated runtime behavioral analysis and continuous scanning are planned.</p>
+  </div>
+
+  <!-- AST09 -->
+  <h2>AST09 &mdash; No Governance</h2>
+  <div class="control-card">
+    <h3>No Governance <span class="transparency-note partial">Partially Implemented</span></h3>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li>Trust tiers (Community and Verified) gate plugin access in production (real, enforced)</li>
+      <li>Monthly merit reviews planned (manual at launch, tooling planned)</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>The <code>risk_tier</code> field (L0&ndash;L3) exists in the manifest spec but is not enforced at runtime. Governance tooling for automated merit reviews and tier transitions is planned but not yet built.</p>
+  </div>
+
+  <!-- AST10 -->
+  <h2>AST10 &mdash; Lack of Observability</h2>
+  <div class="control-card">
+    <h3>Lack of Observability <span class="transparency-note implemented">Implemented</span></h3>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Cross-Platform Reuse"</p>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li><code>plugin_activity_log</code> collection records every plugin call with: user ID, plugin ID, tier, privacy metadata, consent status, result, and error messages</li>
+      <li>PRISM transaction logging at pre-invoke and post-invoke phases</li>
+      <li>Dashboard stat cards show live usage data</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>Observability is implemented and enforced in production. No significant gaps at this time.</p>
+  </div>
+
+  <!-- Lethal Trifecta -->
+  <h2>OWASP &ldquo;Lethal Trifecta&rdquo; Mapping</h2>
+  <p class="lead">OWASP defines the lethal trifecta as three capabilities that, combined, create maximum risk for agentic systems.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Channel</th><th>SwarmSpace control</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Access to private data</td>
+          <td><code>data_required</code> field + PRISM consent flow</td>
+          <td><span class="transparency-note designed">Designed, not enforced</span></td>
+        </tr>
+        <tr>
+          <td>Exposure to untrusted content</td>
+          <td>Output schema validation + untrusted data wrapping</td>
+          <td><span class="transparency-note planned">Planned</span></td>
+        </tr>
+        <tr>
+          <td>Ability to communicate externally</td>
+          <td><code>network_permissions</code> allowlist + <code>deny_write</code> protection</td>
+          <td><span class="transparency-note designed">Spec only, no enforcement</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>PRISM consent fields are defined in the manifest spec; runtime enforcement is not yet in place. Full lethal trifecta coverage requires implementing the controls listed in the Compliance Timeline below.</p>
+
+  <!-- Compliance Timeline -->
+  <h2>Compliance Timeline</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Milestone</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Manifest spec aligned with AST10 fields</td><td><span class="transparency-note implemented">Complete</span> (spec only &mdash; no runtime enforcement)</td></tr>
+        <tr><td>PRISM consent flow for privacy-sensitive plugins</td><td><span class="transparency-note designed">Designed, not enforced</span></td></tr>
+        <tr><td>Activity logging and observability</td><td><span class="transparency-note implemented">Complete</span></td></tr>
+        <tr><td>Ed25519 manifest signing for Verified tier</td><td><span class="transparency-note designed">Designed</span> (no signing code exists)</td></tr>
+        <tr><td>Runtime enforcement of <code>network_permissions</code>, <code>deny_write</code>, <code>risk_tier</code></td><td><span class="transparency-note planned">Planned</span></td></tr>
+        <tr><td>Output schema validation for plugin responses</td><td><span class="transparency-note planned">Planned</span></td></tr>
+        <tr><td>Version pinning and update alerting</td><td><span class="transparency-note planned">Planned</span></td></tr>
+        <tr><td>Behavioral scanning pipeline</td><td><span class="transparency-note planned">Planned</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Honest Limitations -->
+  <h2 id="limitations">Honest Limitations</h2>
+  <div class="limitations">
+    <h3>What is NOT solved yet</h3>
+    <ul>
+      <li><strong>Runtime privilege enforcement</strong> &mdash; <code>network_permissions</code>, <code>deny_write</code>, and <code>risk_tier</code> fields exist in the manifest spec but have zero runtime enforcement. Plugins can currently make any network call and access any data, constrained only by V8 isolate boundaries.</li>
+      <li><strong>Consent gating</strong> &mdash; PRISM consent fields are logged but do not block plugin invocation. A plugin can execute without confirmed user consent for the data it accesses.</li>
+      <li><strong>Manifest signing</strong> &mdash; Ed25519 signing and SHA-256 content hashing are spec-only. No cryptographic verification of plugin identity or integrity exists in production.</li>
+      <li><strong>Output validation</strong> &mdash; Plugin responses are passed to agents without schema validation. Malformed or adversarial output is not filtered.</li>
+      <li><strong>Behavioral scanning</strong> &mdash; Plugin review is manual. No automated behavioral or semantic scanning pipeline is deployed.</li>
+    </ul>
+  </div>
+  <div class="limitations" style="margin-top:16px;">
+    <h3>What is designed but not enforced</h3>
+    <ul>
+      <li><strong>PRISM consent flow</strong> &mdash; Fields and passthrough code exist; enforcement as a hard gate is not implemented.</li>
+      <li><strong>Version pinning</strong> &mdash; Manifest field exists; no code checks or alerts on version changes.</li>
+      <li><strong>Least-privilege declarations</strong> &mdash; <code>data_required</code> and <code>network_permissions</code> are declared in manifests but not validated or restricted at the execution layer.</li>
+      <li><strong>Risk-tier enforcement</strong> &mdash; <code>risk_tier</code> (L0&ndash;L3) is recorded but does not gate plugin behavior or access levels.</li>
+    </ul>
+  </div>
+
+  <!-- References -->
+  <h2>References</h2>
+  <div class="refs">
+    <h3>Documentation &amp; Standards</h3>
+    <ul>
+      <li><a href="https://owasp.org/www-project-agentic-skills-top-10/" rel="noopener noreferrer">OWASP Agentic Skills Top 10 Project</a></li>
+      <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026" rel="noopener noreferrer">OWASP Top 10 for Agentic Applications (2026)</a></li>
+      <li><a href="/security.html">SwarmSpace Security &amp; Trust Architecture</a></li>
+      <li><a href="/prism.html">PRISM &mdash; Privacy-Respecting Invocation Safety Model</a></li>
+      <li><a href="https://github.com/marcyap29/swarmspace/blob/main/Docs/OWASP_AST10_COMPLIANCE.md">Full compliance matrix (source document)</a></li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>SwarmSpace by Orbital AI &mdash; 2026</p>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/upgrade.html">Pricing</a>
+    <a href="/submit-plugin.html">Submit plugin</a>
+    <a href="/security.html">Security</a>
+    <a href="/ast10.html">AST10</a>
+    <a href="/prism.html">PRISM</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+</footer>
+
+</body>
+</html>
