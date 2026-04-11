@@ -112,7 +112,7 @@ section { padding:96px 40px; max-width:1100px; margin:0 auto; }
 .api-desc { font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:8px; }
 .api-ex { font-size:11px; color:var(--dim); font-style:italic; }
 
-.tiers { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:56px; }
+.tiers { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; margin-top:56px; }
 .tier-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
 .tier-icon { font-size:28px; margin-bottom:16px; }
 .tier-name { font-size:18px; font-weight:700; margin-bottom:8px; }
@@ -187,7 +187,7 @@ footer p { font-size:13px; color:var(--dim); }
     <a href="#platform">Platform</a>
     <a href="#trust">Trust</a>
     <a href="#for-who">For who</a>
-    <a href="/submit-plugin">Submit a plugin</a>
+    <a href="/submit-plugin.html">Submit a plugin</a>
   </div>
   <div class="nav-actions">
     <a href="/upgrade.html" class="btn-ghost">Pricing</a>
@@ -207,7 +207,7 @@ footer p { font-size:13px; color:var(--dim); }
       </div>
       <div class="hero-stats">
         <div><div class="stat-num">15</div><div class="stat-label">Free APIs</div></div>
-        <div><div class="stat-num">MCP</div><div class="stat-label">Compatible</div></div>
+        <div><div class="stat-num">REST</div><div class="stat-label">Compatible</div></div>
         <div><div class="stat-num">0</div><div class="stat-label">Config required</div></div>
         <div><div class="stat-num">∞</div><div class="stat-label">Runtime capabilities</div></div>
       </div>
@@ -363,13 +363,13 @@ footer p { font-size:13px; color:var(--dim); }
     </div>
     <div class="api-card">
       <div class="api-header"><span class="api-name">Open-Meteo</span><span class="api-free">FREE</span></div>
-      <div class="api-slug">open-meteo</div>
+      <div class="api-slug">weather</div>
       <div class="api-desc">Weather, forecasts, and historical data. No key.</div>
       <div class="api-ex">"Forecast for San Diego this week"</div>
     </div>
     <div class="api-card">
       <div class="api-header"><span class="api-name">NewsAPI</span><span class="api-free">FREE</span></div>
-      <div class="api-slug">news-api</div>
+      <div class="api-slug">news</div>
       <div class="api-desc">Headlines from 70+ sources. 100 req/day.</div>
       <div class="api-ex">"Top AI headlines today"</div>
     </div>
@@ -387,15 +387,15 @@ footer p { font-size:13px; color:var(--dim); }
     </div>
     <div class="api-card">
       <div class="api-header"><span class="api-name">HackerNews</span><span class="api-free">FREE</span></div>
-      <div class="api-slug">hacker-news</div>
+      <div class="api-slug">hackernews</div>
       <div class="api-desc">Tech community stories and discussions.</div>
       <div class="api-ex">"What is HN saying about MCP?"</div>
     </div>
     <div class="api-card">
-      <div class="api-header"><span class="api-name">Reddit (read)</span><span class="api-free">FREE</span></div>
-      <div class="api-slug">reddit</div>
-      <div class="api-desc">Community discussions. 60 req/min free.</div>
-      <div class="api-ex">"r/LocalLLaMA on agent frameworks"</div>
+      <div class="api-header"><span class="api-name">Dictionary API</span><span class="api-free">FREE</span></div>
+      <div class="api-slug">dictionary-api</div>
+      <div class="api-desc">Word definitions and etymology.</div>
+      <div class="api-ex">"Define 'serendipity' with etymology"</div>
     </div>
     <div class="api-card">
       <div class="api-header"><span class="api-name">GitHub Public</span><span class="api-free">FREE</span></div>
@@ -405,7 +405,7 @@ footer p { font-size:13px; color:var(--dim); }
     </div>
     <div class="api-card">
       <div class="api-header"><span class="api-name">Exchange Rates</span><span class="api-free">FREE</span></div>
-      <div class="api-slug">exchange-rates</div>
+      <div class="api-slug">currency</div>
       <div class="api-desc">Currency conversion. 1,500 req/month.</div>
       <div class="api-ex">"EUR to USD right now"</div>
     </div>
@@ -501,9 +501,9 @@ footer p { font-size:13px; color:var(--dim); }
         <li>Performance-based — not payment-based</li>
         <li>Top 5 placement in search results</li>
         <li>80% revenue share on paid calls</li>
-        <li>Monthly merit review by SwarmSpace</li>
+        <li>Merit-based review planned</li>
         <li>Eligible for personal data contexts</li>
-        <li>Cryptographically signed execution</li>
+        <li>Cryptographic signing planned</li>
       </ul>
     </div>
     <div class="tier-card">
@@ -519,25 +519,13 @@ footer p { font-size:13px; color:var(--dim); }
         <li>Free to publish — no subscription needed</li>
       </ul>
     </div>
-    <div class="tier-card">
-      <div class="tier-icon">⚠</div>
-      <div class="tier-name" style="color:var(--orange)">Experimental</div>
-      <div class="tier-desc">For developers prototyping and iterating. No review required. Not eligible for personal data contexts by default.</div>
-      <ul class="tier-features">
-        <li>No review required</li>
-        <li>User shown explicit warning</li>
-        <li>Isolated execution context</li>
-        <li>Sandbox only — no PII access</li>
-        <li>Ideal for early-stage builds</li>
-      </ul>
-    </div>
   </div>
 
   <div style="margin-top:36px;padding:24px 32px;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;gap:20px;align-items:flex-start">
     <div style="font-size:24px">📊</div>
     <div>
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">The merit algorithm</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7">Monthly Verified review uses a composite score: <strong style="color:var(--text)">upvotes</strong> (weighted by usage history), <strong style="color:var(--text)">call volume</strong>, <strong style="color:var(--text)">retention</strong> (returning users), <strong style="color:var(--text)">developer activity</strong> in Swarms, <strong style="color:var(--text)">update frequency</strong>, and <strong style="color:var(--text)">error rate</strong>. No single signal can be gamed. High failure rates disqualify regardless of other scores.</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">Merit-based review planned</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">Verified review will use a composite score: <strong style="color:var(--text)">upvotes</strong> (weighted by usage history), <strong style="color:var(--text)">call volume</strong>, <strong style="color:var(--text)">retention</strong> (returning users), <strong style="color:var(--text)">developer activity</strong> in Swarms, <strong style="color:var(--text)">update frequency</strong>, and <strong style="color:var(--text)">error rate</strong>. No single signal can be gamed. High failure rates disqualify regardless of other scores.</div>
     </div>
   </div>
 </section>
@@ -580,7 +568,7 @@ footer p { font-size:13px; color:var(--dim); }
         <li>Natural language capability discovery</li>
         <li>Trust tier matching at runtime</li>
         <li>Inter-agent plugin references</li>
-        <li>MCP-compatible protocol</li>
+        <li>REST-compatible protocol</li>
         <li>Minimum-context privacy enforcement</li>
       </ul>
     </div>
@@ -596,14 +584,14 @@ footer p { font-size:13px; color:var(--dim); }
     <div class="status-item"><div class="status-dot"></div><span class="status-name">semantic-scholar</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">jina-reader</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">wikipedia</span></div>
-    <div class="status-item"><div class="status-dot"></div><span class="status-name">open-meteo</span></div>
-    <div class="status-item"><div class="status-dot"></div><span class="status-name">news-api</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">weather</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">news</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">arxiv</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">pubmed</span></div>
-    <div class="status-item"><div class="status-dot"></div><span class="status-name">hacker-news</span></div>
-    <div class="status-item"><div class="status-dot"></div><span class="status-name">reddit</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">hackernews</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">dictionary-api</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">github-public</span></div>
-    <div class="status-item"><div class="status-dot"></div><span class="status-name">exchange-rates</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="status-name">currency</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">rest-countries</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">nominatim</span></div>
     <div class="status-item"><div class="status-dot"></div><span class="status-name">gemini-flash</span></div>
@@ -618,7 +606,7 @@ footer p { font-size:13px; color:var(--dim); }
     <p>Sign up free. 20 calls/day across 15 APIs. No credit card.<br>Submit your own plugins when you're ready.</p>
     <div class="cta-actions">
       <a href="/signup.html" class="hero-cta">Get API access →</a>
-      <a href="/submit-plugin" class="hero-secondary">Submit a plugin</a>
+      <a href="/submit-plugin.html" class="hero-secondary">Submit a plugin</a>
     </div>
     <p style="margin-top:20px;font-size:13px;color:var(--dim)">Already have an account? <a href="/signup.html">Sign in →</a></p>
   </div>
@@ -629,9 +617,9 @@ footer p { font-size:13px; color:var(--dim); }
   <div class="footer-links">
     <a href="/dashboard.html">Dashboard</a>
     <a href="/upgrade.html">Pricing</a>
-    <a href="/submit-plugin">Submit plugin</a>
-    <a href="#">Docs</a>
-    <a href="#">Privacy</a>
+    <a href="/submit-plugin.html">Submit plugin</a>
+    <a href="/DEVELOPER_GUIDE.md">Docs</a>
+    <a href="/privacy.html">Privacy</a>
   </div>
 </footer>
 
