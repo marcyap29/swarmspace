@@ -78,6 +78,7 @@ import {
   swarmspaceRouter,
   swarmspacePluginStatus,
   swarmspacePluginCatalog,
+  swarmspaceWriteCapabilities,
 } from "./functions/swarmspaceRouter";
 import { newsDataInvoke } from "./functions/newsDataInvoke";
 import { visionOcrInvoke } from "./functions/visionOcrInvoke";
@@ -86,6 +87,7 @@ import { updateUserModelConfig } from "./functions/updateUserModelConfig";
 export { swarmspaceRouter };
 export { swarmspacePluginStatus };
 export { swarmspacePluginCatalog };
+export { swarmspaceWriteCapabilities };
 export { newsDataInvoke };
 export { visionOcrInvoke };
 export { updateUserModelConfig };
