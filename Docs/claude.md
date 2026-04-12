@@ -167,6 +167,17 @@ These two files keep work organized across sessions and prevent losing track of 
 
 ---
 
+## Gemini Model Reference
+
+**The latest Gemini model family is 3.x (not 2.0 or 2.5).** Gemini 2.0 and 2.5 models are deprecated and return 404.
+
+- **Use:** `gemini-3-flash-preview` for all SwarmSpace functions (proxyGemini, visionOcrInvoke, swarmspaceDiscoveryAgent)
+- **Do not use:** `gemini-2.0-flash`, `gemini-2.5-flash`, or any 2.x model — they are no longer available
+
+When adding new functions that call Gemini, always check `proxyGemini.ts` for the current model string.
+
+---
+
 ## Cross-Repo Integration: LUMARA ↔ SwarmSpace
 
 Both repos deploy Cloud Functions to the **same Firebase project (`arc-epi`)** using different codebase labels (`default` for LUMARA, `swarmspace` for SwarmSpace).
