@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-04-06  
+**Last Updated:** 2026-04-10
 **Status:** ✅ Synced
 
 ---
@@ -74,10 +74,28 @@ When running a doc sync or release:
 | Docs/SECURITY_CHECKLIST.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/UI_UX.md | Docs/ | 2026-03-01 | ✅ Synced | |
 | Docs/bugtracker/ | Docs/ | 2026-04-04 | ✅ Synced | |
+| ast10.html | root | 2026-04-10 | ✅ Synced | OWASP AST10 compliance page (public) |
+| LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md | root | 2026-04-10 | ✅ Synced | Cross-repo function ownership |
+| SWARMSPACE_ANSWERS_TO_LUMARA.md | root | 2026-04-10 | ✅ Synced | Responses to LUMARA integration questions |
+| backlog.md | root | 2026-04-10 | ✅ Synced | Long-term feature backlog |
+| planner.md | root | 2026-04-10 | ✅ Synced | Active task scratchpad |
+| Docs/OWASP_AST10_COMPLIANCE.md | Docs/ | 2026-04-10 | ✅ Synced | Internal AST10 compliance doc |
+| Docs/LAYER3_DESIGN_AND_BACKLOG.md | Docs/ | 2026-04-10 | ✅ Synced | Layer 3 design |
+| Docs/LUMARA_Overview.md | Docs/ | 2026-04-10 | ✅ Synced | LUMARA overview |
+| functions/src/functions/validatePluginSubmission.ts | functions/ | 2026-04-10 | ✅ Synced | Plugin validation function |
 
 ---
 
 ## Change Log
+
+### 2026-04-10/11 — LUMARA integration, OWASP AST10, new functions, doc inventory sync
+
+**Action:** Updated documentation inventory and cross-repo integration docs after LUMARA backend integration, OWASP AST10 compliance work, and new Cloud Function additions.
+
+**Changes:**
+- CONFIGURATION_MANAGEMENT: added `ast10.html`, `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md`, `SWARMSPACE_ANSWERS_TO_LUMARA.md`, `backlog.md`, `planner.md`, `Docs/OWASP_AST10_COMPLIANCE.md`, `Docs/LAYER3_DESIGN_AND_BACKLOG.md`, `Docs/LUMARA_Overview.md`, `functions/src/functions/validatePluginSubmission.ts` to inventory.
+- claude.md: file structure, Quick Reference, and Cross-Repo Integration ownership list updated.
+- LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md: added `validatePluginSubmission` and `swarmspaceWriteCapabilities` to SwarmSpace-owned functions (6 → 8).
 
 ### 2026-04-06 — Doc-config-git-backup (prism/privacy pages, Functions lazy-load)
 

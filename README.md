@@ -13,7 +13,8 @@ Get live in ~20 minutes.
 3. Enable **Cloud Firestore** with the following collections:
    - `users/{uid}` — fields: `email`, `plan`, `isPremium`, `api_key`, `createdAt`, `callsToday`, `callsReset`
    - `submissions` — plugin submissions
-   - `plugins` — plugin registry
+   - `plugins` — plugin registry (21 plugins: 15 free, 4 standard, 2 premium)
+   - `swarmspace_capabilities` — real-time capability snapshot for LUMARA (single doc `current`)
 4. In **Project settings → General → Your apps (Web app)**, copy your Firebase web config
 5. Add your Firebase config to each page that requires auth (e.g. `signup.html`, `dashboard.html`)
 
@@ -137,6 +138,8 @@ vercel --prod
 
 ```
 swarmspace/
+├── planner.md          ← Active planning scratch pad (read on startup)
+├── backlog.md          ← Backlog items and future features
 ├── overview.md         ← Orientation: purpose, flow, for users and agents
 ├── DEVELOPER_GUIDE.md  ← Plugin manifest spec, schemas, submission checklist
 ├── index.html          ← Landing page (7 free APIs, upgrade CTA)
@@ -144,6 +147,7 @@ swarmspace/
 ├── submit.html         ← Developer plugin submission (Firebase; clean URL `/submit`)
 ├── submit-plugin.html  ← Primary submit portal (Firebase; linked from dashboard / landing)
 ├── admin-submissions.html ← Admin review queue (Firebase; `/admin-submissions`)
+├── ast10.html          ← OWASP AST10 compliance page (public)
 ├── upgrade.html        ← API tier pricing (Free / Standard $30 / Premium)
 ├── dashboard.html      ← Developer dashboard
 ├── marketplace.html    ← Plugin marketplace
@@ -155,6 +159,8 @@ swarmspace/
 ├── privacy.html        ← Privacy policy (public)
 ├── Privacy.md          ← Privacy policy (Markdown; paired with Docs/PRIVACY.md)
 ├── SWARMSPACE_API_CONTEXT.md   ← API reference for LUMARA integration
+├── LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md ← Cross-repo function ownership & sync
+├── SWARMSPACE_ANSWERS_TO_LUMARA.md ← Answers/context for LUMARA integration
 ├── .cursorrules        ← Cursor rules (API context, tiers, never commit keys)
 ├── Docs/
 │   ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md

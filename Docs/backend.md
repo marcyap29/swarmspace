@@ -1,6 +1,6 @@
 # SwarmSpace Backend & Infrastructure
 
-**Last Updated:** 2026-04-06
+**Last Updated:** 2026-04-10
 
 ---
 
@@ -28,7 +28,13 @@ SwarmSpace is a static web app with serverless API endpoints. Auth and database 
 Plugin submissions from developers.
 
 ### `plugins` collection
-Plugin registry.
+Plugin registry. **21 plugins** across 3 tiers (15 free, 4 standard, 2 premium).
+
+### `swarmspace_capabilities` collection
+Real-time capability snapshot consumed by LUMARA via Firestore listener. Single document `swarmspace_capabilities/current` containing plugin count, plugin IDs, chain routes, and aggregated capabilities list.
+
+- **Read:** any authenticated user (`request.auth != null`)
+- **Write:** server-side only (Admin SDK via `swarmspaceWriteCapabilities`); client writes denied
 
 ---
 
@@ -39,13 +45,17 @@ Plugin registry.
 | Firebase | Auth, database (users, submissions, plugins) | Firebase Authentication, Firestore |
 | Stripe | Checkout, subscriptions, webhooks | Stripe API |
 | Vercel | Hosting, serverless functions | Vercel |
-| API (external) | swarmspaceRouter, swarmspacePluginStatus | Firebase Cloud Functions |
+| API (external) | swarmspaceRouter, swarmspacePluginStatus, swarmspacePluginCatalog, swarmspaceWriteCapabilities, validatePluginSubmission | Firebase Cloud Functions |
+| Orchestrator | 12 workflow routes via Cloudflare Worker | `swarmspace-orchestrator.orbitalai.workers.dev` |
 
 ### Firebase Cloud Functions (`functions/`)
 
 - **Package:** `firebase-functions` **^7.2.3** (see `functions/package.json`).
 - **Deploy discovery:** Large dependencies (`@google-cloud/vision`, `@google/generative-ai`) are loaded with **dynamic `import()`** inside handlers where used (e.g. `visionOcrInvoke`, `proxyGemini`) so Firebase’s deploy-time module discovery stays within timeout.
 - **Scripts:** `scripts/deploy-functions.sh` (executable) for targeted deploys when used in your workflow.
+- **`swarmspaceWriteCapabilities`** — Admin-only callable. Writes aggregated catalog snapshot to `swarmspace_capabilities/current` in Firestore so LUMARA can subscribe via real-time listener. Includes plugin IDs, chain routes, capability list, and catalog version.
+- **`validatePluginSubmission`** — Authenticated callable. Server-side validation of plugin submission data: checks field constraints (plugin ID format, required manifest fields, valid categories/pricing/auth enums), endpoint reachability, and optional manifest validity. Called before writing to `plugin_submissions`.
+- **PRISM consent enforcement** is now active in `swarmspaceRouter`. Plugins flagged with `privacy_data_required: true` that receive sensitive payloads (image, URL) without `_prism_consent` are blocked and logged.
 
 ---
 
