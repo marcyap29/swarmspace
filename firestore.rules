@@ -87,6 +87,27 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ── founding_programme/{docId} ────────────────────────────────
+    // Founding Developer Programme metadata.
+    // Any authenticated user can read (to see spots remaining).
+    // Writes are Admin SDK only (Cloud Function handles claims).
+    match /founding_programme/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // ── discovery_rate_limits/{ipHash} ─────────────────────────────
+    // Rate limiting for unauthenticated discovery agent. Server-side only.
+    match /discovery_rate_limits/{docId} {
+      allow read, write: if false;
+    }
+
+    // ── discovery_sessions/{sessionId} ─────────────────────────────
+    // Multi-turn discovery sessions. Server-side only.
+    match /discovery_sessions/{docId} {
+      allow read, write: if false;
+    }
+
     // ── users/{uid} ──────────────────────────────────────────────────
     // Web dashboard user docs (created by signup.html).
     // Owner can read and write their own doc.

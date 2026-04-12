@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — Founding Developer Programme</title>
+  <meta name="description" content="100 spots. Permanent 85% revenue share. Build the trust layer for AI agents." />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
+      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
+      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
+      --orange:#fb923c; --purple:#9b6dff;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --mono:'SF Mono','JetBrains Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.65; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-links { display:flex; align-items:center; gap:24px; }
+    .nav-links a { font-size:14px; color:var(--muted); }
+    .nav-links a:hover { color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
+
+    .hero { padding:96px 40px 64px; max-width:800px; margin:0 auto; text-align:center; }
+    .hero h1 { font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-1px; line-height:1.1; margin-bottom:20px; }
+    .hero p { font-size:18px; color:var(--muted); line-height:1.7; margin-bottom:32px; }
+
+    .counter-badge {
+      display:inline-flex; align-items:center; gap:12px;
+      background:linear-gradient(135deg,rgba(91,91,214,.12),rgba(52,211,153,.08));
+      border:1px solid rgba(91,91,214,.3); border-radius:12px;
+      padding:16px 28px; margin-bottom:40px;
+    }
+    .counter-num { font-size:36px; font-weight:800; color:var(--green); font-family:var(--mono); }
+    .counter-label { font-size:14px; color:var(--muted); text-align:left; line-height:1.3; }
+
+    section { max-width:900px; margin:0 auto; padding:64px 40px; }
+    h2 { font-size:28px; font-weight:800; margin-bottom:32px; text-align:center; }
+
+    .benefits-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+    .benefit-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; }
+    .benefit-icon { font-size:28px; margin-bottom:12px; }
+    .benefit-title { font-size:16px; font-weight:700; margin-bottom:6px; }
+    .benefit-desc { font-size:13px; color:var(--muted); line-height:1.6; }
+
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:32px; }
+    .step-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; }
+    .step-num { font-size:24px; font-weight:800; color:var(--accent); margin-bottom:8px; }
+    .step-text { font-size:13px; color:var(--muted); line-height:1.5; }
+
+    .requirements { max-width:600px; margin:32px auto 0; }
+    .requirements li { font-size:14px; color:var(--muted); padding:8px 0; border-bottom:1px solid var(--border); list-style:none; }
+    .requirements li::before { content:"→ "; color:var(--accent2); }
+    .requirements li:last-child { border-bottom:none; }
+
+    .cta-section { text-align:center; padding:64px 40px; }
+    .cta-btn { display:inline-block; padding:16px 32px; background:var(--accent); border-radius:10px; font-size:16px; font-weight:700; color:#fff; border:none; cursor:pointer; }
+    .cta-btn:hover { opacity:.9; text-decoration:none; }
+    .cta-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .cta-status { margin-top:16px; font-size:14px; color:var(--muted); }
+    .cta-success { color:var(--green); font-weight:700; }
+    .cta-error { color:var(--orange); }
+
+    .founding-badge { display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,var(--accent),var(--purple)); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; color:#fff; }
+
+    footer { border-top:1px solid var(--border); padding:40px; display:flex; flex-direction:column; align-items:center; gap:16px; max-width:900px; margin:0 auto; }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:14px 24px; justify-content:center; }
+    .footer-links a { font-size:13px; color:var(--dim); }
+
+    @media(max-width:768px) {
+      nav { padding:14px 20px; }
+      .nav-links { display:none; }
+      .hero { padding:64px 20px 48px; }
+      section { padding:48px 20px; }
+      .benefits-grid { grid-template-columns:1fr; }
+      .steps { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">SwarmSpace</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/submit-plugin.html">Submit a plugin</a>
+    <a href="/DEVELOPER_GUIDE.md">Docs</a>
+    <a href="/upgrade.html">Pricing</a>
+  </div>
+  <a href="/signup.html" class="btn-primary">Get API access →</a>
+</nav>
+
+<div class="hero">
+  <h1>Founding Developer Programme</h1>
+  <p>100 spots. Permanent 85% revenue share. Help build the trust layer for AI agents — and earn more for it, forever.</p>
+  <div class="counter-badge">
+    <span class="counter-num" id="spots-remaining">—</span>
+    <span class="counter-label">of 100 spots<br>remaining</span>
+  </div>
+</div>
+
+<section>
+  <h2>What You Get</h2>
+  <div class="benefits-grid">
+    <div class="benefit-card">
+      <div class="benefit-icon">💰</div>
+      <div class="benefit-title">85% Revenue Share — Permanent</div>
+      <div class="benefit-desc">Standard developers earn 80%. As a Founding Developer, you earn 85% on every API call to your plugins. This rate is locked in permanently — it never downgrades.</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-icon">🏅</div>
+      <div class="benefit-title">Founding Developer Badge</div>
+      <div class="benefit-desc">A permanent badge on your profile and all your plugins. It signals to users that you were here from the beginning — a trust signal that can't be bought later.</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-icon">🚀</div>
+      <div class="benefit-title">Early Access</div>
+      <div class="benefit-desc">First to test new platform features: Durable Objects scheduling, Outcome Packages, the Discovery Agent. Your feedback shapes what ships.</div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-icon">🔗</div>
+      <div class="benefit-title">Direct Channel</div>
+      <div class="benefit-desc">Direct access to the SwarmSpace team. Priority plugin review. Your issues get looked at first.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>How It Works</h2>
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-text">Sign up for a SwarmSpace developer account</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-text">Claim your founding spot (one click)</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-text">Submit your first plugin within 90 days</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-text">Earn 85% on every API call</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Requirements</h2>
+  <ul class="requirements">
+    <li>Submit at least 1 plugin within 90 days of claiming your spot</li>
+    <li>Plugin must pass review (Community or Verified tier)</li>
+    <li>Comply with the <a href="/DEVELOPER_GUIDE.md">Developer Guide</a> and Developer Agreement</li>
+    <li>Free to join — no fees, ever</li>
+  </ul>
+</section>
+
+<div class="cta-section" id="cta-section">
+  <div id="cta-loading" style="color:var(--muted);">Loading...</div>
+  <div id="cta-unauthenticated" style="display:none;">
+    <a href="/signup.html?founding=true" class="cta-btn">Sign up and claim your spot →</a>
+    <div class="cta-status">Already have an account? <a href="/signup.html?founding=true">Sign in</a></div>
+  </div>
+  <div id="cta-claim" style="display:none;">
+    <button class="cta-btn" id="claim-btn" onclick="claimSpot()">Claim your founding spot →</button>
+    <div class="cta-status" id="claim-status"></div>
+  </div>
+  <div id="cta-already" style="display:none;">
+    <div class="founding-badge">🏅 Founding Developer</div>
+    <div class="cta-success" id="already-msg" style="margin-top:16px;"></div>
+    <a href="/submit-plugin.html" class="cta-btn" style="margin-top:16px;">Submit your first plugin →</a>
+  </div>
+  <div id="cta-full" style="display:none;">
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px;">All 100 spots have been claimed</div>
+    <div class="cta-status">You can still join as a standard developer with 80% revenue share.</div>
+    <a href="/signup.html" class="cta-btn" style="margin-top:16px;">Join as a developer →</a>
+  </div>
+</div>
+
+<footer>
+  <p>SwarmSpace by Orbital AI — 2026</p>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/upgrade.html">Pricing</a>
+    <a href="/submit-plugin.html">Submit plugin</a>
+    <a href="/DEVELOPER_GUIDE.md">Docs</a>
+    <a href="/security.html">Security</a>
+    <a href="/ast10.html">AST10</a>
+    <a href="/prism.html">PRISM</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+</footer>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
+
+  const app = initializeApp({
+    apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain:        "arc-epi.firebaseapp.com",
+    projectId:         "arc-epi",
+    storageBucket:     "arc-epi.firebasestorage.app",
+    messagingSenderId: "563971839074",
+    appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b"
+  });
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const functions = getFunctions(app);
+
+  // Load spots counter
+  async function loadCounter() {
+    try {
+      const metaDoc = await getDoc(doc(db, "founding_programme", "meta"));
+      if (metaDoc.exists()) {
+        const data = metaDoc.data();
+        const remaining = data.totalSlots - data.claimedSlots;
+        document.getElementById("spots-remaining").textContent = remaining;
+        if (remaining <= 0) {
+          document.getElementById("spots-remaining").textContent = "0";
+        }
+        return data;
+      }
+    } catch (e) {
+      console.error("Failed to load counter:", e);
+    }
+    document.getElementById("spots-remaining").textContent = "100";
+    return { totalSlots: 100, claimedSlots: 0, isOpen: true };
+  }
+
+  // Check auth state and show appropriate CTA
+  onAuthStateChanged(auth, async (user) => {
+    const meta = await loadCounter();
+    document.getElementById("cta-loading").style.display = "none";
+
+    if (meta.claimedSlots >= meta.totalSlots) {
+      document.getElementById("cta-full").style.display = "block";
+      return;
+    }
+
+    if (!user) {
+      document.getElementById("cta-unauthenticated").style.display = "block";
+      return;
+    }
+
+    // Check if already a founding developer
+    try {
+      const devDoc = await getDoc(doc(db, "developers", user.uid));
+      if (devDoc.exists() && devDoc.data().isFoundingDeveloper) {
+        const slot = devDoc.data().foundingDeveloperSlot;
+        document.getElementById("already-msg").textContent =
+          "You are Founding Developer #" + slot + "! Submit your first plugin to activate your 85% revenue share.";
+        document.getElementById("cta-already").style.display = "block";
+        return;
+      }
+    } catch (e) {
+      console.error("Failed to check developer status:", e);
+    }
+
+    document.getElementById("cta-claim").style.display = "block";
+  });
+
+  // Claim spot
+  window.claimSpot = async function() {
+    const btn = document.getElementById("claim-btn");
+    const status = document.getElementById("claim-status");
+    btn.disabled = true;
+    btn.textContent = "Claiming...";
+    status.textContent = "";
+
+    try {
+      const claimFn = httpsCallable(functions, 'swarmspaceClaimFoundingSpot');
+      const result = await claimFn();
+      const data = result.data;
+
+      if (data.success) {
+        document.getElementById("cta-claim").style.display = "none";
+        document.getElementById("already-msg").textContent = data.message;
+        document.getElementById("cta-already").style.display = "block";
+        document.getElementById("spots-remaining").textContent = data.remainingSlots;
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = "Claim your founding spot →";
+      const msg = e.message || "Something went wrong. Try again.";
+      status.className = "cta-status cta-error";
+      status.textContent = msg;
+    }
+  };
+</script>
+</body>
+</html>

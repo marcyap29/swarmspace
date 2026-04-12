@@ -68,6 +68,40 @@ h3 { font-size:20px; font-weight:700; margin-bottom:10px; }
 .td { color:var(--dim); } .tg { color:var(--green); } .tb { color:var(--accent2); }
 .to { color:var(--orange); } .tw { color:var(--text); }
 
+/* Discovery chat UI */
+.discovery-chat { background:#0d0d14; border:1px solid var(--border); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; max-height:460px; }
+.chat-header { display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border); background:#111118; }
+.chat-dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+.chat-header span:last-child { font-size:11px; color:var(--dim); font-family:var(--mono); }
+.chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; min-height:280px; }
+.chat-welcome { font-size:13px; color:var(--muted); font-family:var(--mono); line-height:1.6; }
+.chat-msg { max-width:90%; padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.5; }
+.chat-msg.user { align-self:flex-end; background:var(--accent); color:#fff; border-bottom-right-radius:4px; }
+.chat-msg.agent { align-self:flex-start; background:var(--surface); border:1px solid var(--border); color:var(--text); border-bottom-left-radius:4px; }
+.chat-input-row { display:flex; gap:8px; padding:12px; border-top:1px solid var(--border); background:#111118; }
+.chat-input-row input { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:13px; font-family:var(--mono); color:var(--text); outline:none; }
+.chat-input-row input:focus { border-color:var(--accent); }
+.chat-input-row button { padding:10px 16px; background:var(--accent); border:none; border-radius:8px; font-size:14px; font-weight:700; color:#fff; cursor:pointer; flex-shrink:0; }
+.chat-input-row button:hover { opacity:.9; }
+.chat-input-row button:disabled { opacity:.5; cursor:not-allowed; }
+.chat-loading { display:flex; gap:4px; padding:8px 0; }
+.chat-loading span { width:6px; height:6px; background:var(--accent2); border-radius:50%; animation:chatpulse 1.2s infinite; }
+.chat-loading span:nth-child(2) { animation-delay:.2s; }
+.chat-loading span:nth-child(3) { animation-delay:.4s; }
+@keyframes chatpulse { 0%,80%,100%{opacity:.3;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+.chain-card-row { display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin:8px 0; }
+.chain-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; text-align:center; }
+.chain-card .cc-name { font-size:11px; font-weight:700; color:var(--text); font-family:var(--mono); }
+.chain-card .cc-tier { font-size:9px; font-weight:700; margin-top:2px; }
+.cc-tier.free { color:var(--green); }
+.cc-tier.standard { color:var(--accent2); }
+.cc-tier.premium { color:var(--purple); }
+.chain-arrow { color:var(--dim); font-size:14px; }
+.chain-summary { font-size:12px; color:var(--muted); margin:6px 0; line-height:1.5; }
+.chain-match { font-size:12px; color:var(--green); margin:4px 0; }
+.chain-cta { display:inline-block; margin-top:8px; padding:8px 16px; background:var(--accent); border-radius:8px; font-size:12px; font-weight:700; color:#fff; text-decoration:none; }
+.chain-cta:hover { opacity:.9; text-decoration:none; }
+
 .lumara-banner { max-width:1100px; margin:0 auto; padding:0 40px 0; }
 .lumara-inner {
   padding:28px 40px;
@@ -210,32 +244,17 @@ footer p { font-size:13px; color:var(--dim); }
         <div><div class="stat-num">∞</div><div class="stat-label">Runtime capabilities</div></div>
       </div>
     </div>
-    <div class="terminal">
-      <div class="terminal-bar">
-        <div class="tdot" style="background:#ff5f57"></div>
-        <div class="tdot" style="background:#febc2e"></div>
-        <div class="tdot" style="background:#28c840"></div>
-        <span class="ttitle">agent-runtime.log</span>
+    <div class="discovery-chat">
+      <div class="chat-header">
+        <span class="chat-dot"></span>
+        <span>discovery-agent</span>
       </div>
-      <div class="terminal-body">
-        <div class="td">→ agent.reason("prep investor meeting")</div>
-        <br>
-        <div class="td">// capability gap detected</div>
-        <div class="td">// needs: research + competitor intel</div>
-        <br>
-        <div class="tb">→ swarmspace.discover(</div>
-        <div class="tb">&nbsp;&nbsp;"research and competitor brief"</div>
-        <div class="tb">)</div>
-        <br>
-        <div class="tw">results: [</div>
-        <div class="tg">&nbsp;&nbsp;{ name: "Research", trust: "verified" },</div>
-        <div class="tg">&nbsp;&nbsp;{ name: "CompetitorIntel", trust: "verified" },</div>
-        <div class="tg">&nbsp;&nbsp;{ name: "Writing", trust: "verified" }</div>
-        <div class="tw">]</div>
-        <br>
-        <div class="to">→ user.confirm("Run 3-step chain?")</div>
-        <div class="tg">✓ chain authorized · CHRONICLE context on</div>
-        <div class="tg">✓ streaming results to LUMARA...</div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-welcome">Tell me what you need done — I'll find the right APIs and workflows for you.</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="e.g. Research my competitors..." autocomplete="off">
+        <button id="chat-send">→</button>
       </div>
     </div>
   </div>
@@ -638,5 +657,183 @@ footer p { font-size:13px; color:var(--dim); }
   </div>
 </footer>
 
+<script>
+(function() {
+  const DISCOVERY_URL = "https://us-central1-arc-epi.cloudfunctions.net/swarmspaceDiscoveryAgent";
+  const messagesEl = document.getElementById("chat-messages");
+  const inputEl = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("chat-send");
+  let sessionId = null;
+  let turnCount = 0;
+  const MAX_TURNS = 3;
+
+  const TIER_MAP = {
+    "gemini-flash":"free","brave-search":"free","semantic-scholar":"free","weather":"free",
+    "wikipedia":"free","currency":"free","news":"free","arxiv":"free","pubmed":"free",
+    "nominatim":"free","rest-countries":"free","github-public":"free","hackernews":"free",
+    "dictionary-api":"free","jina-reader":"free",
+    "vision-ocr":"standard","url-reader":"standard","media-upload":"standard",
+    "tavily-search":"standard","social-publisher":"standard",
+    "exa-search":"premium","perplexity-sonar":"premium"
+  };
+
+  function addMessage(content, role) {
+    const div = document.createElement("div");
+    div.className = "chat-msg " + role;
+    if (typeof content === "string") {
+      div.textContent = content;
+    } else {
+      div.appendChild(content);
+    }
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function showLoading() {
+    const div = document.createElement("div");
+    div.className = "chat-loading";
+    div.id = "chat-loading";
+    div.innerHTML = "<span></span><span></span><span></span>";
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function hideLoading() {
+    const el = document.getElementById("chat-loading");
+    if (el) el.remove();
+  }
+
+  function renderChain(data) {
+    const frag = document.createDocumentFragment();
+
+    // Chain cards
+    if (data.suggested_chain && data.suggested_chain.plugins) {
+      const row = document.createElement("div");
+      row.className = "chain-card-row";
+      data.suggested_chain.plugins.forEach(function(pid, i) {
+        if (i > 0) {
+          const arrow = document.createElement("span");
+          arrow.className = "chain-arrow";
+          arrow.textContent = "→";
+          row.appendChild(arrow);
+        }
+        const card = document.createElement("div");
+        card.className = "chain-card";
+        const tier = TIER_MAP[pid] || "free";
+        card.innerHTML = '<div class="cc-name">' + pid + '</div><div class="cc-tier ' + tier + '">' + tier.charAt(0).toUpperCase() + tier.slice(1) + '</div>';
+        row.appendChild(card);
+      });
+      frag.appendChild(row);
+
+      // Summary
+      if (data.suggested_chain.description) {
+        const sum = document.createElement("div");
+        sum.className = "chain-summary";
+        sum.textContent = data.suggested_chain.description;
+        frag.appendChild(sum);
+      }
+
+      // Workflow match
+      if (data.suggested_chain.matches_workflow) {
+        const match = document.createElement("div");
+        match.className = "chain-match";
+        match.textContent = "✅ Ready-made workflow: " + (data.suggested_chain.workflow_name || data.suggested_chain.matches_workflow);
+        frag.appendChild(match);
+      }
+
+      // Tier note
+      if (!data.suggested_chain.requires_paid) {
+        const note = document.createElement("div");
+        note.className = "chain-match";
+        note.textContent = "🆓 Entirely free tier";
+        frag.appendChild(note);
+      }
+    }
+
+    // CTA
+    var ctaText = data.cta || "Sign up to run this chain";
+    var chainData = data.suggested_chain ? btoa(JSON.stringify(data.suggested_chain)) : "";
+    var cta = document.createElement("a");
+    cta.className = "chain-cta";
+    cta.href = "/signup.html" + (chainData ? "?chain=" + encodeURIComponent(chainData) : "");
+    cta.textContent = ctaText;
+    frag.appendChild(cta);
+
+    return frag;
+  }
+
+  async function sendMessage() {
+    var msg = inputEl.value.trim();
+    if (!msg) return;
+
+    if (turnCount >= MAX_TURNS) {
+      addMessage("Sign up for unlimited discovery and to run your chains.", "agent");
+      return;
+    }
+
+    addMessage(msg, "user");
+    inputEl.value = "";
+    sendBtn.disabled = true;
+    showLoading();
+    turnCount++;
+
+    try {
+      var res = await fetch(DISCOVERY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, session_id: sessionId })
+      });
+
+      hideLoading();
+
+      if (res.status === 429) {
+        addMessage("You've used your free discovery queries. Sign up for unlimited access.", "agent");
+        sendBtn.disabled = false;
+        return;
+      }
+
+      var data = await res.json();
+      sessionId = data.session_id || sessionId;
+
+      if (data.signup_gate) {
+        addMessage("Sign up for unlimited discovery and to run your chains.", "agent");
+        sendBtn.disabled = false;
+        return;
+      }
+
+      if (data.error) {
+        addMessage("Something went wrong. Try again?", "agent");
+        sendBtn.disabled = false;
+        return;
+      }
+
+      // Render intent
+      if (data.intent) {
+        var intentEl = document.createElement("div");
+        intentEl.style.cssText = "font-size:12px;color:var(--muted);margin-bottom:4px;";
+        intentEl.textContent = "Intent: " + data.intent;
+        var wrapper = document.createElement("div");
+        wrapper.appendChild(intentEl);
+        wrapper.appendChild(renderChain(data));
+        addMessage(wrapper, "agent");
+      } else {
+        addMessage(renderChain(data), "agent");
+      }
+
+    } catch (err) {
+      hideLoading();
+      addMessage("Something went wrong. Try again?", "agent");
+    }
+
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  inputEl.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") sendMessage();
+  });
+})();
+</script>
 </body>
 </html>
