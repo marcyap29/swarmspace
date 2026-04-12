@@ -154,6 +154,62 @@ Server-side validation of plugin submission data before writing to `plugin_submi
 
 ---
 
+### 6. `swarmspaceDiscoveryAgent` — Natural-Language Discovery
+
+**URL:** `https://swarmspacediscoveryagent-6sdvtdka3a-uc.a.run.app`
+**Method:** POST (`onRequest` — public HTTP, not Firebase callable)
+**Auth:** None required (IP rate-limited: 10 requests/hr)
+
+**Request body:**
+```json
+{
+  "message": "I need to research competitors",
+  "session_id": "optional-existing-session-id"
+}
+```
+
+**Response:**
+```json
+{
+  "intent": "competitive_analysis",
+  "suggested_chain": "/competitor",
+  "alternatives": ["/market-scan", "/news-brief"],
+  "cta": "Try the Competitive Analysis workflow →",
+  "session_id": "abc123",
+  "turns_remaining": 2
+}
+```
+
+Multi-turn: up to 3 turns per session. Pass `session_id` from a previous response to continue the conversation. Powered by Gemini 3 Flash.
+
+---
+
+### 7. `swarmspaceClaimFoundingSpot` — Founding Developer Programme Claim
+
+**URL:** `https://us-central1-arc-epi.cloudfunctions.net/swarmspaceClaimFoundingSpot`
+**Method:** POST (Firebase callable)
+**Auth:** Firebase ID token (any authenticated user)
+
+Claims a Founding Developer Programme slot. Uses a Firestore transaction against `founding_programme/meta` for atomic 100-slot enforcement.
+
+**Request body:** `{ "data": {} }` (no params required)
+
+**Response:**
+```json
+{
+  "result": {
+    "success": true,
+    "slotNumber": 42,
+    "remainingSlots": 58,
+    "revenueShare": "5%"
+  }
+}
+```
+
+**Error codes:** `not-found` (programme not seeded), `failed-precondition` (programme closed or full), `already-exists` (user already claimed), `unauthenticated`
+
+---
+
 ## Orchestrator Workflow Routes (Cloudflare Worker)
 
 12 workflow routes via `swarmspace-orchestrator.orbitalai.workers.dev`:

@@ -15,6 +15,9 @@ Get live in ~20 minutes.
    - `submissions` — plugin submissions
    - `plugins` — plugin registry (21 plugins: 15 free, 4 standard, 2 premium)
    - `swarmspace_capabilities` — real-time capability snapshot for LUMARA (single doc `current`)
+   - `founding_programme` — Founding Developer Programme metadata and claims
+   - `discovery_rate_limits` — Rate limiting for Discovery Agent requests
+   - `discovery_sessions` — Multi-turn Discovery Agent conversation sessions
 4. In **Project settings → General → Your apps (Web app)**, copy your Firebase web config
 5. Add your Firebase config to each page that requires auth (e.g. `signup.html`, `dashboard.html`)
 
@@ -148,6 +151,8 @@ swarmspace/
 ├── submit-plugin.html  ← Primary submit portal (Firebase; linked from dashboard / landing)
 ├── admin-submissions.html ← Admin review queue (Firebase; `/admin-submissions`)
 ├── ast10.html          ← OWASP AST10 compliance page (public)
+├── founding-developers.html ← Founding Developer Programme landing page
+├── developer-guide.html ← HTML developer guide (styled)
 ├── upgrade.html        ← API tier pricing (Free / Standard $30 / Premium)
 ├── dashboard.html      ← Developer dashboard
 ├── marketplace.html    ← Plugin marketplace
