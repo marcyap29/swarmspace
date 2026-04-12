@@ -1,7 +1,7 @@
 # SwarmSpace Documentation Context Guide
 
 **Version:** 1.1.0
-**Last Updated:** April 9, 2026
+**Last Updated:** April 10, 2026
 **Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
@@ -175,7 +175,7 @@ Both repos deploy Cloud Functions to the **same Firebase project (`arc-epi`)** u
 
 ### Ownership Rules
 
-- **SwarmSpace owns:** `swarmspaceRouter`, `swarmspacePluginStatus`, `swarmspacePluginCatalog`, `newsDataInvoke`, `visionOcrInvoke`, `updateUserModelConfig`, and any future plugin/agent functions.
+- **SwarmSpace owns:** `swarmspaceRouter`, `swarmspacePluginStatus`, `swarmspacePluginCatalog`, `newsDataInvoke`, `visionOcrInvoke`, `updateUserModelConfig`, `swarmspaceWriteCapabilities`, `validatePluginSubmission`, and any future plugin/agent functions.
 - **LUMARA owns:** Core app functions (journal, chat, LLM proxies, Stripe, throttle, subscription, API tokens).
 - **SwarmSpace will add functions over time** as developers submit plugins and new agent capabilities ship. Any new SwarmSpace function must be registered in `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md`.
 
@@ -209,6 +209,8 @@ For structural changes (new functions, ownership changes), update `LUMARA_SWARMS
 | **Docs/PRISM.md** | PRISM / privacy logging reference | `Docs/PRISM.md` |
 | **Docs/PRIVACY.md** | Privacy policy (Markdown) | `Docs/PRIVACY.md` |
 | **prism.html** / **privacy.html** | Public PRISM and privacy pages | site root |
+| **ast10.html** | OWASP AST10 compliance page (public) | `ast10.html` |
+| **Docs/OWASP_AST10_COMPLIANCE.md** | Internal AST10 compliance doc | `Docs/OWASP_AST10_COMPLIANCE.md` |
 | **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
 | **PROMPT_TRACKER.md** | Prompt change log | `PROMPT_TRACKER.md` |
 | **PROMPT_REFERENCES.md** | Prompt catalog | `PROMPT_REFERENCES.md` |
@@ -254,7 +256,7 @@ swarmspace/
 ├── planner.md          ← Active planning scratch pad (read on startup)
 ├── backlog.md          ← Backlog items and future features
 ├── overview.md         ← Orientation for users and agents
-├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html
+├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html, ast10.html
 ├── DEVELOPER_GUIDE.md
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── vercel.json

@@ -1,7 +1,41 @@
 # SwarmSpace Changelog
 
-**Version:** 1.1.6  
-**Last Updated:** 2026-04-06
+**Version:** 1.2.0
+**Last Updated:** 2026-04-11
+
+---
+
+## [1.2.0] - 2026-04-11
+
+### Added
+
+- **7 new free plugin workers:** nominatim, rest-countries, github-public, hackernews, dictionary-api, jina-reader, pubmed.
+- **`ast10.html`** — AST10 (OWASP Agentic Security Top 10) compliance page.
+- **`validatePluginSubmission` Cloud Function** — Server-side manifest validation and endpoint reachability checks.
+- **`swarmspaceWriteCapabilities` Cloud Function** — Firestore real-time sync for LUMARA capability discovery.
+- **Enriched `swarmspacePluginCatalog` response** — Now includes chains, pricing, capabilities, and deploy dates.
+- **12 orchestrator workflow chain definitions** added to the plugin catalog.
+- **`LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md`** — Cross-repo function ownership documentation.
+- **Resources section on landing page** with links to all key pages.
+- **`swarmspace_capabilities` Firestore collection** + corresponding security rules.
+
+### Fixed
+
+- **Orchestrator 405 error** — Redeployed to resolve method-not-allowed responses.
+- **PRISM consent enforcement** — Was logging-only; now actively blocks unconsented calls.
+- **Plugin worker error handling** — Added try/catch on `request.json()` for github-public, hackernews, dictionary-api, jina-reader.
+- **jina-reader response format** — Wrapped output in `results` array for consistency.
+- **Landing page (`index.html`)** — Removed phantom Reddit plugin, added Dictionary API, fixed 4 slug mismatches.
+- **`upgrade.html`** — Removed 5 phantom plugins, added 4 real missing plugins.
+- **`faq.html`** — Renamed SwarmStore to SwarmSpace (~61 occurrences).
+- **Stray CSS backticks in `index.html`** breaking nav layout.
+
+### Changed
+
+- **Documentation honesty pass:** `security.html`, `prism.html`, `DEVELOPER_GUIDE.md`, `OWASP_AST10_COMPLIANCE.md` — removed aspirational language, aligned with actual implementation.
+- **`architecture.md`** — Reconciled with codebase (manifest format, plugin counts, trust tiers).
+- **`DEVELOPER_GUIDE.md`** — Removed Experimental tier, fixed `privacy_data_required` to boolean, corrected endpoint contract.
+- **Firestore rules** — Added `swarmspace_capabilities` collection.
 
 ---
 
