@@ -11,6 +11,7 @@
     { "source": "/earnings", "destination": "/earnings.html" },
     { "source": "/submit-plugin", "destination": "/submit-plugin.html" },
     { "source": "/ast10", "destination": "/ast10.html" },
-    { "source": "/founding-developers", "destination": "/founding-developers.html" }
+    { "source": "/founding-developers", "destination": "/founding-developers.html" },
+    { "source": "/developer-guide", "destination": "/developer-guide.html" }
   ]
 }
