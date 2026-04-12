@@ -944,4 +944,178 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 
 ---
 
-*SwarmSpace Full Backlog — Orbital AI — April 9, 2026*
+## Recurring Agent Scheduler — Durable Objects Implementation Spec
+
+*Added: April 11, 2026*
+
+### Context
+
+Server-side recurring workflow scheduler for SwarmSpace mobile users. Built on Cloudflare Durable Objects with the Alarms API. Paid tier only (Pro $15/mo or Premium $20/mo). Desktop users run the local Dart scheduler — this spec covers mobile only.
+
+**What it does:** Users schedule any `schedulable: true` workflow to run on a cadence. On each run the DO executes the workflow, diffs the output against the previous run, and surfaces the delta to the user. Personal context (CHRONICLE) is injected at execution time, never stored in the DO.
+
+### Architecture Overview
+
+```
+LUMARA iOS / SwarmSpace Dashboard
+         │
+         ▼
+  swarmspaceRouter (Firebase CF)
+  POST /scheduler/create
+  POST /scheduler/pause
+  POST /scheduler/delete
+  GET  /scheduler/list
+  GET  /scheduler/history/:id
+         │
+         ▼
+  SchedulerManager Worker (Cloudflare)
+  — creates / manages DO instances
+         │
+         ▼
+  AgentSchedulerDO (Durable Object, one per user per scheduled workflow)
+  — stores: schedule config, last-run output, run history
+  — fires: Durable Objects Alarms API (cron-style)
+  — on alarm: calls swarmspaceRouter to execute workflow
+  — on complete: diffs output, writes delta to Firestore, resets alarm
+```
+
+### Durable Object Class: `AgentSchedulerDO`
+
+**File:** `workers/scheduler/AgentSchedulerDO.ts`
+
+**Key interfaces:**
+
+```typescript
+interface ScheduleConfig {
+  id: string;                    // uuid
+  uid: string;                   // Firebase UID
+  workflow: string;              // workflow slug e.g. 'hiring-intel'
+  input: Record<string, unknown>;
+  cadence: CadenceConfig;
+  delta_mode: boolean;           // true = diff vs last run; false = full output
+  created_at: string;
+  last_run_at: string | null;
+  next_run_at: string | null;
+  paused: boolean;
+  chronicle_token: string | null; // ephemeral token, fresh context fetched each run
+}
+
+interface CadenceConfig {
+  type: 'preset' | 'custom';
+  preset?: 'daily' | 'weekly' | 'monthly';
+  days_of_week?: number[];       // 0=Sun ... 6=Sat
+  time_of_day?: string;          // HH:MM UTC
+  interval_hours?: number;       // min 6
+}
+
+interface RunRecord {
+  run_id: string;
+  ran_at: string;
+  output: string;
+  delta: string | null;
+  credits_used: number;
+  status: 'success' | 'error';
+  error?: string;
+}
+```
+
+**DO endpoints:** `/init` (POST), `/pause` (POST), `/resume` (POST), `/status` (GET), `/history` (GET)
+
+**Alarm handler flow:**
+1. Request fresh CHRONICLE context if token available (never stored)
+2. Execute workflow via swarmspaceRouter
+3. Diff against previous output if delta_mode enabled
+4. Store run record (history capped at 10)
+5. Write delta to Firestore for LUMARA iOS pickup
+6. Schedule next alarm
+
+### Scheduler Manager Worker
+
+**File:** `workers/scheduler/index.ts`
+
+Routes:
+- `POST /scheduler/create` — create new scheduled job (paid tier gate)
+- `GET /scheduler/list` — list user's scheduled jobs
+- `POST /scheduler/pause/:id` — pause a schedule
+- `POST /scheduler/resume/:id` — resume a schedule
+- `DELETE /scheduler/:id` — delete a schedule
+- `GET /scheduler/history/:id` — get run history
+
+DO naming: `{uid}:{scheduleId}` — one DO per user per scheduled workflow.
+
+**Schedulable workflows (v1):**
+`news-brief`, `competitor`, `tech-scout`, `hiring-intel` (meeting-prep is on-demand only, not schedulable)
+
+### wrangler.toml Updates
+
+```toml
+[[durable_objects.bindings]]
+name = "AGENT_SCHEDULER"
+class_name = "AgentSchedulerDO"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["AgentSchedulerDO"]
+```
+
+### Firestore Schema
+
+**Collection:** `scheduled_jobs/{schedule_id}`
+- `uid`, `workflow`, `input`, `cadence`, `delta_mode`, `paused`
+- `created_at`, `last_run_at`, `next_run_at`
+- `last_delta`, `last_run_status`, `credits_used_total`
+
+**Subcollection:** `scheduler_results/{schedule_id}/runs/{run_id}`
+- `ran_at`, `output`, `delta`, `credits_used`, `status`, `error`
+
+**Rules:** Owner read/write on `scheduled_jobs`, owner read on `scheduler_results`, server-write only on runs.
+
+### swarmspaceRouter Additions
+
+- `POST /scheduler/result` — called by DO on each run, writes result to Firestore (admin only)
+- `GET /scheduler/list` — lists user's scheduled jobs from Firestore
+
+### Tier Access
+
+| Tier | Mobile Scheduling | Desktop Scheduling |
+|---|---|---|
+| Free | Blocked at Worker level | Local Dart scheduler, free APIs only |
+| Pro ($15/mo) | Server-side DO | Local + premium plugins |
+| Premium ($20/mo) | Server-side DO + CHRONICLE | Local + CHRONICLE + premium |
+| Developer Pro | Not available | Own plugins only |
+
+### Credit Handling
+
+- Scheduled runs consume credits at same rate as manual runs
+- DO passes `_scheduled: true` in workflow call
+- If credits exhausted: run skipped, error recorded as `credit_exhausted`, alarm rescheduled
+- LUMARA surfaces: "Your scheduled [workflow] was skipped — credit limit reached"
+
+### Dashboard UI
+
+New section on `dashboard.html`: **Scheduled Workflows**
+- List of active schedules with status, last run, next run
+- "+ New" button → modal: select workflow, enter input, choose cadence, delta mode toggle
+- Pause / Delete / View history per schedule
+
+### Implementation Order
+
+1. DO class + Scheduler Manager Worker → deploy
+2. swarmspaceRouter additions → `/scheduler/result` + `/scheduler/list`
+3. Firestore collections + rules → `scheduled_jobs`, `scheduler_results`
+4. Dashboard UI → Scheduled Workflows section + New Schedule modal
+5. LUMARA iOS → Scheduled agent cards, result view
+6. Test with `news-brief` first (simplest, daily cadence)
+7. Add `competitor` + `tech-scout` recurring variants
+
+### Constraints
+
+- DO must never store CHRONICLE content or raw personal data
+- Credit deduction in swarmspaceRouter, not in DO
+- Free tier blocked at Worker level before DO creation
+- `chronicle_token` is reference only — fresh context fetched each execution
+- Minimum interval: 6 hours (enforced in `calculateNextRun`)
+
+---
+
+*SwarmSpace Full Backlog — Orbital AI — April 11, 2026*
