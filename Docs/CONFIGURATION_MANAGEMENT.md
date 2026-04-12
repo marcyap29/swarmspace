@@ -83,10 +83,24 @@ When running a doc sync or release:
 | Docs/LAYER3_DESIGN_AND_BACKLOG.md | Docs/ | 2026-04-10 | ✅ Synced | Layer 3 design |
 | Docs/LUMARA_Overview.md | Docs/ | 2026-04-10 | ✅ Synced | LUMARA overview |
 | functions/src/functions/validatePluginSubmission.ts | functions/ | 2026-04-10 | ✅ Synced | Plugin validation function |
+| founding-developers.html | root | 2026-04-11 | ✅ Synced | Founding Developer Programme landing page |
+| developer-guide.html | root | 2026-04-11 | ✅ Synced | HTML developer guide (styled) |
+| functions/src/functions/swarmspaceDiscoveryAgent.ts | functions/ | 2026-04-11 | ✅ Synced | Discovery agent function |
+| functions/src/functions/swarmspaceClaimFoundingSpot.ts | functions/ | 2026-04-11 | ✅ Synced | Founding spot claim function |
 
 ---
 
 ## Change Log
+
+### 2026-04-11 — Discovery Agent, Founding Developer Programme, new pages and functions
+
+**Action:** Added Discovery Agent, Founding Developer Programme, and chain-to-signup handoff. New HTML pages and Cloud Functions registered.
+
+**Changes:**
+- CONFIGURATION_MANAGEMENT: added `founding-developers.html`, `developer-guide.html`, `swarmspaceDiscoveryAgent.ts`, `swarmspaceClaimFoundingSpot.ts` to inventory.
+- claude.md: file structure, Quick Reference, and Ownership Rules updated; version bumped to 1.3.0.
+- README.md: file structure updated; new Firestore collections (`founding_programme`, `discovery_rate_limits`, `discovery_sessions`) added.
+- planner.md: wiped clean after completing Discovery Agent, Founding Developer Programme, and chain-to-signup handoff.
 
 ### 2026-04-10/11 — LUMARA integration, OWASP AST10, new functions, doc inventory sync
 

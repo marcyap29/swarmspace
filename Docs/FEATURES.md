@@ -1,6 +1,6 @@
 # SwarmSpace Features
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Last Updated:** 2026-04-11
 
 ---
@@ -30,15 +30,19 @@
 | Developer guide (`DEVELOPER_GUIDE.md`) | Manifest specification, JSON Schema, endpoint and submission guidance for plugin authors | ✅ |
 | Catalog enrichment (`swarmspacePluginCatalog`) | Returns chains, pricing, capabilities, deploy dates; 12 orchestrator workflow routes | ✅ |
 | Capabilities sync (`swarmspaceWriteCapabilities`) | Cloud Function: writes `swarmspace_capabilities` to Firestore for real-time LUMARA discovery | ✅ |
+| Discovery Agent (`swarmspaceDiscoveryAgent`) | NL plugin/workflow discovery via homepage chat UI; IP rate limiting; multi-turn sessions | ✅ |
+| Founding Developer Programme (`founding-developers.html`) | `swarmspaceClaimFoundingSpot` function, landing page, seed script; `founding_programme` Firestore collection | ✅ |
+| Developer guide (`developer-guide.html`) | HTML conversion of DEVELOPER_GUIDE.md with styled code blocks and table of contents | ✅ |
+| Chain-to-signup handoff | Discovery chain preserved through auth flow to dashboard | ✅ |
 
 ### Integrations
 
 | Integration | Purpose |
 |-------------|---------|
-| Firebase | Auth, Firestore (users, submissions, plugins, swarmspace_capabilities collections) |
+| Firebase | Auth, Firestore (users, submissions, plugins, swarmspace_capabilities, founding_programme, discovery_rate_limits, discovery_sessions collections) |
 | Stripe | Checkout, subscriptions, webhooks |
 | Vercel | Hosting, serverless API |
-| Firebase (external) | swarmspaceRouter, swarmspacePluginStatus for LUMARA |
+| Firebase (external) | swarmspaceRouter, swarmspacePluginStatus, swarmspaceDiscoveryAgent, swarmspaceClaimFoundingSpot for LUMARA |
 | Firebase (web app) | Optional: Auth + Firestore for `plugin_submissions` on submit + admin pages |
 
 ### API Tiers

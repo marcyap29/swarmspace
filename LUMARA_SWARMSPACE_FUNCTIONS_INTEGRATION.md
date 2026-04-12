@@ -30,6 +30,8 @@ Both repos deploy to the same Firebase project using separate codebase labels.
 | `updateUserModelConfig` | User LLM settings | Writes to `developers` collection |
 | `validatePluginSubmission` | Server-side manifest validation + endpoint reachability check | |
 | `swarmspaceWriteCapabilities` | Admin: writes capabilities doc for LUMARA real-time sync | |
+| `swarmspaceDiscoveryAgent` | NL plugin/workflow discovery agent | Public `onRequest`, IP rate-limited (10/hr), multi-turn (3 turns), Gemini 3 Flash |
+| `swarmspaceClaimFoundingSpot` | Founding Developer Programme slot claim | Authenticated callable, Firestore transaction, 100-slot atomic cap |
 
 ### LUMARA-Owned Functions (codebase: `default`)
 
@@ -62,7 +64,6 @@ These will be added as the developer ecosystem grows:
 
 | Function | Purpose | Status |
 |----------|---------|--------|
-| `swarmspaceDiscoveryAgent` | NL plugin/workflow discovery | Planned |
 | `swarmspacePackageCatalog` | Outcome package bundles | Planned |
 | `swarmspaceSubmissionReview` | Automated plugin submission pipeline | Planned |
 
@@ -117,7 +118,7 @@ For **structural changes** (new functions, ownership transfers), update this fil
 ## Consolidation Status
 
 The 14 LUMARA-owned functions are currently duplicated in the SwarmSpace repo for historical reasons. The plan is:
-- **SwarmSpace strips LUMARA-owned duplicates** from its `functions/src/index.ts`, keeping only the 8 SwarmSpace-owned functions
+- **SwarmSpace strips LUMARA-owned duplicates** from its `functions/src/index.ts`, keeping only the 10 SwarmSpace-owned functions
 - **LUMARA removes its stale `swarmspaceRouter`** copy and uses SwarmSpace's canonical version via the `swarmspace` codebase
 
 **Do not consolidate until both repos are aligned on the clean split.**

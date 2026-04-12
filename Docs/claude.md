@@ -1,7 +1,7 @@
 # SwarmSpace Documentation Context Guide
 
-**Version:** 1.1.0
-**Last Updated:** April 10, 2026
+**Version:** 1.3.0
+**Last Updated:** April 11, 2026
 **Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
@@ -186,7 +186,7 @@ Both repos deploy Cloud Functions to the **same Firebase project (`arc-epi`)** u
 
 ### Ownership Rules
 
-- **SwarmSpace owns:** `swarmspaceRouter`, `swarmspacePluginStatus`, `swarmspacePluginCatalog`, `newsDataInvoke`, `visionOcrInvoke`, `updateUserModelConfig`, `swarmspaceWriteCapabilities`, `validatePluginSubmission`, and any future plugin/agent functions.
+- **SwarmSpace owns:** `swarmspaceRouter`, `swarmspacePluginStatus`, `swarmspacePluginCatalog`, `newsDataInvoke`, `visionOcrInvoke`, `updateUserModelConfig`, `swarmspaceWriteCapabilities`, `validatePluginSubmission`, `swarmspaceDiscoveryAgent`, `swarmspaceClaimFoundingSpot`, and any future plugin/agent functions.
 - **LUMARA owns:** Core app functions (journal, chat, LLM proxies, Stripe, throttle, subscription, API tokens).
 - **SwarmSpace will add functions over time** as developers submit plugins and new agent capabilities ship. Any new SwarmSpace function must be registered in `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md`.
 
@@ -228,6 +228,8 @@ For structural changes (new functions, ownership changes), update `LUMARA_SWARMS
 | **Planner.md** | Active task scratchpad (short-term) | `Planner.md` |
 | **backlog.md** | Long-term feature backlog | `backlog.md` |
 | **LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md** | Cross-repo function ownership & sync | `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` |
+| **founding-developers.html** | Founding Developer Programme landing page | `founding-developers.html` |
+| **developer-guide.html** | HTML developer guide (styled) | `developer-guide.html` |
 
 ---
 
@@ -267,7 +269,7 @@ swarmspace/
 ├── planner.md          ← Active planning scratch pad (read on startup)
 ├── backlog.md          ← Backlog items and future features
 ├── overview.md         ← Orientation for users and agents
-├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html, ast10.html
+├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html, ast10.html, founding-developers.html, developer-guide.html
 ├── DEVELOPER_GUIDE.md
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── vercel.json
@@ -568,4 +570,4 @@ Work continuously and comprehensively. Provide complete technical analysis. NO A
 ---
 
 *SwarmSpace — Developer dashboard and plugin marketplace. API layer for LUMARA.*
-*Version 1.1.0 — SOPs adapted from LUMARA/ARC doc-config workflow.*
+*Version 1.3.0 — SOPs adapted from LUMARA/ARC doc-config workflow.*

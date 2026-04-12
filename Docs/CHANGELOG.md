@@ -1,7 +1,26 @@
 # SwarmSpace Changelog
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Last Updated:** 2026-04-11
+
+---
+
+## [1.3.0] - 2026-04-11
+
+### Added
+
+- **Discovery Agent (`swarmspaceDiscoveryAgent`)** — Natural-language plugin/workflow discovery, homepage chat UI, IP rate limiting, multi-turn sessions.
+- **Founding Developer Programme** — `swarmspaceClaimFoundingSpot` Cloud Function, `founding-developers.html` landing page, seed script.
+- **`developer-guide.html`** — HTML conversion of DEVELOPER_GUIDE.md with styled code blocks and table of contents.
+- **Chain-to-signup handoff** — Discovery chain preserved through auth flow to dashboard.
+- **Firestore collections:** `founding_programme`, `discovery_rate_limits`, `discovery_sessions`.
+- **Founding Developers link** in homepage Resources section and footer.
+
+### Fixed
+
+- **Discovery Agent `invoker: "public"`** — Unauthenticated access was returning 403.
+- **Gemini model updated to `gemini-3-flash-preview`** — 2.0 model deprecated and returning 404.
+- **Stray CSS backticks in `index.html`** breaking nav layout.
 
 ---
 

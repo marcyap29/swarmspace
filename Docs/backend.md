@@ -36,6 +36,15 @@ Real-time capability snapshot consumed by LUMARA via Firestore listener. Single 
 - **Read:** any authenticated user (`request.auth != null`)
 - **Write:** server-side only (Admin SDK via `swarmspaceWriteCapabilities`); client writes denied
 
+### `founding_programme` collection
+Programme metadata for the Founding Developer Programme. Single document `founding_programme/meta` with `totalSlots`, `claimedSlots`, `isOpen`. Written by `swarmspaceClaimFoundingSpot` via Firestore transaction; seeded by `scripts/seed-founding-programme.js`.
+
+### `discovery_rate_limits` collection
+IP-based rate limiting for the public `swarmspaceDiscoveryAgent` endpoint. Keyed by IP address; tracks request count and window expiry (10 requests/hr).
+
+### `discovery_sessions` collection
+Multi-turn conversation sessions for `swarmspaceDiscoveryAgent`. Each document stores session context, turn history, and turns remaining (max 3 turns per session).
+
 ---
 
 ## Services
@@ -55,6 +64,8 @@ Real-time capability snapshot consumed by LUMARA via Firestore listener. Single 
 - **Scripts:** `scripts/deploy-functions.sh` (executable) for targeted deploys when used in your workflow.
 - **`swarmspaceWriteCapabilities`** — Admin-only callable. Writes aggregated catalog snapshot to `swarmspace_capabilities/current` in Firestore so LUMARA can subscribe via real-time listener. Includes plugin IDs, chain routes, capability list, and catalog version.
 - **`validatePluginSubmission`** — Authenticated callable. Server-side validation of plugin submission data: checks field constraints (plugin ID format, required manifest fields, valid categories/pricing/auth enums), endpoint reachability, and optional manifest validity. Called before writing to `plugin_submissions`.
+- **`swarmspaceDiscoveryAgent`** — Public `onRequest` Cloud Function. Natural-language discovery endpoint that maps user intent to SwarmSpace workflows and plugins. IP rate-limited (10 requests/hr via `discovery_rate_limits`), supports multi-turn conversation (3 turns per session via `discovery_sessions`), powered by Gemini 3 Flash.
+- **`swarmspaceClaimFoundingSpot`** — Authenticated callable. Claims a Founding Developer Programme slot using a Firestore transaction against `founding_programme/meta`. Atomic 100-slot cap; returns slot number, remaining slots, and revenue share percentage.
 - **PRISM consent enforcement** is now active in `swarmspaceRouter`. Plugins flagged with `privacy_data_required: true` that receive sensitive payloads (image, URL) without `_prism_consent` are blocked and logged.
 
 ---
@@ -127,6 +138,8 @@ Canonical rules live in root `firestore.rules`.
 | `/dashboard` | `/dashboard.html` |
 | `/marketplace` | `/marketplace.html` |
 | `/thankyou` | `/thankyou.html` |
+| `/founding-developers` | `/founding-developers.html` |
+| `/developer-guide` | `/developer-guide.html` |
 
 ---
 
