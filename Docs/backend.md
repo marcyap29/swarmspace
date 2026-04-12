@@ -130,6 +130,34 @@ Canonical rules live in root `firestore.rules`.
 
 ---
 
+## Scripts
+
+Utility scripts in `scripts/`. Run from the project root.
+
+### `scripts/seed-founding-programme.js`
+
+**Purpose:** Seeds the `founding_programme/meta` Firestore document that the Founding Developer Programme needs to function. Without this document, the claim function (`swarmspaceClaimFoundingSpot`) returns "Programme not found."
+
+**Run:**
+```bash
+node scripts/seed-founding-programme.js
+```
+
+**What it does:**
+- Creates `founding_programme/meta` with `totalSlots: 100`, `claimedSlots: 0`, `isOpen: true`
+- Safe to run multiple times — skips if document already exists
+- Uses Firebase Admin SDK with your local credentials (same auth as `firebase deploy`)
+
+**When to run:**
+- Once, before the Founding Developer Programme goes live
+- After a Firestore wipe or project reset
+
+### `scripts/deploy-functions.sh`
+
+**Purpose:** Targeted Firebase function deploys (if used in your workflow).
+
+---
+
 ## Outcome Packages (Planned)
 
 **Status:** Defined | **Priority:** After Discovery Agent (Idea 1) ships | **Added:** April 2026
