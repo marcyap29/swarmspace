@@ -203,7 +203,7 @@ function parseDiscoveryResponse(raw: string): Record<string, unknown> | null {
 // ── Main Handler ────────────────────────────────────────────────────────────
 
 export const swarmspaceDiscoveryAgent = onRequest(
-  { secrets: [GEMINI_API_KEY], cors: false },
+  { secrets: [GEMINI_API_KEY], cors: false, invoker: "public" },
   async (req, res) => {
     // CORS preflight
     if (req.method === "OPTIONS") {
