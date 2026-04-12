@@ -152,6 +152,51 @@
     .site-footer .links { display:flex; flex-wrap:wrap; gap:18px; }
     .site-footer .links a { font-size:12px; color:var(--dim); text-decoration:none; }
     .site-footer .links a:hover { color:var(--muted); }
+
+    /* ── PENDING CHAIN ── */
+    .pending-chain {
+      background:linear-gradient(135deg,#13131E,#16162A);
+      border:1px solid rgba(91,91,214,0.35); border-radius:14px;
+      padding:24px; margin-bottom:28px;
+    }
+    .pending-chain h3 { font-size:16px; margin-bottom:16px; }
+    .chain-card-row {
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      margin-bottom:16px; padding:12px 0;
+    }
+    .chain-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; padding:12px 16px; min-width:110px; text-align:center;
+    }
+    .cc-name {
+      font-family:var(--mono); font-size:12px; font-weight:600;
+      color:var(--text); margin-bottom:6px;
+    }
+    .cc-tier {
+      display:inline-block; font-size:10px; font-family:var(--mono);
+      padding:2px 8px; border-radius:10px; font-weight:600;
+      background:rgba(91,91,214,0.15); color:var(--purple);
+    }
+    .cc-tier.free { background:rgba(52,211,153,0.15); color:var(--green); }
+    .cc-tier.standard { background:rgba(91,91,214,0.15); color:var(--purple); }
+    .cc-tier.premium { background:rgba(251,146,60,0.15); color:var(--orange); }
+    .chain-arrow { color:var(--dim); font-size:18px; margin:0 4px; }
+    .chain-summary { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:12px; }
+    .chain-match {
+      font-size:12px; font-family:var(--mono); color:var(--green);
+      background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.2);
+      border-radius:8px; padding:8px 12px; margin-bottom:16px; display:inline-block;
+    }
+    .chain-actions { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:8px; }
+    .chain-run-btn {
+      background:var(--purple); color:white; border:none; border-radius:8px;
+      padding:11px 22px; font-size:14px; font-weight:700; cursor:pointer;
+      text-decoration:none; display:inline-block; transition:opacity 0.15s;
+    }
+    .chain-run-btn:hover { opacity:0.9; }
+    .chain-run-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .chain-dismiss { font-size:13px; color:var(--dim); text-decoration:none; }
+    .chain-dismiss:hover { color:var(--muted); }
   </style>
 </head>
 <body>
@@ -498,6 +543,25 @@
     wireSubmitForm(user);
     updateStatCards(userData, pluginCount);
     loadCredits(user);
+
+    // Check for pending chain from discovery agent
+    const userTier = userData ? (userData.isPremium ? 'premium' : (userData.plan || 'free')) : 'free';
+    const urlParams = new URLSearchParams(window.location.search);
+    let chainData = urlParams.get('chain') || sessionStorage.getItem('pendingChain');
+
+    if (chainData) {
+      try {
+        const chain = JSON.parse(atob(decodeURIComponent(chainData)));
+        if (chain && Array.isArray(chain.plugins)) {
+          renderPendingChain(chain, userTier);
+          // Clean up
+          sessionStorage.removeItem('pendingChain');
+          history.replaceState(null, '', window.location.pathname);
+        }
+      } catch (e) {
+        console.error('Invalid chain data:', e);
+      }
+    }
   });
 
   // Sign out
@@ -796,6 +860,136 @@
         btn.disabled = false;
       }
     });
+  }
+
+  // ── Chain-to-Run ──
+  const TIER_MAP = {
+    "gemini-flash":"free","brave-search":"free","semantic-scholar":"free","weather":"free",
+    "wikipedia":"free","currency":"free","news":"free","arxiv":"free","pubmed":"free",
+    "nominatim":"free","rest-countries":"free","github-public":"free","hackernews":"free",
+    "dictionary-api":"free","jina-reader":"free",
+    "vision-ocr":"standard","url-reader":"standard","media-upload":"standard",
+    "tavily-search":"standard","social-publisher":"standard",
+    "exa-search":"premium","perplexity-sonar":"premium"
+  };
+
+  const WORKFLOW_ENDPOINTS = {
+    "/research": "https://swarmspace-orchestrator.orbitalai.workers.dev/research",
+    "/competitor": "https://swarmspace-orchestrator.orbitalai.workers.dev/competitor",
+    "/marketing": "https://swarmspace-orchestrator.orbitalai.workers.dev/marketing",
+    "/plugins": "https://swarmspace-orchestrator.orbitalai.workers.dev/plugins",
+    "/academic": "https://swarmspace-orchestrator.orbitalai.workers.dev/academic",
+    "/news-brief": "https://swarmspace-orchestrator.orbitalai.workers.dev/news-brief",
+    "/market-scan": "https://swarmspace-orchestrator.orbitalai.workers.dev/market-scan",
+    "/location-brief": "https://swarmspace-orchestrator.orbitalai.workers.dev/location-brief",
+    "/health-research": "https://swarmspace-orchestrator.orbitalai.workers.dev/health-research",
+    "/tech-scout": "https://swarmspace-orchestrator.orbitalai.workers.dev/tech-scout",
+    "/fact-check": "https://swarmspace-orchestrator.orbitalai.workers.dev/fact-check",
+    "/content-brief": "https://swarmspace-orchestrator.orbitalai.workers.dev/content-brief",
+  };
+
+  function renderPendingChain(chain, userTier) {
+    const container = document.createElement('div');
+    container.className = 'pending-chain';
+    container.id = 'pending-chain';
+
+    let html = '<h3>Proposed Workflow</h3>';
+
+    // Chain cards
+    html += '<div class="chain-card-row">';
+    chain.plugins.forEach((pid, i) => {
+      if (i > 0) html += '<span class="chain-arrow">\u2192</span>';
+      const tier = TIER_MAP[pid] || 'free';
+      html += '<div class="chain-card"><div class="cc-name">' + escHtml(pid) + '</div><div class="cc-tier ' + tier + '">' + tier.charAt(0).toUpperCase() + tier.slice(1) + '</div></div>';
+    });
+    html += '</div>';
+
+    // Description
+    if (chain.description) {
+      html += '<div class="chain-summary">' + escHtml(chain.description) + '</div>';
+    }
+
+    // Workflow match
+    if (chain.matches_workflow && chain.workflow_name) {
+      html += '<div class="chain-match">Ready-made workflow: ' + escHtml(chain.workflow_name) + '</div>';
+    }
+
+    // Actions
+    html += '<div class="chain-actions">';
+
+    if (chain.requires_paid && userTier === 'free') {
+      html += '<a href="/upgrade.html" class="chain-run-btn" style="background:var(--orange);">Upgrade to run this chain</a>';
+      html += '<div style="font-size:12px;color:var(--muted);margin-top:8px;">This chain requires Standard tier for: ' + escHtml((chain.paid_plugins || []).join(', ')) + '</div>';
+    } else if (chain.matches_workflow && WORKFLOW_ENDPOINTS[chain.matches_workflow]) {
+      html += '<button class="chain-run-btn" data-workflow="' + escHtml(chain.matches_workflow) + '">Run this chain \u2192</button>';
+    } else {
+      html += '<button class="chain-run-btn" disabled>Custom chains coming soon</button>';
+    }
+
+    html += '<a href="#" class="chain-dismiss">Dismiss</a>';
+    html += '</div>';
+
+    container.innerHTML = html;
+
+    // Wire up event listeners
+    const runBtn = container.querySelector('.chain-run-btn[data-workflow]');
+    if (runBtn) {
+      runBtn.addEventListener('click', () => runChain(runBtn.dataset.workflow));
+    }
+    const dismissBtn = container.querySelector('.chain-dismiss');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('pending-chain').remove();
+      });
+    }
+
+    // Insert at top of content area, before Overview
+    const overviewSection = document.getElementById('overview');
+    if (overviewSection) {
+      overviewSection.parentNode.insertBefore(container, overviewSection);
+    } else {
+      const content = document.querySelector('.content');
+      if (content) content.prepend(container);
+    }
+  }
+
+  async function runChain(workflowRoute) {
+    const endpoint = WORKFLOW_ENDPOINTS[workflowRoute];
+    if (!endpoint) return;
+
+    const btn = document.querySelector('.chain-run-btn');
+    btn.disabled = true;
+    btn.textContent = 'Running\u2026';
+
+    try {
+      const user = auth.currentUser;
+      const token = await user.getIdToken();
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ query: 'discovery agent chain execution' }),
+      });
+
+      const data = await res.json();
+
+      // Replace the chain card with results
+      const container = document.getElementById('pending-chain');
+      container.innerHTML = '<h3>Results</h3><pre style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:12px;font-family:var(--mono);overflow-x:auto;color:var(--text);max-height:400px;overflow-y:auto;">' + escHtml(JSON.stringify(data, null, 2)) + '</pre><a href="#" class="chain-dismiss" style="display:inline-block;margin-top:12px;">Dismiss</a>';
+      container.querySelector('.chain-dismiss').addEventListener('click', (e) => {
+        e.preventDefault();
+        container.remove();
+      });
+
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Run this chain \u2192';
+      alert('Error: ' + err.message);
+    }
   }
 </script>
 </body>
