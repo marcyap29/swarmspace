@@ -327,13 +327,33 @@
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
+  // Persist chain param for edge cases (mobile redirects, page refresh)
+  const _initParams = new URLSearchParams(window.location.search);
+  if (_initParams.get('chain')) {
+    sessionStorage.setItem('pendingChain', _initParams.get('chain'));
+  }
+
   function postAuthRedirect() {
-    const raw = new URLSearchParams(window.location.search).get('redirect');
-    if (!raw) return '/dashboard.html';
-    const dec = decodeURIComponent(raw).trim();
-    if (dec.startsWith('/') && !dec.startsWith('//') && /\.html$/i.test(dec)) return dec;
-    if (dec === 'submit-plugin' || dec === '/submit-plugin') return '/submit-plugin.html';
-    return '/dashboard.html';
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('redirect');
+    let redirect;
+    if (!raw) {
+      redirect = '/dashboard.html';
+    } else {
+      const dec = decodeURIComponent(raw).trim();
+      if (dec.startsWith('/') && !dec.startsWith('//') && /\.html$/i.test(dec)) redirect = dec;
+      else if (dec === 'submit-plugin' || dec === '/submit-plugin') redirect = '/submit-plugin.html';
+      else redirect = '/dashboard.html';
+    }
+
+    // Append chain param to redirect URL if present
+    const chain = params.get('chain') || sessionStorage.getItem('pendingChain');
+    if (chain) {
+      sessionStorage.removeItem('pendingChain');
+      const separator = redirect.includes('?') ? '&' : '?';
+      return redirect + separator + 'chain=' + encodeURIComponent(chain);
+    }
+    return redirect;
   }
 
   // ── Redirect if already signed in ──────────────────────────
