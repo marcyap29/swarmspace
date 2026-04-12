@@ -84,6 +84,8 @@ import { newsDataInvoke } from "./functions/newsDataInvoke";
 import { visionOcrInvoke } from "./functions/visionOcrInvoke";
 import { updateUserModelConfig } from "./functions/updateUserModelConfig";
 import { validatePluginSubmission } from "./functions/validatePluginSubmission";
+import { swarmspaceDiscoveryAgent } from "./functions/swarmspaceDiscoveryAgent";
+import { swarmspaceClaimFoundingSpot } from "./functions/swarmspaceClaimFoundingSpot";
 
 export { swarmspaceRouter };
 export { swarmspacePluginStatus };
@@ -93,3 +95,5 @@ export { newsDataInvoke };
 export { visionOcrInvoke };
 export { updateUserModelConfig };
 export { validatePluginSubmission };
+export { swarmspaceDiscoveryAgent };
+export { swarmspaceClaimFoundingSpot };
