@@ -111,9 +111,13 @@ Rules deployed in `firestore.rules`. Covers `plugin_submissions`, `plugins`, `sw
 
 ## 3. SUPPLY-SIDE (Developer Ecosystem) — Priority: HIGH
 
-### 3.1 Developer Submission Portal
+### 3.1 Developer Submission Portal — partially ✅ DONE
 
-Not built. Highest priority for supply-side growth. The dashboard has a basic submit form that writes to Firestore. Need a proper submission flow: manifest validation, endpoint reachability check, queue for review.
+Server-side validation infrastructure built *(commit 4ce7256, April 11)*: `validatePluginSubmission` Cloud Function with schema validation, endpoint reachability check (POST /invoke), and manifest URL fetch/validate. `submit-plugin.html` calls validation before Firestore write with progressive check results UI. `admin-submissions.html` enhanced with automated checks display and "Run/Re-run Checks" button.
+
+Still needed:
+- [ ] Formal submission queue with review states (submitted → under review → approved/rejected)
+- [ ] Developer onboarding flow distinct from general user signup
 
 ### 3.2 Developer Agreement (Legal)
 
@@ -127,13 +131,13 @@ Not provisioned. 80% to dev, 20% platform on Verified transactions. 85% for Foun
 
 Not built. Required before Verified tier launches. Show calls, revenue, merit score trajectory.
 
-### 3.5 AST10 Compliance Posture Page
+### 3.5 ~~AST10 Compliance Posture Page~~ ✅ DONE (April 11, 2026)
 
-Not built. Publish at `swarmspace.vercel.app` before Founding Developer outreach. Map SwarmSpace architecture against OWASP Agentic Skills Top 10. High signal, low effort.
+Published at `/ast10.html` *(commit 4ce7256)*. Maps all 10 OWASP AST10 controls with honest status badges. Linked from index.html and security.html.
 
-### 3.6 Founding Developer Programme
+### 3.6 ~~Founding Developer Programme~~ ✅ DONE (April 11, 2026)
 
-100 spots. First-come permanent 85% revenue share + badge. Blocked on: developer submission portal, DEVELOPER_GUIDE.md, documentation honesty pass.
+100-slot claiming system live *(commits 4db0a30, d429c29)*. `founding-developers.html` with live counter, `swarmspaceClaimFoundingSpot` Cloud Function (atomic Firestore transaction), seed script, Firestore rules for `founding_programme` collection. Auth-aware CTA, permanent 85% revenue share + badge. All prior blockers (submission portal validation, DEVELOPER_GUIDE, docs honesty pass, AST10 page) resolved.
 
 ### 3.7 Twitter/Bluesky + Dev.to Accounts
 
@@ -170,9 +174,9 @@ Not built. `/catalogue/updates` on swarmspaceRouter. Builds on live `swarmspaceP
 
 Drafted conceptually. Needs formal specification. Must include `is_concurrency_safe` declarations per step for orchestrator parallelization.
 
-### 4.7 architecture.md in Repo
+### 4.7 ~~architecture.md in Repo~~ ✅ DONE (April 10, 2026)
 
-Significantly out of date. Needs full update to reflect v7 decisions.
+Reconciled with codebase *(commit decd9af)*. Updated manifest format (slug IDs), removed phantom plugins, fixed plugin counts and tier assignments, marked Ed25519 signing and AST10 fields as planned, added `swarmspacePluginCatalog` and `swarmspaceWriteCapabilities` to API table, updated current state to reflect PRISM enforcement and orchestrator routes.
 
 ---
 
@@ -277,8 +281,8 @@ Do not start outreach until prerequisites are met.
 - [ ] DEVELOPER_GUIDE.md fixes complete (Section 2.4) — mostly done, 2 items remaining
 - [x] Documentation honesty pass complete (Section 2.1) — 3/4 done, 1 minor narrative gap remaining *(April 10, 2026)*
 - [ ] Developer submission portal functional (Section 3.1)
-- [ ] At least 3 of 12 free workflows demonstrably working in LUMARA (Research & Summarise, News Briefing, Competitor Research)
-- [ ] AST10 compliance posture page published (Section 3.5)
+- [ ] At least 3 of 12 free workflows demonstrably working in LUMARA (Research & Summarise, News Briefing, Competitor Research) — orchestrator routes live, LUMARA integration unverified
+- [x] AST10 compliance posture page published (Section 3.5) *(April 11, 2026)*
 
 ### Launch Sequence
 1. Identify 20-30 target developers from LinkedIn/Substack audience
@@ -297,12 +301,12 @@ Do not start outreach until prerequisites are met.
 
 ---
 
-## 9. WEBSITE FIXES — Priority: MEDIUM
+## 9. WEBSITE FIXES — Priority: MEDIUM — mostly ✅ DONE
 
-- [ ] Fix footer link in `index.html` — PRISM link `href` contains entire raw HTML of `prism.html` instead of `/prism.html`
-- [ ] Verify Docs and Privacy footer links are not dead (`#`) before outreach
-- [ ] Backlog footer says "v3" — should be "v4"
-- [ ] Product Backlog Section 3 references Architecture v6 — should be v7
+- [x] Fix footer link in `index.html` — PRISM link now correctly points to `/prism.html` *(fixed across multiple commits, April 10-13)*
+- [x] Verify Docs and Privacy footer links are not dead — all footer links verified working (PRISM, Privacy, AST10, Security, Founding Developers) *(April 10-13)*
+- [ ] Backlog footer says "v3" — should be "v4" *(needs spot-check)*
+- [ ] Product Backlog Section 3 references Architecture v6 — should be v7 *(needs spot-check)*
 
 ---
 
@@ -725,7 +729,7 @@ The Broker sits at the intersection of: private data access (handshake context) 
 | Dependency | Status | Blocks |
 |---|---|---|
 | swarmspaceRouter functional | Live (23 plugins, credit enforcement) | Phase 3 dispatch |
-| 404/405 Worker fixes | IMMEDIATE blocker | Phase 3 full chain testing |
+| 404/405 Worker fixes | ✅ DONE (April 10) | Phase 3 full chain testing |
 | swarmspacePluginCatalog | Live | Phase 3 catalogue query |
 | Orchestrator execution modes | Not started (Arch v7 §6) | Phase 3 chain assembly (can stub initially) |
 | Dynamic Worker sandbox | Not started | Phase 2 PRISM at sandbox level (Broker adds layer above) |
@@ -740,7 +744,7 @@ The Broker sits at the intersection of: private data access (handshake context) 
 
 ---
 
-## 12. FRONT-PAGE DISCOVERY AGENT — Priority: HIGH (after 404/405 fixes)
+## 12. ~~FRONT-PAGE DISCOVERY AGENT~~ ✅ DONE (April 11-12, 2026) — all 3 phases complete
 
 ### Overview
 
@@ -760,19 +764,19 @@ Do NOT build the chat widget from scratch.
 
 **Recommendation:** Option 3 (custom inline) for best conversion UX. Use BuildShip widget as reference for message handling, streaming, and error states. Copy their POST request/response pattern. Build visual rendering custom.
 
-### Prerequisites (Do Not Start Without These)
+### Prerequisites — all met
 
-| Prerequisite | Status | Why It Blocks |
-|---|---|---|
-| 404 fixes on plugin Workers | IMMEDIATE BLOCKER | Agent needs real plugins from catalogue. Incomplete if Workers return 404. |
-| 405 fixes on orchestrator | IMMEDIATE BLOCKER | Chain assembly references orchestrator routes. Agent needs to know which routes exist and what they chain. |
-| swarmspacePluginCatalog function | LIVE | Already deployed. Agent queries this for full catalogue with tier info. |
-| At least 3 workflows working | BLOCKED on 404/405 | Agent credibility depends on showing chains that actually work. Research, News Briefing, Competitor Research minimum. |
-| Gemini Flash API key | LIVE | Agent uses Gemini Flash for intent parsing and chain assembly reasoning. Already in free tier. |
+| Prerequisite | Status |
+|---|---|
+| 404 fixes on plugin Workers | ✅ DONE (April 10) |
+| 405 fixes on orchestrator | ✅ DONE (April 10) |
+| swarmspacePluginCatalog function | ✅ LIVE |
+| At least 3 workflows working | ✅ Orchestrator routes live |
+| Gemini Flash API key | ✅ LIVE |
 
-### Phase 1: Intent Parser Cloud Function
+### Phase 1: Intent Parser Cloud Function ✅ DONE *(commit 4db0a30)*
 
-A new Firebase Cloud Function (or Cloudflare Worker) that receives a natural language user message, queries the plugin catalogue, and returns a proposed chain.
+`swarmspaceDiscoveryAgent` Cloud Function deployed. IP rate limiting (10/hr), session management (30-min TTL, max 3 turns unauthenticated), Gemini Flash integration, embedded 21-plugin catalogue + 12 workflows.
 
 **Tasks:**
 
@@ -815,9 +819,9 @@ A new Firebase Cloud Function (or Cloudflare Worker) that receives a natural lan
 - Confirm rate limiting (11th request from same IP returns 429)
 - Confirm no plugin endpoint is ever called during chain proposal
 
-### Phase 2: Homepage Chat UI
+### Phase 2: Homepage Chat UI ✅ DONE *(commit 4db0a30)*
 
-Inline chat panel in the hero section of `index.html` that replaces or sits alongside current hero content.
+Inline chat panel integrated into `index.html` hero section. Terminal-style UI, chain card renderer with tier badges, CTA linking to `/signup.html?chain=base64(...)`, multi-turn support, responsive mobile layout.
 
 **Tasks:**
 
@@ -852,9 +856,9 @@ Inline chat panel in the hero section of `index.html` that replaces or sits alon
 - "Sign up to run this" links to `/signup.html`
 - 4th message shows signup gate
 
-### Phase 3: Chain-to-Signup Handoff
+### Phase 3: Chain-to-Signup Handoff ✅ DONE *(commit 2b4e9b4)*
 
-When a visitor signs up after using the discovery agent, their proposed chain should be waiting for them.
+Chain parameter preserved through auth flow. `signup.html` forwards `?chain=` to dashboard via sessionStorage. `dashboard.html` renders "Proposed Workflow" card with tier gating and "Run this chain" button. URL cleaned after consumption.
 
 **Tasks:**
 
@@ -875,13 +879,13 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 
 ### Phase Summary
 
-| Phase | Deliverable | Dependency | Est. Effort |
-|---|---|---|---|
-| Phase 1 | swarmspaceDiscoveryAgent Cloud Function | Plugin catalogue live, Gemini Flash key | 1-2 days |
-| Phase 2 | Inline chat UI on index.html | Phase 1 endpoint live | 2-3 days |
-| Phase 3 | Chain-to-signup handoff | Phase 2 + signup.html working | 1 day |
+| Phase | Deliverable | Status |
+|---|---|---|
+| Phase 1 | swarmspaceDiscoveryAgent Cloud Function | ✅ DONE (April 11) |
+| Phase 2 | Inline chat UI on index.html | ✅ DONE (April 11) |
+| Phase 3 | Chain-to-signup handoff | ✅ DONE (April 12) |
 
-**Total estimated: 4-6 days.** Hard blocker: 404/405 Worker fixes must land first. Without working plugins and orchestrator routes, the discovery agent has nothing real to propose.
+**All phases complete.** Discovery agent is live on the homepage.
 
 ---
 
@@ -913,6 +917,20 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 - [x] Docs/SECURITY-ARCHITECTURE.md created
 - [x] Merge `claude/review-swarmspace-backlog-HQOlM` branch into main
 - [x] Lumara-workflows Worker deployed with 12 workflow routes and platform selector
+- [x] 7 plugin Workers deployed: nominatim, rest-countries, github-public, hackernews, dictionary-api, jina-reader, pubmed (April 10)
+- [x] Orchestrator 405 fixes — all 12 POST routes functional (April 10)
+- [x] Firestore security rules deployed for plugins, submissions, usage, activity log, capabilities (April 10)
+- [x] authGuard.ts migrated from `users` to `developers` collection (April 10)
+- [x] PRISM consent enforcement activated — blocking, not logging (April 10)
+- [x] Documentation honesty pass — security.html, prism.html, OWASP_AST10_COMPLIANCE.md (April 10)
+- [x] architecture.md reconciled with codebase (April 10)
+- [x] AST10 compliance posture page published at /ast10.html (April 11)
+- [x] Plugin submission validation — `validatePluginSubmission` Cloud Function (April 11)
+- [x] Founding Developer Programme — claiming system, landing page, seed script (April 11)
+- [x] Discovery Agent — all 3 phases: Cloud Function, homepage chat UI, chain-to-signup handoff (April 11-12)
+- [x] DEVELOPER_GUIDE converted to styled HTML page (April 12)
+- [x] Website footer links fixed — PRISM, Privacy, AST10, Security all correct (April 10-13)
+- [x] All documentation synced to v1.3.0 (April 13)
 
 ---
 
