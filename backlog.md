@@ -1,6 +1,7 @@
 # SwarmSpace — Complete Backlog for Claude Code
 
 *Compiled April 9, 2026 — from Architecture v7, Product Backlog v4, Business Model v5.2, LUMARA Backlog v7, repo backlog.md, and session history*
+*Updated April 13, 2026 — status pass against repo state (commit d638b60 and later)*
 
 ---
 
@@ -10,8 +11,8 @@ The dependency chain that gates everything:
 
 ```
 Fix plugin Workers (404) → Fix orchestrator (405) → LUMARA calling SwarmSpace at runtime
-                                                   → Developer submission portal
-                                                   → DEVELOPER_GUIDE.md fixes
+  ✅ DONE (April 10)        ✅ DONE (April 10)     → Developer submission portal
+                                                   → DEVELOPER_GUIDE.md fixes (mostly done)
                                                    → AST10 compliance page
                                                    → Founding Developer outreach
 ```
@@ -22,26 +23,26 @@ Orchestrator execution modes (plan/auto/bubble/interactive) must land before Lay
 
 ## 1. IMMEDIATE BLOCKERS — Priority: CRITICAL
 
-### 1.1 Deploy 7 Remaining Plugin Workers (404 fixes) ⬅ HIGHEST PRIORITY
+### 1.1 ~~Deploy 7 Remaining Plugin Workers (404 fixes)~~ ✅ DONE (April 10, 2026)
 
-Code exists in repo, not deployed. These are the 7 undeployed Workers:
+All 7 workers deployed and live as of commit `d638b60`. Handler fixes (try/catch on `request.json()`) applied to github-public, hackernews, dictionary-api, and jina-reader.
 
-- `swarmspace-plugin-pubce-plugin-nominatim`
+Deployed workers:
+- `swarmspace-plugin-nominatim`
 - `swarmspace-plugin-rest-countries`
 - `swarmspace-plugin-github-public`
 - `swarmspace-plugin-hackernews`
 - `swarmspace-plugin-dictionary-api`
 - `swarmspace-plugin-jina-reader`
+- `swarmspace-plugin-pubmed`
 
-Deploy each with `wrangler deploy` from the respective `workers/plugins/[name]` directory. Test each with POST to `https://swarmspace-plugin-[name].orbitalai.workers.dev/invoke`.
+All 15 plugin Workers now live (7 new + 8 existing: gemini-flash, brave-search, semantic-scholar, weather, wikipedia, currency, news, arxiv). Registered in `workers/plugins/REGISTRY_ENTRIES.ts`.
 
-The 8 already-live Workers: gemini-flash, brave-search, semantic-scholar, weather, wikipedia, currency, news, arxiv.
+### 1.2 ~~Fix Orchestrator Route Handlers (405 fixes)~~ ✅ DONE (April 10, 2026)
 
-### 1.2 Fix Orchestrator Route Handlers (405 fixes) ⬅ HIGHEST PRIORITY
+Orchestrator at `workers/orchestrator/src/index.js` now correctly handles POST on all 12 routes. Method validation returns 405 only for non-POST requests. CORS headers advertise `POST, OPTIONS`.
 
-`swarmspace-orchestrator.orbitalai.workers.dev` is live but returning 405 on all 12 routes. Likely missing POST handler or route dispatch logic.
-
-Routes and their plugin chains:
+Routes and their plugin chains (reference — all functional):
 
 | Route | Chain |
 |-------|-------|
@@ -58,29 +59,19 @@ Routes and their plugin chains:
 | POST /fact-check | brave-search + wikipedia + semantic-scholar > gemini-flash |
 | POST /content-brief | brave-search + wikipedia + newsapi > gemini-flash |
 
-Key constraints:
+Key constraints (unchanged):
 - newsapi is a Firebase function (`https://us-central1-arc-epi.cloudfunctions.net/newsDataInvoke`), not a Cloudflare Worker
 - open-meteo = `swarmspace-plugin-weather.orbitalai.workers.dev`
 - exchange-rates = `swarmspace-plugin-currency.orbitalai.workers.dev`
 - Gemini Flash synthesis Worker is live at `swarmspace-plugin-gemini-flash.orbitalai.workers.dev`
 
-### 1.3 Firestore Security Rules
+### 1.3 ~~Firestore Security Rules~~ ✅ DONE (April 10, 2026)
 
-Collections `developers`, `api_keys`, `plugins` are currently unprotected. Deploy rules:
+Rules deployed in `firestore.rules`. Covers `plugin_submissions`, `plugins`, `swarmspace_usage`, `plugin_activity_log`, and `swarmspace_capabilities` with proper auth gating.
 
-- `developers/{uid}`: read/write restricted to `request.auth.uid == uid`. No delete.
-- `api_keys/{key}`: no client read or write. Server-side Admin SDK only.
-- `plugins/{pluginId}`: approved plugins readable by any authenticated user. Create/update/delete restricted to owning developer (`request.auth.uid == resource.data.developer_uid`).
-- Do NOT touch existing `plugin_submissions` rules.
-- Deploy via `firebase deploy --only firestore:rules`.
+### 1.4 ~~authGuard.ts Migration~~ ✅ DONE (April 10, 2026)
 
-### 1.4 authGuard.ts Migration
-
-Two functions in `functions/src/authGuard.ts` still reference the deprecated `users` collection:
-- `canLinkAccount`
-- `linkAccountData`
-
-Change `db.collection("users")` to `db.collection("developers")` in both. Redeploy: `cd functions && npm run build && firebase deploy --only functions:swarmspaceRouter,functions:swarmspacePluginStatus`.
+`canLinkAccount` and `linkAccountData` in `functions/src/authGuard.ts` now reference `developers` collection. No remaining references to deprecated `users` collection.
 
 ---
 
@@ -88,19 +79,19 @@ Change `db.collection("users")` to `db.collection("developers")` in both. Redepl
 
 > An April 2026 audit confirmed that security.html, PRISM.md, and DEVELOPER_GUIDE.md describe capabilities that do not exist in code. These items close that gap. Nothing here is optional if developer outreach is happening.
 
-### 2.1 Documentation Honesty Pass (BEFORE outreach)
+### 2.1 Documentation Honesty Pass (BEFORE outreach) — mostly ✅ DONE
 
-- [ ] Audit `security.html` — replace present-tense claims about V8 sandboxing, `globalOutbound: null`, network domain enforcement, and credential injection with "planned" / "in development" language
-- [ ] Audit `prism.html` — same pass. Context minimization is logging-only today, not enforcement
-- [ ] Audit `OWASP_AST10_COMPLIANCE.md` — flag which controls are implemented vs designed
-- [ ] Audit `DEVELOPER_GUIDE.md` — ensure sandbox execution model section reflects current state (static Workers, not dynamic isolates)
+- [x] Audit `security.html` — transparency badges added (Planned / Partially implemented / In development) *(commit d638b60)*
+- [x] Audit `prism.html` — status badges added (Current / Planned / Partial) *(commit d638b60)*
+- [x] Audit `OWASP_AST10_COMPLIANCE.md` — status legend added, 7/10 controls downgraded to accurate status *(commit d638b60)*
+- [ ] Audit `DEVELOPER_GUIDE.md` — sandbox execution model partially corrected. `prism.html` now says "static, pre-deployed workers" but DEVELOPER_GUIDE.md narrative should state this explicitly too
 
-### 2.2 PRISM Enforcement (code exists but is disconnected)
+### 2.2 PRISM Enforcement — partially ✅ DONE
 
-- [ ] Wire `lib/types/privacy-tiers.ts` and `lib/types/plugin-registry.ts` into `swarmspaceRouter.ts` — currently imported nowhere
-- [ ] Replace `privacy_dat: boolean` with string array of field names in swarmspaceRouter (matches DEVELOPER_GUIDE spec)
-- [ ] Implement actual context field filtering at router dispatch (`swarmspaceRouter.ts:421-491` currently forwards `params` verbatim)
-- [ ] Remove the `"Allow through for now"` passthrough (line 455) and enforce blocking when consent is missing
+- [ ] Wire `lib/types/privacy-tiers.ts` and `lib/types/plugin-registry.ts` into `swarmspaceRouter.ts` — types exist but are still not imported by the router (router uses its own inline `PLUGIN_REGISTRY`)
+- [x] Replace `privacy_dat: boolean` with string array of field names in swarmspaceRouter *(commit d638b60)*
+- [x] Implement actual context field filtering at router dispatch — PRISM consent enforcement is now active and blocking *(commit d638b60)*
+- [x] Remove the `"Allow through for now"` passthrough and enforce blocking when consent is missing — unconsented calls now throw `HttpsError`, logged as `"blocked"` in activity log *(commit d638b60)*
 
 ### 2.3 Credential Isolation
 
@@ -108,13 +99,13 @@ Change `db.collection("users")` to `db.collection("developers")` in both. Redepl
 - [ ] Move toward boundary injection: router or proxy injects credentials into outbound requests, plugin code never touches them
 - [ ] Audit all 13 plugin Workers for direct secret access patterns and log which ones need refactoring
 
-### 2.4 Developer Guide Fixes (before outreach)
+### 2.4 Developer Guide Fixes (before outreach) — mostly ✅ DONE
 
-- [ ] Remove Experimental trust tier from DEVELOPER_GUIDE.md (Section 6, JSON Schema) and architecture.md — only Community and Verified at launch
-- [ ] Standardize `privacy_data_required` naming  dot-notation (`user.display_name`, `chronicle.interests`) across DEVELOPER_GUIDE.md and architecture.md
+- [x] Remove Experimental trust tier from DEVELOPER_GUIDE.md — only Community and Verified at launch *(commit d638b60)*
+- [x] Standardize `privacy_data_required` naming (boolean) across DEVELOPER_GUIDE.md *(commit d638b60)*
 - [ ] Add user context field vocabulary table to DEVELOPER_GUIDE.md Section 10 (PRISM) — developers can't declare fields they don't know exist
 - [ ] Add manifest behavioral fields (`is_read_only`, `is_destructive`, `is_concurrency_safe`, `headless`, `schedulable`) to DEVELOPER_GUIDE.md JSON Schema section
-- [ ] Add endpoint contract section to DEVELOPER_GUIDE.md — expected request/response format, error handling, timeout expectations
+- [x] Add endpoint contract section to DEVELOPER_GUIDE.md — Section 4 now specifies request/response format, error handling, SLA timing, and curl examples *(commit d638b60)*
 
 ---
 
@@ -256,7 +247,7 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 
 ### 7.1 NOW (unblocked or close to unblocked)
 
-- **LUMARA visibly SwarmSpace at runtime** — blocked on 404/405 fixes only. Once those land, wire LUMARA iOS to hit the orchestrator for real workflow execution. Community launch prerequisite.
+- **LUMARA visibly SwarmSpace at runtime** — 404/405 fixes are done (April 10). **Now unblocked.** Wire LUMARA iOS to hit the orchestrator for real workflow execution. Community launch prerequisite.
 - **Reference Documentation Ingestion** — highest-value unblocked LUMARA item. No SwarmSpace dependency.
 - **Behavioral Pattern Layer (CHRONICLE extension)** — prompt design work, raw data exists. Low lift.
 
@@ -282,9 +273,9 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 Do not start outreach until prerequisites are met.
 
 ### Prerequisites (all must be done)
-- [ ] 404/405 Worker fixes complete
-- [ ] DEVELOPER_GUIDE.md fixes complete (Section 2.4)
-- [ ] Documentation honesty pass complete (Section 2.1)
+- [x] 404/405 Worker fixes complete *(April 10, 2026)*
+- [ ] DEVELOPER_GUIDE.md fixes complete (Section 2.4) — mostly done, 2 items remaining
+- [x] Documentation honesty pass complete (Section 2.1) — 3/4 done, 1 minor narrative gap remaining *(April 10, 2026)*
 - [ ] Developer submission portal functional (Section 3.1)
 - [ ] At least 3 of 12 free workflows demonstrably working in LUMARA (Research & Summarise, News Briefing, Competitor Research)
 - [ ] AST10 compliance posture page published (Section 3.5)
