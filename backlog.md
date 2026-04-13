@@ -885,7 +885,7 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 
 ---
 
-## 13. COMPLETED (March-April 2026)
+## 16. COMPLETED (March-April 2026)
 
 - [x] Supabase to Firestore migration (all collections, auth, Stripe webhook, dashboard)
 - [x] swarmspaceRouter enforceAuth migration from users to developers collection
