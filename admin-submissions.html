@@ -815,6 +815,12 @@
         reviewedAt: resolveField(data, ["reviewed_at"], ""),
         reviewedBy: resolveField(data, ["reviewed_by"], ""),
         submittedAt: resolveField(data, ["submitted_at", "created_at"], ""),
+        accessTier: resolveField(data, ["access_tier", "accessTier"], ""),
+        capabilities: Array.isArray(data.capabilities) ? data.capabilities : [],
+        exampleQuery: resolveField(data, ["example_query", "exampleQuery"], ""),
+        version: resolveField(data, ["version"], ""),
+        rateLimits: data.rate_limits || data.rateLimits || null,
+        validationVersion: resolveField(data, ["validation_version", "validationVersion"], ""),
         automatedChecks: data.automated_checks || null,
         raw: data
       });
@@ -1006,6 +1012,12 @@
     const title = document.createElement("div");
     title.className = "detail-title";
     title.textContent = "Automated Validation Checks";
+    if (item.validationVersion) {
+      const vBadge = document.createElement("span");
+      vBadge.style.cssText = "margin-left:0.6rem;font-size:0.56rem;color:var(--blue);background:var(--blue-ghost);border:1px solid rgba(100,181,246,0.24);padding:0.15rem 0.45rem;letter-spacing:0.08em;text-transform:uppercase;";
+      vBadge.textContent = item.validationVersion;
+      title.appendChild(vBadge);
+    }
     header.appendChild(title);
 
     const runBtn = document.createElement("button");
@@ -1046,6 +1058,77 @@
     grid.appendChild(buildCheckItem("Endpoint Reachability", checks.endpoint_reachability || checks.endpoint));
     grid.appendChild(buildCheckItem("Manifest URL", checks.manifest_url || checks.manifest));
     grid.appendChild(buildCheckItem("Response Shape", checks.response_shape || checks.response));
+
+    // v2 check: Security Headers
+    if (checks?.security_headers) {
+      const sh = checks.security_headers;
+      const shPassed = sh.passed !== false;
+      const shClass = sh.skipped ? "skipped" : (shPassed ? "passed" : "failed");
+      const shIcon = sh.skipped ? "--" : (shPassed ? "OK" : "FAIL");
+      const shColor = sh.skipped ? "var(--muted)" : (shPassed ? "var(--green)" : "var(--red)");
+      const shEl = document.createElement("div");
+      shEl.className = "check-item " + shClass;
+      let shDetail = "Score: " + (sh.score ?? "?") + "/100";
+      if (Array.isArray(sh.headers_present) && sh.headers_present.length) {
+        shDetail += "<br>Present: " + sh.headers_present.join(", ");
+      }
+      if (Array.isArray(sh.headers_missing) && sh.headers_missing.length) {
+        shDetail += "<br>Missing: " + sh.headers_missing.join(", ");
+      }
+      if (sh.cors_wildcard) {
+        shDetail += '<br><span style="color:var(--amber)">CORS wildcard (*) detected</span>';
+      }
+      shEl.innerHTML = '<span class="check-icon mono" style="color:' + shColor + '">' + shIcon + '</span>' +
+        '<div><div class="check-label">Security Headers</div><div class="check-detail">' + shDetail + '</div></div>';
+      grid.appendChild(shEl);
+    }
+
+    // v2 check: Network Domains
+    if (checks?.network_domains) {
+      const nd = checks.network_domains;
+      const ndPassed = nd.passed !== false;
+      const ndClass = nd.skipped ? "skipped" : (ndPassed ? "passed" : "failed");
+      const ndIcon = nd.skipped ? "--" : (ndPassed ? "OK" : "FAIL");
+      const ndColor = nd.skipped ? "var(--muted)" : (ndPassed ? "var(--green)" : "var(--red)");
+      const ndEl = document.createElement("div");
+      ndEl.className = "check-item " + ndClass;
+      let ndDetail = nd.message || nd.detail || (ndPassed ? "All domains OK" : "Issues detected");
+      if (Array.isArray(nd.domains)) {
+        ndDetail += "<br>" + nd.domains.map(function(d) {
+          const name = d.domain || d.name || "?";
+          const resolvable = d.resolvable !== false ? "resolvable" : "unresolvable";
+          const priv = d.private ? ' <span style="color:var(--red)">[private IP]</span>' : "";
+          return name + " (" + resolvable + ")" + priv;
+        }).join("<br>");
+      }
+      ndEl.innerHTML = '<span class="check-icon mono" style="color:' + ndColor + '">' + ndIcon + '</span>' +
+        '<div><div class="check-label">Network Domains</div><div class="check-detail">' + ndDetail + '</div></div>';
+      grid.appendChild(ndEl);
+    }
+
+    // v2 check: Prompt Injection
+    if (checks?.prompt_injection) {
+      const pi = checks.prompt_injection;
+      const piPassed = pi.passed !== false;
+      const piClass = pi.skipped ? "skipped" : (piPassed ? "passed" : "failed");
+      const piIcon = pi.skipped ? "--" : (piPassed ? "OK" : "FAIL");
+      const piColor = pi.skipped ? "var(--muted)" : (piPassed ? "var(--green)" : "var(--red)");
+      const piEl = document.createElement("div");
+      piEl.className = "check-item " + piClass;
+      let piDetail = "Probes sent: " + (pi.probes_sent ?? "?") + " / Flagged: " + (pi.probes_flagged ?? 0);
+      if (!piPassed && Array.isArray(pi.flagged_probes) && pi.flagged_probes.length) {
+        piDetail += '<div class="check-errors" style="color:var(--red)">';
+        pi.flagged_probes.forEach(function(fp) {
+          const probeName = fp.probe || fp.name || "unknown";
+          const indicators = Array.isArray(fp.indicators) ? fp.indicators.join(", ") : (fp.indicator || "");
+          piDetail += "- " + probeName + (indicators ? ": " + indicators : "") + "<br>";
+        });
+        piDetail += "</div>";
+      }
+      piEl.innerHTML = '<span class="check-icon mono" style="color:' + piColor + '">' + piIcon + '</span>' +
+        '<div><div class="check-label">Prompt Injection</div><div class="check-detail">' + piDetail + '</div></div>';
+      grid.appendChild(piEl);
+    }
 
     container.appendChild(grid);
 
@@ -1218,6 +1301,15 @@
         details.appendChild(
           makeDetailBlock("Network domains", Array.isArray(item.networkDomains) ? item.networkDomains.join("\n") : item.networkDomains)
         );
+        details.appendChild(makeDetailBlock("Access tier", item.accessTier));
+        details.appendChild(makeDetailBlock("Capabilities", Array.isArray(item.capabilities) && item.capabilities.length ? item.capabilities.join(", ") : "-"));
+        details.appendChild(makeDetailBlock("Example query", item.exampleQuery));
+        details.appendChild(makeDetailBlock("Version", item.version));
+        {
+          const rl = item.rateLimits;
+          const rlText = rl ? ("Free: " + (rl.free ?? "-") + " / Standard: " + (rl.standard ?? "-") + " / Premium: " + (rl.premium ?? "-")) : "-";
+          details.appendChild(makeDetailBlock("Rate limits", rlText));
+        }
         details.appendChild(makeDetailBlock("Developer UID", item.developerUid));
         details.appendChild(makeDetailBlock("Submitter notes", item.notes));
         details.appendChild(makeDetailBlock("Review notes", item.reviewNote));

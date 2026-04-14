@@ -79,6 +79,14 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── approved_plugins/{pluginId} ────────────────────────────────
+    // Approved developer plugins promoted by onSubmissionStatusChange trigger.
+    // Any authenticated user can read (for catalog). Writes are Admin SDK only.
+    match /approved_plugins/{pluginId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
     // ── swarmspace_capabilities/{docId} ────────────────────────────
     // Plugin catalog sync for LUMARA real-time listener.
     // Any authenticated user can read; writes are Admin SDK only.
