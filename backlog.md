@@ -180,16 +180,78 @@ Reconciled with codebase *(commit decd9af)*. Updated manifest format (slug IDs),
 
 ---
 
-## 5. CLOUDFLARE AGENT INFRASTRUCTURE — Priority: MEDIUM-LOW
+## 5. CLOUDFLARE AGENT INFRASTRUCTURE — Priority: MEDIUM (upgrade 5.1 to HIGH for security posture)
 
-### 5.1 Dynamic Worker Loader (Plugin Sandbox)
+### 5.1 Dynamic Workers Plugin Sandbox — Priority: HIGH (security differentiator)
 
-- [ ] Prototype one plugin running inside Dynamic Worker Loader (V8 isolate sandbox, open beta)
-- [ ] Configure `globalOutbound: null` — verify network restriction works
-- [ ] Implement `network_domains` allowlist check against plugin manifest before dispatch
-- [ ] Evaluate DX and cost vs current static Worker deployment
-- [ ] Add `@cloudflare/codemode` or equivalent if adopting Dynamic Workers
-- [ ] Runtime behavioral monitoring: log and monitor plugin behavior during execution
+> **Product:** Cloudflare Dynamic Workers (open beta since March 24, 2026). Available to all paid Workers plan users. No waitlist.
+
+**What it is:** A host Cloudflare Worker can instantiate new Workers at runtime with dynamically specified code. Each dynamic Worker runs in its own isolated V8 sandbox with hardware-enforced memory isolation (Memory Protection Keys), isolate groups, and risk-based dynamic cordoning. This is the correct primitive for running untrusted third-party plugin code.
+
+**Why this matters for SwarmSpace:** Currently all 15 plugin Workers are static deployments where plugin code has direct access to `env.SWARMSPACE_INTERNAL_TOKEN` and unrestricted `fetch()`. Dynamic Workers would let us:
+1. **Eliminate direct secret access** — credentials injected via `globalOutbound` gateway, never visible to plugin code
+2. **Enforce network allowlists** — each plugin's manifest `network_permissions` maps to `globalOutbound` gateway rules
+3. **Centralize deployment** — one orchestrator Worker loads plugin code dynamically; no more `wrangler deploy` per plugin
+4. **Enable runtime monitoring** — Tail Workers capture all `fetch` events and `console.log` output
+5. **Strengthen security marketing** — "V8 hardware-isolated sandboxes with credential injection and network allowlists" is a concrete trust signal for developer outreach and AST10 compliance
+
+**Pricing:**
+
+| Dimension | Rate | Beta Status |
+|-----------|------|-------------|
+| Unique Workers loaded per day | $0.002 per unique Worker/day | **Waived during open beta** |
+| Requests | Standard Workers rates (included in plan) | Active |
+| CPU time | Standard Workers rates; **includes startup/parse time** | Active |
+
+Requires Workers Paid ($5/mo base). At ~50 plugins active/day, post-beta per-load cost is ~$3/month. Worth it for the security posture.
+
+**Key capabilities confirmed:**
+
+| Capability | Status | Detail |
+|-----------|--------|--------|
+| `globalOutbound: null` (kill network) | ✅ Available | Completely cuts off all `fetch()` and `connect()` |
+| Domain allowlists | ✅ Available | `globalOutbound` gateway inspects and enforces allowed domains per plugin manifest |
+| Credential injection at boundary | ✅ Available | Gateway intercepts outbound requests, attaches auth headers from host env. Plugin never sees API keys. |
+| Per-plugin warm isolates | ✅ Available | `env.LOADER.get(pluginId, callback)` — cached by ID, reused across requests |
+| Ephemeral per-request isolates | ✅ Available | `env.LOADER.load()` — fresh isolate per call |
+| Runtime monitoring via Tail Workers | ✅ Available | Captures all fetch events and console output |
+| Hardware memory isolation (MPK) | ✅ Automatic | Isolate groups with Memory Protection Keys — key mismatch kills attacker's script |
+| Risk-based dynamic cordoning | ✅ Automatic | Higher-risk executions auto-routed to more isolated infrastructure |
+| Bindings (KV, R2, D1, DO) | Via RPC only | Must expose via custom RPC interfaces from host Worker (security advantage: narrows scope) |
+
+**Wrangler config:**
+```toml
+[[worker_loaders]]
+binding = "LOADER"
+```
+
+**Host Worker loading pattern:**
+```typescript
+const worker = env.LOADER.load({
+  compatibilityDate: "2026-01-28",
+  mainModule: "worker.js",
+  modules: { "worker.js": pluginCode },
+  globalOutbound: null // or gateway binding
+});
+const response = await worker.getEntrypoint().fetch(request);
+```
+
+For TypeScript/npm deps: use `@cloudflare/worker-bundler` to transpile and bundle before passing to `load()`.
+
+**Implementation tasks:**
+
+- [ ] Prototype one existing plugin (e.g., hackernews) running inside Dynamic Workers with `globalOutbound: null`
+- [ ] Build `globalOutbound` gateway Worker implementing domain allowlist check against plugin manifest `network_permissions`
+- [ ] Implement credential injection pattern in gateway (API keys from host env injected into outbound requests)
+- [ ] Evaluate `load()` vs `get(pluginId)` for SwarmSpace use case (warm isolates preferred)
+- [ ] Migrate one plugin end-to-end: static Worker → Dynamic Worker with gateway, verify identical behavior
+- [ ] Attach Tail Worker for runtime behavioral monitoring and anomaly logging
+- [ ] Benchmark latency: cold start + parse time for dynamic loading vs current static Worker invocation
+- [ ] Cost model: project post-beta costs at 10K users with current plugin catalogue
+- [ ] If viable: plan migration path for all 15 plugin Workers to Dynamic Workers
+- [ ] Update security.html, AST10 compliance page, and DEVELOPER_GUIDE to reflect actual (not planned) V8 sandbox enforcement
+
+**Decision gate:** If prototype shows acceptable latency (<100ms cold start overhead) and the gateway pattern works cleanly, migrate all plugins. The security posture upgrade alone justifies the ~$8-15/mo additional cost at current scale.
 
 ### 5.2 Durable Objects (Recurring Agent Runtime)
 
