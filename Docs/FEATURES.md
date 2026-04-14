@@ -1,7 +1,7 @@
 # SwarmSpace Features
 
-**Version:** 1.3.0
-**Last Updated:** 2026-04-11
+**Version:** 1.4.1
+**Last Updated:** 2026-04-13
 
 ---
 
@@ -22,7 +22,7 @@
 | Developer submit portal (`/submit` → `submit.html`) | Firebase sign-in; idea or manifest modes; writes `plugin_submissions` with `developer_uid` + pending | ✅ |
 | Submit plugin portal (`submit-plugin.html`) | Full manifest-style flow with extended fields (access_tier, capabilities, example_query, version, rate_limits); SSRF-protected endpoint validation; duplicate detection (name + endpoint); resubmission flow for rejected/needs-info submissions; real-time developer status dashboard (onSnapshot listener, status timeline, check results); same `plugin_submissions` collection; landing + dashboard links | ✅ |
 | Automated promotion pipeline | `onSubmissionStatusChange` Firestore trigger: approved submissions promoted to `approved_plugins` collection and live in router; revocation (approved→rejected) removes from live registry | ✅ |
-| Server-side submission validation (`validatePluginSubmission`) | Cloud Function: manifest schema validation + endpoint reachability check | ✅ |
+| Server-side submission validation (`validatePluginSubmission`) | Cloud Function: v2 automated validation pipeline — Ajv JSON Schema validation for fetched manifests, 3-sample latency profiler (p50/p95), security header audit (6-check weighted score), network domain DNS validation, 7 prompt injection probes, 90s timeout budget. Returns `validation_version: "2.0.0"` | ✅ |
 | Admin submissions (`/admin-submissions`) | Allowlisted reviewer; list/filter/search on **`plugin_submissions`**; approve / needs info / reject → Firestore | ✅ |
 | Security & trust (`security.html`) | OWASP Agentic Top 10 mapping, PRISM, trust tiers; linked from main nav and dashboard | ✅ |
 | AST10 compliance (`ast10.html`) | OWASP Agentic Security Top 10 compliance reference page | ✅ |

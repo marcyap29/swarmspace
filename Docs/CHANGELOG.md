@@ -1,7 +1,26 @@
 # SwarmSpace Changelog
 
-**Version:** 1.4.0
+**Version:** 1.4.1
 **Last Updated:** 2026-04-13
+
+---
+
+## [1.4.1] - 2026-04-13
+
+### Added
+
+- **validatePluginSubmission v2 automated validation pipeline** — Ajv JSON Schema validation for fetched plugin manifests (draft-07).
+- **3-sample latency profiler** with p50/p95 and `latency_class` comparison.
+- **Security header audit** (6-check weighted score: HSTS, X-Content-Type-Options, Content-Type, X-Frame-Options, CSP, HTTPS).
+- **Network domain DNS validation** with private IP detection.
+- **7 prompt injection probes** (system prompt leak, instruction override, role confusion, data exfil, SQL injection, XSS, path traversal).
+- **90-second timeout budget** with graceful degradation.
+- **`validation_version` and `validated_at` fields** in validation response.
+
+### Changed
+
+- **Function timeout** increased from 30s to 120s.
+- **Added `ajv` and `ajv-formats` dependencies** to `functions/package.json`.
 
 ---
 
