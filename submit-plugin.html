@@ -322,6 +322,21 @@
         <span>Fetching manifest URL...</span>
         <span class="vp-detail" id="vp-manifest-url-detail"></span>
       </div>
+      <div class="vp-item" id="vp-security-headers">
+        <span class="vp-icon" id="vp-security-headers-icon">⏳</span>
+        <span class="vp-label">Security Headers</span>
+        <span class="vp-detail" id="vp-security-headers-detail"></span>
+      </div>
+      <div class="vp-item" id="vp-network-domains">
+        <span class="vp-icon" id="vp-network-domains-icon">⏳</span>
+        <span class="vp-label">Network Domains</span>
+        <span class="vp-detail" id="vp-network-domains-detail"></span>
+      </div>
+      <div class="vp-item" id="vp-prompt-injection">
+        <span class="vp-icon" id="vp-prompt-injection-icon">⏳</span>
+        <span class="vp-label">Prompt Injection</span>
+        <span class="vp-detail" id="vp-prompt-injection-detail"></span>
+      </div>
     </div>
 
     <!-- Form -->
@@ -827,6 +842,31 @@
         setVPItem('manifest-url', mf.valid ? 'pass' : 'fail', mf.error || '');
       }
     }
+    // Security headers check
+    if (checks.security_headers != null) {
+      const sh = checks.security_headers;
+      const status = sh.score >= 50 ? 'pass' : 'warn';
+      setVPItem('security-headers', status, 'Score: ' + sh.score + '/100');
+    } else {
+      setVPItem('security-headers', 'skip', 'skipped');
+    }
+    // Network domains check
+    if (checks.network_domains != null) {
+      const nd = checks.network_domains;
+      const status = nd.all_valid ? 'pass' : 'warn';
+      setVPItem('network-domains', status, nd.declared_domains.length + ' domain(s) checked');
+    } else {
+      setVPItem('network-domains', 'skip', 'skipped');
+    }
+    // Prompt injection check
+    if (checks.prompt_injection != null) {
+      const pi = checks.prompt_injection;
+      const status = pi.passed ? 'pass' : 'warn';
+      const detail = pi.passed ? pi.probes_sent + ' probes passed' : pi.probes_flagged + '/' + pi.probes_sent + ' flagged';
+      setVPItem('prompt-injection', status, detail);
+    } else {
+      setVPItem('prompt-injection', 'skip', 'skipped');
+    }
   }
 
   // ── Enter key support: submit form on Enter in single-line inputs ──
@@ -900,6 +940,12 @@
           (epLatency != null ? ' (' + epLatency + 'ms)' : '') + '</li>' +
         '<li>Manifest: <span class="' + (mfValid === null ? 'check-na' : mfValid ? 'check-pass' : 'check-fail') + '">' +
           (mfValid === null ? 'N/A' : mfValid ? '\u2713' : '\u2717') + '</span></li>' +
+        '<li>Security: <span class="' + (checks.security_headers == null ? 'check-na' : checks.security_headers?.score >= 50 ? 'check-pass' : 'check-fail') + '">' +
+          (checks.security_headers == null ? 'N/A' : checks.security_headers.score + '/100') + '</span></li>' +
+        '<li>Domains: <span class="' + (checks.network_domains == null ? 'check-na' : checks.network_domains?.all_valid ? 'check-pass' : 'check-fail') + '">' +
+          (checks.network_domains == null ? 'N/A' : checks.network_domains.all_valid ? '\u2713' : '\u26A0') + '</span></li>' +
+        '<li>Injection: <span class="' + (checks.prompt_injection == null ? 'check-na' : checks.prompt_injection?.passed ? 'check-pass' : 'check-fail') + '">' +
+          (checks.prompt_injection == null ? 'N/A' : checks.prompt_injection.passed ? '\u2713' : checks.prompt_injection.probes_flagged + ' flagged') + '</span></li>' +
       '</ul>' +
     '</details>';
   }
