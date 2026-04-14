@@ -291,7 +291,7 @@ SwarmSpace returns structured error responses with both a human-readable `error`
 | Stage | What happens | Timeline |
 |-------|----------------|----------|
 | **1. Submit** | Complete the form at [swarmspace.vercel.app/submit-plugin.html](https://swarmspace.vercel.app/submit-plugin.html). Manifest fields are validated; endpoint reachability is checked. | Immediate |
-| **2. Automated checks** | Schema validation, response shape checks, latency sampling vs `latency_class`. | Minutes |
+| **2. Automated checks (v2)** | Validation v2 pipeline: Ajv JSON Schema validation for fetched manifests, 3-sample latency profiler (p50/p95 vs declared `latency_class`), security header audit (HSTS, Content-Type, X-Frame-Options, CSP, HTTPS), network domain DNS validation, and 7 prompt injection probes. Results include `validation_version: "2.0.0"`. | Minutes |
 | **3. Safety review** | Human review: abuse, third-party ToS alignment, privacy minimization, identity checks. | **2–3 business days** |
 | **4. Listing** | **Community** tier; discoverable via agent search and catalogue updates. | After approval |
 | **5. Monthly merit review** | Strong Community plugins evaluated for **Verified** promotion. | Monthly |

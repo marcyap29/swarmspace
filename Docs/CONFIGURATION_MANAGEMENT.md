@@ -92,6 +92,14 @@ When running a doc sync or release:
 
 ## Change Log
 
+### 2026-04-13 — validatePluginSubmission v2 upgrade
+
+**Action:** Rewrote `validatePluginSubmission` as a v2 automated validation pipeline with Ajv schema validation, latency profiling, security header audit, network DNS validation, and prompt injection probes.
+
+**Changes:**
+- Modified: `functions/src/functions/validatePluginSubmission.ts` (v2 rewrite: Ajv JSON Schema validation, 3-sample latency profiler, security header audit, network DNS validation, prompt injection probes)
+- Modified: `functions/package.json` (added `ajv`, `ajv-formats`)
+
 ### 2026-04-13 — PRISM enforcement, developer plugin pipeline, SSRF hardening, doc honesty pass
 
 **Action:** Updated documentation after PRISM enforcement in router, developer submission promotion pipeline, plugin merge, SSRF hardening, orchestrator fixes, and documentation honesty pass.
