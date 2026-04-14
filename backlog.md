@@ -1201,6 +1201,136 @@ Paper passes if title + first author + year all match.
 
 ---
 
+## 15. ITERATIVE REFINEMENT AGENT PLUGIN — Priority: HIGH (Phase 4 of Research Writing Assistant)
+
+> **Plugin slug:** `refinement-agent` | **Category:** AI Synthesis | **Credit cost:** 10 per pass | **Trust tier:** Verified | **Privacy:** `chronicle.writing_style` (optional)
+
+### Purpose
+
+Processes user annotations on specific document sections and produces targeted rewrites. User highlights a passage, adds a comment, and the agent rewrites only that section while preserving all surrounding context. Callable independently against any document (blog posts, reports, emails, research papers) and as Step 6 within the Research Writing Assistant workflow.
+
+### Plugin Manifest
+
+```json
+{
+  "name": "Iterative Refinement Agent",
+  "slug": "refinement-agent",
+  "version": "1.0.0",
+  "description": "Processes user annotations on specific document sections and produces targeted rewrites. Supports rewrite, expand, condense, strengthen, tone adjustment, citation request, and factual verification.",
+  "semantic_tags": ["editing", "writing", "refinement", "rewrite", "revision", "feedback", "annotation", "iterative", "document", "proofreading"],
+  "access_tier": "premium",
+  "trust_tier": "verified",
+  "credit_cost_per_call": 10,
+  "latency_class": "fast",
+  "privacy_data_required": ["chronicle.writing_style"],
+  "auth_method": "api_key",
+  "is_concurrency_safe": false,
+  "is_read_only": true,
+  "is_destructive": false,
+  "headless": false,
+  "schedulable": false
+}
+```
+
+### Input Schema
+
+```json
+{
+  "document": { "content": "<full document>", "format": "markdown | latex | plain_text", "metadata": { "title": "...", "reference_style": "apa | mla | ... | null", "verified_citations": [] } },
+  "annotation": { "selection": { "start_offset": 1240, "end_offset": 1890, "selected_text": "<highlighted text>" }, "comment": "User's feedback", "type": "rewrite | expand | condense | strengthen | tone | citation_request | factual_check | auto", "context_window": { "before": "<2 paragraphs before>", "after": "<2 paragraphs after>" } },
+  "chronicle_context": { "writing_style": "<optional>" }
+}
+```
+
+### Annotation Type Resolution (auto mode)
+
+| Detected Pattern | Resolved Type |
+|-----------------|---------------|
+| "rewrite", "redo", "try again", "different approach" | `rewrite` |
+| "expand", "more detail", "elaborate", "flesh out" | `expand` |
+| "shorten", "condense", "more concise", "tighten" | `condense` |
+| "strengthen", "more support", "needs evidence" | `strengthen` |
+| "more formal", "less formal", "assertive", "softer", "academic tone" | `tone` |
+| "needs citation", "add source", "reference", "cite" | `citation_request` |
+| "check this", "verify", "is this accurate", "fact check" | `factual_check` |
+| No pattern match | `rewrite` (default) |
+
+### Type-Specific Processing
+
+**rewrite** — Rewrite using comment as guidance. Preserve approximate length. Match surrounding tone (or CHRONICLE style). Maintain inline citations unless irrelevant.
+
+**expand** — Add depth. Target 1.5-2x word count. New content grounded in document, verified citations, or hedged domain knowledge. No new uncited claims unless verified citation set provides support.
+
+**condense** — Reduce to 0.5-0.7x. Prioritize: cited claims > uncited claims > transitions > filler. Never drop a cited claim. If passage is mostly cited material, inform user instead of forcing condensation.
+
+**strengthen** — Search verified citation set for supporting papers. If found: integrate with proper formatting. If not found: flag "No verified source found. Consider adding evidence or softening the assertion." Never hallucinate citations.
+
+**tone** — Rewrite matching requested tone direction. Preserve all factual content and citations. If CHRONICLE data available and comment is vague, use CHRONICLE to match user's natural voice.
+
+**citation_request** — Search verified citation set only (no external APIs). If found: insert citation in document's reference style. If not found: return original unchanged with flag.
+
+**factual_check** — Cross-reference against verified citations, other document claims, and internal consistency. Return one of three verdicts: "Supported by [citation]", "Unverified: could not confirm against your sources", or "Inconsistent: conflicts with [passage/citation]". **Read-only — no rewriting.**
+
+### Output Schema
+
+```json
+{
+  "rewritten_section": { "text": "<replacement text>", "format": "markdown | latex | plain_text" },
+  "diff": { "original_text": "...", "new_text": "...", "change_type": "...", "word_count_original": 145, "word_count_new": 162, "citations_added": [], "citations_removed": [], "insertions": [...], "deletions": [...] },
+  "flags": [{ "type": "no_citation_found", "message": "...", "suggestion": "..." }],
+  "unchanged": false
+}
+```
+
+For `factual_check` or `citation_request` with no match: `unchanged: true`, value is in the `flags` array.
+
+### Boundary Enforcement (Critical)
+
+**The agent must not modify any text outside the selected boundaries.**
+
+Verification procedure (runs on every pass):
+1. Take full document. Replace text between offsets with `rewritten_section.text`.
+2. Compare resulting document against original character-by-character outside replacement zone.
+3. If any character outside changed: reject output, re-run with explicit constraint injection, verify again.
+4. If violation persists after 2 retries: return error "Refinement could not be completed without affecting surrounding text. Try selecting a larger section."
+
+### UX Integration (LUMARA Output Viewer)
+
+**Selection flow:** User taps/long-presses passage → selection handles → "Add Comment" floating action button.
+
+**Comment flow:** Comment card with text input + annotation type chips (Rewrite, Expand, Condense, Strengthen, Tone, Add Citation, Fact Check). Chips optional — `auto` inference if none selected.
+
+**Result flow:** Loading indicator on selection → rewritten section replaces original → change indicator in sidebar → tap for diff view (red removed, green added) → "Keep Changes" / "Revert" buttons → flags shown as yellow callouts.
+
+**History:** Local revision history per document. Timestamp, annotation type, selected text preview, comment, "Restore this version". Stored locally only — not sent to SwarmSpace or CHRONICLE.
+
+### Acceptance Tests
+
+1. **Boundary integrity:** 5-paragraph doc, rewrite paragraph 3 → paragraphs 1,2,4,5 byte-identical
+2. **Expand:** 50-word passage → 75-100 words, no new uncited claims
+3. **Condense:** 200-word passage → 100-140 words, no citations dropped
+4. **Citation request with match:** Relevant paper in verified set → correctly inserted in reference style
+5. **Citation request without match:** No relevant papers → `unchanged: true` with flag
+6. **Factual check consistency:** Contradictory claims in document → inconsistency detected and reported
+7. **Tone with CHRONICLE:** Formal academic CHRONICLE data + casual passage → matches CHRONICLE style
+8. **Tone without CHRONICLE:** Same test → infers from surrounding context
+9. **Auto type inference:** 7 comments matching different patterns → correct type for each
+10. **LaTeX preservation:** `\cite{}` commands and equation references preserved in rewrite
+11. **Reference style fidelity:** Rewrite + strengthen across all 6 styles → correct inline formatting
+12. **Concurrent rejection:** Two simultaneous passes on same doc → `is_concurrency_safe: false` enforced
+
+### Constraints
+
+1. **Boundary enforcement is non-negotiable.** Verified programmatically on every pass.
+2. **No citation fabrication.** Only uses verified citation set.
+3. **User-provided references never removed.** Flagged, not deleted.
+4. **CHRONICLE data optional.** Works without it.
+5. **Format preservation.** Markdown in → markdown out. LaTeX in → LaTeX out.
+6. **Revision history is local.** No data stored on SwarmSpace or sent to CHRONICLE.
+7. **Credit per pass.** Each annotation = 1 pass = 10 credits. No bulk discount (preserves targeted annotation incentive).
+
+---
+
 ## 16. COMPLETED (March-April 2026)
 
 - [x] Supabase to Firestore migration (all collections, auth, Stripe webhook, dashboard)
