@@ -20,7 +20,8 @@
 | Thank-you page | Post-signup marketplace preview | ✅ |
 | FAQ | FAQ page (SwarmSpace branding) | ✅ |
 | Developer submit portal (`/submit` → `submit.html`) | Firebase sign-in; idea or manifest modes; writes `plugin_submissions` with `developer_uid` + pending | ✅ |
-| Submit plugin portal (`submit-plugin.html`) | Full manifest-style flow, endpoint probe, submission history; same `plugin_submissions` collection; landing + dashboard links | ✅ |
+| Submit plugin portal (`submit-plugin.html`) | Full manifest-style flow with extended fields (access_tier, capabilities, example_query, version, rate_limits); SSRF-protected endpoint validation; duplicate detection (name + endpoint); resubmission flow for rejected/needs-info submissions; real-time developer status dashboard (onSnapshot listener, status timeline, check results); same `plugin_submissions` collection; landing + dashboard links | ✅ |
+| Automated promotion pipeline | `onSubmissionStatusChange` Firestore trigger: approved submissions promoted to `approved_plugins` collection and live in router; revocation (approved→rejected) removes from live registry | ✅ |
 | Server-side submission validation (`validatePluginSubmission`) | Cloud Function: manifest schema validation + endpoint reachability check | ✅ |
 | Admin submissions (`/admin-submissions`) | Allowlisted reviewer; list/filter/search on **`plugin_submissions`**; approve / needs info / reject → Firestore | ✅ |
 | Security & trust (`security.html`) | OWASP Agentic Top 10 mapping, PRISM, trust tiers; linked from main nav and dashboard | ✅ |

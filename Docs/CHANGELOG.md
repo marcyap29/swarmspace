@@ -1,7 +1,37 @@
 # SwarmSpace Changelog
 
-**Version:** 1.3.0
-**Last Updated:** 2026-04-11
+**Version:** 1.4.0
+**Last Updated:** 2026-04-13
+
+---
+
+## [1.4.0] - 2026-04-13
+
+### Added
+
+- **PRISM enforcement in `swarmspaceRouter`** — `PrivacyTier` enum, context field filtering, consent gating per privacy tier.
+- **Developer Submission Portal (3.1)** — `onSubmissionStatusChange.ts` Firestore trigger for promotion pipeline.
+- **Developer plugin merge in `swarmspaceRouter`** — TTL-cached (5 min) loading from `approved_plugins` collection.
+- **Resubmission flow** for rejected/needs-info plugin submissions.
+- **Real-time developer status dashboard** with `onSnapshot` listeners.
+- **Plugin revocation handling** — approved → rejected removes from `approved_plugins`.
+
+### Fixed
+
+- **Orchestrator plugin ID mismatches:** `newsapi` → `news`, `open-meteo` → `weather`, `exchange-rates` → `currency`.
+- **SSRF protection in `validatePluginSubmission`** — `isPrivateUrl`, redirect blocking, IPv4-mapped IPv6, carrier-grade NAT.
+- **Endpoint reachability hardened:** 5xx/timeout now blocking errors, response shape validation.
+- **Duplicate detection** for plugin submissions (same name/endpoint in pending/approved).
+- **Validation check result shape mismatch** in `submit-plugin.html` (was reading wrong property names).
+
+### Changed
+
+- **Documentation honesty pass:** `security.html`, `prism.html`, `OWASP_AST10_COMPLIANCE.md`, `DEVELOPER_GUIDE.md` — removed false claims, added transparency notes.
+- **AST10 compliance page:** 4 renamed categories to official OWASP names with _(formerly: X)_ annotations.
+- **Developer Guide:** removed Experimental tier, changed `privacy_data_required` to `string[]`, added PRISM fields.
+- **Trust tier claim corrected** in AST09 (designed not enforced).
+- **5 new form fields in `submit-plugin.html`:** `access_tier`, `capabilities`, `example_query`, `version`, `rate_limits`.
+- **Extended server-side schema validation** for new fields (`access_tier` + `capabilities` now required).
 
 ---
 

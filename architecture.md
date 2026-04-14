@@ -1,5 +1,5 @@
 # SwarmSpace: Architecture & Technical Reference
-*Orbital AI — Internal Technical Reference | March 2026*
+*Orbital AI — Internal Technical Reference | April 2026*
 
 ---
 
@@ -30,7 +30,7 @@ When a plugin is invoked, the Firebase Cloud Function (`swarmspaceRouter`) forwa
     "model": "included|per_call|subscription",
     "cost_per_call": null
   },
-  "privacy_data_required": false,
+  "privacy_data_required": [],
   "auth_method": "api_key|none",
   "tags": ["web_search", "general"],
   "developer": {
@@ -41,7 +41,7 @@ When a plugin is invoked, the Firebase Cloud Function (`swarmspaceRouter`) forwa
 }
 ```
 
-> **Note:** The manifest format above reflects the current implementation. Plugin IDs use slug format (e.g., `brave-search`), not reverse-domain notation. Fields like `network_permissions`, `content_hash`, `scan_status`, `deny_write`, and `version_pinning` are designed for future AST10 compliance but are not yet enforced at runtime. See `Docs/OWASP_AST10_COMPLIANCE.md` for implementation status.
+> **Note:** The manifest format above reflects the current implementation. Plugin IDs use slug format (e.g., `brave-search`), not reverse-domain notation. The `privacy_data_required` field is a string array of dot-notation CHRONICLE field names (e.g. `["user.location"]`, `["user.display_name", "user.email"]`), not a boolean. Use `[]` or `["none"]` to indicate no personal data is required. Fields like `network_permissions`, `content_hash`, `scan_status`, `deny_write`, and `version_pinning` are designed for future AST10 compliance but are not yet enforced at runtime. See `Docs/OWASP_AST10_COMPLIANCE.md` for implementation status.
 
 #### Planned AST10 Manifest Fields (not yet implemented)
 
@@ -91,10 +91,12 @@ Static HTML pages deployed on Vercel with URL rewrites configured in `vercel.jso
 
 | Function | Purpose | Timeout |
 |---|---|---|
-| `swarmspaceRouter` | Main plugin invocation endpoint | 25s |
+| `swarmspaceRouter` | Main plugin invocation endpoint; merges built-in + developer plugins (5-min TTL cache) | 25s |
 | `swarmspacePluginStatus` | Plugin availability check | 10s |
 | `swarmspacePluginCatalog` | Enriched plugin/chain discovery for LUMARA | 10s |
 | `swarmspaceWriteCapabilities` | Admin: writes capabilities doc for real-time sync | 10s |
+| `validatePluginSubmission` | Authenticated: validates plugin submissions (schema, SSRF, duplicates) | 25s |
+| `onSubmissionStatusChange` | Firestore trigger: promotes/demotes plugins on status change | 10s |
 
 `swarmspaceRouter` URL: `https://us-central1-arc-epi.cloudfunctions.net/swarmspaceRouter`
 
@@ -118,6 +120,7 @@ Each plugin runs as a Cloudflare Worker at `swarmspace-plugin-{plugin_id}.orbita
 | `users/{uid}` | User profile, plan, API key, call tracking | `email`, `plan`, `isPremium`, `api_key`, `createdAt`, `callsToday`, `callsReset` |
 | `submissions` | Plugin submissions from submit.html | `name`, `category`, `description`, `trustTier`, `pricingModel`, `manifestUrl`, `authMethod`, `website`, `tags`, `submittedBy`, `status` |
 | `plugins` | Approved/listed plugins | From dashboard submit form |
+| `approved_plugins` | Developer plugin manifests (PluginConfig shape); written by `onSubmissionStatusChange` | `plugin_id`, `endpoint`, `capabilities`, `source`, `access_tier` |
 
 ---
 
@@ -245,14 +248,39 @@ LUMARA is the primary consumer of SwarmSpace. The `SwarmSpaceClient` (Flutter) c
 
 ---
 
-## 6. Current State
+## 6. Plugin Promotion Pipeline
+
+Developer-submitted plugins follow a structured path from submission to live availability:
+
+```
+Developer submits via submit-plugin.html
+  → validatePluginSubmission (schema, SSRF-safe endpoint check, duplicate detection)
+  → Writes to plugin_submissions collection (status: "pending")
+  → Admin reviews in admin-submissions.html
+  → Admin approves → updates status to "approved"
+  → onSubmissionStatusChange trigger fires
+  → Builds PluginConfig, writes to approved_plugins/{plugin_id}
+  → swarmspaceRouter loads approved_plugins (5-min TTL cache)
+  → Developer plugin is live in catalog and dispatch
+```
+
+### Key constraints
+
+- **`approved_plugins` contains manifests only, not executable code.** The collection stores PluginConfig objects describing the plugin's endpoint, capabilities, and metadata.
+- **Developer must deploy their own Cloudflare Worker** at the declared endpoint. SwarmSpace validates reachability during submission but does not host developer code.
+- **Router merge order:** `{ ...devPlugins, ...PLUGIN_REGISTRY }` — first-party plugins always win on ID collision. Developer plugins carry `source: "developer"` to distinguish them from built-in plugins.
+
+---
+
+## 7. Current State
 
 - **21 plugins live** across free, standard, and premium tiers
 - **12 orchestrator workflows** chaining plugins into curated multi-step routes
 - **Firebase + Vercel + Cloudflare** stack fully deployed and operational
 - **LUMARA integration** active as primary consumer with tier-aware routing and enriched catalog (chains, pricing, capabilities)
 - **Stripe billing** handling subscriptions for Pro and LUMARA Premium plans
-- **Plugin submission pipeline** accepting community submissions via submit.html with admin review at admin-submissions.html
+- **Plugin submission pipeline** accepting community submissions via submit-plugin.html with admin review at admin-submissions.html
+- **Plugin promotion pipeline** live — approved submissions automatically promoted to `approved_plugins` via `onSubmissionStatusChange` trigger and merged into router dispatch
 - **PRISM consent enforcement** active — unconsented privacy-requiring calls are blocked
 - **Ed25519 signing** designed for Verified tier manifests (not yet implemented)
 

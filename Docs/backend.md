@@ -1,6 +1,6 @@
 # SwarmSpace Backend & Infrastructure
 
-**Last Updated:** 2026-04-10
+**Last Updated:** 2026-04-13
 
 ---
 
@@ -45,6 +45,9 @@ IP-based rate limiting for the public `swarmspaceDiscoveryAgent` endpoint. Keyed
 ### `discovery_sessions` collection
 Multi-turn conversation sessions for `swarmspaceDiscoveryAgent`. Each document stores session context, turn history, and turns remaining (max 3 turns per session).
 
+### `approved_plugins` collection
+Contains approved developer plugin manifests (PluginConfig shape). Written by the `onSubmissionStatusChange` Firestore trigger when a submission transitions to `approved`. Read by `swarmspaceRouter` with a 5-minute TTL cache. Each document is keyed by `plugin_id`.
+
 ---
 
 ## Services
@@ -54,7 +57,7 @@ Multi-turn conversation sessions for `swarmspaceDiscoveryAgent`. Each document s
 | Firebase | Auth, database (users, submissions, plugins) | Firebase Authentication, Firestore |
 | Stripe | Checkout, subscriptions, webhooks | Stripe API |
 | Vercel | Hosting, serverless functions | Vercel |
-| API (external) | swarmspaceRouter, swarmspacePluginStatus, swarmspacePluginCatalog, swarmspaceWriteCapabilities, validatePluginSubmission | Firebase Cloud Functions |
+| API (external) | swarmspaceRouter, swarmspacePluginStatus, swarmspacePluginCatalog, swarmspaceWriteCapabilities, validatePluginSubmission, onSubmissionStatusChange | Firebase Cloud Functions |
 | Orchestrator | 12 workflow routes via Cloudflare Worker | `swarmspace-orchestrator.orbitalai.workers.dev` |
 
 ### Firebase Cloud Functions (`functions/`)
@@ -63,9 +66,11 @@ Multi-turn conversation sessions for `swarmspaceDiscoveryAgent`. Each document s
 - **Deploy discovery:** Large dependencies (`@google-cloud/vision`, `@google/generative-ai`) are loaded with **dynamic `import()`** inside handlers where used (e.g. `visionOcrInvoke`, `proxyGemini`) so Firebase’s deploy-time module discovery stays within timeout.
 - **Scripts:** `scripts/deploy-functions.sh` (executable) for targeted deploys when used in your workflow.
 - **`swarmspaceWriteCapabilities`** — Admin-only callable. Writes aggregated catalog snapshot to `swarmspace_capabilities/current` in Firestore so LUMARA can subscribe via real-time listener. Includes plugin IDs, chain routes, capability list, and catalog version.
-- **`validatePluginSubmission`** — Authenticated callable. Server-side validation of plugin submission data: checks field constraints (plugin ID format, required manifest fields, valid categories/pricing/auth enums), endpoint reachability, and optional manifest validity. Called before writing to `plugin_submissions`.
+- **`validatePluginSubmission`** — Authenticated callable. Server-side validation of plugin submission data: checks field constraints (plugin ID format, required manifest fields, valid categories/pricing/auth enums), endpoint reachability, and optional manifest validity. Includes SSRF protection (private IP blocking), duplicate detection (existing plugin ID and endpoint checks), endpoint hardening (5xx/timeout blocking), and validation for submission fields (`access_tier`, `capabilities`, `example_query`, `version`, `rate_limits`). Called before writing to `plugin_submissions`.
 - **`swarmspaceDiscoveryAgent`** — Public `onRequest` Cloud Function. Natural-language discovery endpoint that maps user intent to SwarmSpace workflows and plugins. IP rate-limited (10 requests/hr via `discovery_rate_limits`), supports multi-turn conversation (3 turns per session via `discovery_sessions`), powered by Gemini 3 Flash.
 - **`swarmspaceClaimFoundingSpot`** — Authenticated callable. Claims a Founding Developer Programme slot using a Firestore transaction against `founding_programme/meta`. Atomic 100-slot cap; returns slot number, remaining slots, and revenue share percentage.
+- **`onSubmissionStatusChange`** — Firestore `onDocumentUpdated` trigger on `plugin_submissions/{docId}`. On transition to `approved`: builds a PluginConfig object and writes it to `approved_plugins/{plugin_id}`. On transition from `approved` to `rejected`: deletes the corresponding document from `approved_plugins`. Idempotent.
+- **Developer plugin merging** is now active in `swarmspaceRouter`. The router merges the built-in `PLUGIN_REGISTRY` with approved developer plugins loaded from the `approved_plugins` Firestore collection (TTL-cached, 5 min). Developer plugins carry `source: "developer"`. On plugin ID collision, first-party plugins take priority (`{ ...devPlugins, ...PLUGIN_REGISTRY }`).
 - **PRISM consent enforcement** is now active in `swarmspaceRouter`. Plugins flagged with `privacy_data_required: true` that receive sensitive payloads (image, URL) without `_prism_consent` are blocked and logged.
 
 ---

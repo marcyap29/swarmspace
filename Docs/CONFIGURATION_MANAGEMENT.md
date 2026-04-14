@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-04-10
+**Last Updated:** 2026-04-13
 **Status:** ✅ Synced
 
 ---
@@ -91,6 +91,20 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-04-13 — PRISM enforcement, developer plugin pipeline, SSRF hardening, doc honesty pass
+
+**Action:** Updated documentation after PRISM enforcement in router, developer submission promotion pipeline, plugin merge, SSRF hardening, orchestrator fixes, and documentation honesty pass.
+
+**Changes:**
+- New file: `functions/src/functions/onSubmissionStatusChange.ts`
+- Modified: `functions/src/functions/swarmspaceRouter.ts` (PRISM enforcement + developer plugin merge)
+- Modified: `functions/src/functions/validatePluginSubmission.ts` (SSRF, duplicates, hardening, new fields)
+- Modified: `submit-plugin.html` (5 new fields, resubmission flow, status dashboard)
+- Modified: `functions/src/index.ts` (new export)
+- Modified: `workers/orchestrator/src/index.js` (plugin ID fixes)
+- Modified: `DEVELOPER_GUIDE.md`, `developer-guide.html`, `security.html`, `prism.html`, `ast10.html`, `faq.html`, `marketplace.html`, `dashboard.html`, `submit-plugin.html`, `thankyou.html`
+- Modified: `Docs/OWASP_AST10_COMPLIANCE.md`, `architecture.md`, `Docs/RULE.md`
 
 ### 2026-04-11 — Discovery Agent, Founding Developer Programme, new pages and functions
 

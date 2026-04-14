@@ -86,6 +86,7 @@ import { updateUserModelConfig } from "./functions/updateUserModelConfig";
 import { validatePluginSubmission } from "./functions/validatePluginSubmission";
 import { swarmspaceDiscoveryAgent } from "./functions/swarmspaceDiscoveryAgent";
 import { swarmspaceClaimFoundingSpot } from "./functions/swarmspaceClaimFoundingSpot";
+import { onSubmissionStatusChange } from "./functions/onSubmissionStatusChange";
 
 export { swarmspaceRouter };
 export { swarmspacePluginStatus };
@@ -97,3 +98,4 @@ export { updateUserModelConfig };
 export { validatePluginSubmission };
 export { swarmspaceDiscoveryAgent };
 export { swarmspaceClaimFoundingSpot };
+export { onSubmissionStatusChange };

@@ -90,6 +90,8 @@ When unavailable: `available: false`, `reason: "unknown_plugin"` or `"tier_insuf
 
 **Request body:** `{ "data": {} }` (no params required)
 
+**Catalog sources:** The catalog merges **first-party plugins** (from the built-in `PLUGIN_REGISTRY`) with **approved developer plugins** (from the `approved_plugins` Firestore collection, TTL-cached for 5 minutes). Developer plugins include `source: "developer"` in the response; first-party plugins include `source: "first-party"` (or omit the field).
+
 **Response:**
 ```json
 {
@@ -207,6 +209,18 @@ Claims a Founding Developer Programme slot. Uses a Firestore transaction against
 ```
 
 **Error codes:** `not-found` (programme not seeded), `failed-precondition` (programme closed or full), `already-exists` (user already claimed), `unauthenticated`
+
+---
+
+### 8. `onSubmissionStatusChange` — Promotion Pipeline Trigger (Backend Only)
+
+**Type:** Firestore `onDocumentUpdated` trigger on `plugin_submissions/{docId}`
+**Not callable by clients** — this is a backend trigger that fires automatically when a submission's status changes in Firestore.
+
+**Behavior:**
+- When a submission transitions to `approved`: the trigger promotes the plugin into the `approved_plugins` collection with `source: "developer"`, making it discoverable via `swarmspacePluginCatalog` (after the 5-minute TTL cache expires).
+- When a submission transitions from `approved` to `rejected`: the trigger removes the corresponding document from `approved_plugins`, revoking the plugin from the live registry.
+- Other status transitions (e.g. `pending` → `needs-info`) are logged but take no promotion action.
 
 ---
 
