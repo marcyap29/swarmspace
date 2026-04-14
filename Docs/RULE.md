@@ -139,5 +139,7 @@ Debug this failure using the SOP in DOCS/claude.md → "Error diagnosis and fixi
 
 Constraints: fix the first real error; quote paths with spaces; if a file exists only outside the repo, I will attach or paste it; after changes, re-run the same command to verify.
 ```
-
+---
+## .md file placement
+- All .md files go into the Docs folder look for them there
 ---    

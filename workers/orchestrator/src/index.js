@@ -145,12 +145,12 @@ async function runCompetitorWorkflow(ctx) {
   const q = ctx.query;
   const results = await parallel(ctx, [
     ['brave-search', { query: `${q} competitor analysis market position`, count: 8 }],
-    ['newsapi', { query: q, count: 5 }],
+    ['news', { query: q, count: 5 }],
     ['hackernews', { query: q, count: 5 }],
   ]);
 
   const synthesis = await callPlugin(ctx, 'gemini-flash', {
-    prompt: `Create a competitive intelligence brief for "${q}":\n\nWeb search: ${JSON.stringify(results['brave-search'])}\n\nNews: ${JSON.stringify(results['newsapi'])}\n\nHacker News discussion: ${JSON.stringify(results['hackernews'])}\n\nStructure as: Overview, Key Players, Recent Moves, Community Sentiment, Strategic Implications.`,
+    prompt: `Create a competitive intelligence brief for "${q}":\n\nWeb search: ${JSON.stringify(results['brave-search'])}\n\nNews: ${JSON.stringify(results['news'])}\n\nHacker News discussion: ${JSON.stringify(results['hackernews'])}\n\nStructure as: Overview, Key Players, Recent Moves, Community Sentiment, Strategic Implications.`,
   });
 
   return { sources: results, analysis: synthesis };
@@ -161,11 +161,11 @@ async function runMarketingWorkflow(ctx) {
   const q = ctx.query;
   const results = await parallel(ctx, [
     ['brave-search', { query: `${q} marketing trends content strategy`, count: 6 }],
-    ['newsapi', { query: q, count: 5 }],
+    ['news', { query: q, count: 5 }],
   ]);
 
   const brief = await callPlugin(ctx, 'gemini-flash', {
-    prompt: `Create a content marketing brief for "${q}":\n\nTrending content: ${JSON.stringify(results['brave-search'])}\n\nRecent news: ${JSON.stringify(results['newsapi'])}\n\nOutput: 1) Key themes and angles, 2) Content calendar suggestions (3 post ideas with hooks), 3) SEO keywords to target, 4) Audience pain points to address.`,
+    prompt: `Create a content marketing brief for "${q}":\n\nTrending content: ${JSON.stringify(results['brave-search'])}\n\nRecent news: ${JSON.stringify(results['news'])}\n\nOutput: 1) Key themes and angles, 2) Content calendar suggestions (3 post ideas with hooks), 3) SEO keywords to target, 4) Audience pain points to address.`,
   });
 
   return { research: results, brief };
@@ -206,13 +206,13 @@ async function runAcademicWorkflow(ctx) {
 async function runNewsBriefWorkflow(ctx) {
   const q = ctx.query;
   const results = await parallel(ctx, [
-    ['newsapi', { query: q, count: 8 }],
+    ['news', { query: q, count: 8 }],
     ['hackernews', { query: q, count: 5 }],
     ['brave-search', { query: `${q} latest news today`, count: 5 }],
   ]);
 
   const brief = await callPlugin(ctx, 'gemini-flash', {
-    prompt: `Create a news intelligence brief for "${q}":\n\nMainstream news: ${JSON.stringify(results['newsapi'])}\n\nTech community: ${JSON.stringify(results['hackernews'])}\n\nWeb: ${JSON.stringify(results['brave-search'])}\n\nStructure as: Headlines Summary (3 bullets), Detailed Analysis, Community Reaction, What To Watch.`,
+    prompt: `Create a news intelligence brief for "${q}":\n\nMainstream news: ${JSON.stringify(results['news'])}\n\nTech community: ${JSON.stringify(results['hackernews'])}\n\nWeb: ${JSON.stringify(results['brave-search'])}\n\nStructure as: Headlines Summary (3 bullets), Detailed Analysis, Community Reaction, What To Watch.`,
   });
 
   return { sources: results, brief };
@@ -223,12 +223,12 @@ async function runMarketScanWorkflow(ctx) {
   const q = ctx.query;
   const results = await parallel(ctx, [
     ['brave-search', { query: `${q} market analysis financial outlook`, count: 6 }],
-    ['newsapi', { query: `${q} market`, count: 5 }],
-    ['exchange-rates', { base: ctx.params.currency || 'USD' }],
+    ['news', { query: `${q} market`, count: 5 }],
+    ['currency', { base: ctx.params.currency || 'USD' }],
   ]);
 
   const scan = await callPlugin(ctx, 'gemini-flash', {
-    prompt: `Create a market scan for "${q}":\n\nMarket research: ${JSON.stringify(results['brave-search'])}\n\nFinancial news: ${JSON.stringify(results['newsapi'])}\n\nExchange rates context: ${JSON.stringify(results['exchange-rates'])}\n\nStructure as: Market Overview, Key Metrics, Recent Developments, Risk Factors, Outlook.`,
+    prompt: `Create a market scan for "${q}":\n\nMarket research: ${JSON.stringify(results['brave-search'])}\n\nFinancial news: ${JSON.stringify(results['news'])}\n\nExchange rates context: ${JSON.stringify(results['currency'])}\n\nStructure as: Market Overview, Key Metrics, Recent Developments, Risk Factors, Outlook.`,
   });
 
   return { data: results, scan };
@@ -239,13 +239,13 @@ async function runLocationBriefWorkflow(ctx) {
   const q = ctx.query;
   const results = await parallel(ctx, [
     ['nominatim', { query: q }],
-    ['open-meteo', { query: q }],
+    ['weather', { query: q }],
     ['rest-countries', { query: q }],
     ['wikipedia', { query: q, mode: 'search', limit: 2 }],
   ]);
 
   const brief = await callPlugin(ctx, 'gemini-flash', {
-    prompt: `Create a location intelligence brief for "${q}":\n\nGeocoding: ${JSON.stringify(results['nominatim'])}\n\nWeather: ${JSON.stringify(results['open-meteo'])}\n\nCountry data: ${JSON.stringify(results['rest-countries'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nStructure as: Location Overview, Current Conditions, Key Facts, Context.`,
+    prompt: `Create a location intelligence brief for "${q}":\n\nGeocoding: ${JSON.stringify(results['nominatim'])}\n\nWeather: ${JSON.stringify(results['weather'])}\n\nCountry data: ${JSON.stringify(results['rest-countries'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nStructure as: Location Overview, Current Conditions, Key Facts, Context.`,
   });
 
   return { data: results, brief };
@@ -308,11 +308,11 @@ async function runContentBriefWorkflow(ctx) {
   const results = await parallel(ctx, [
     ['brave-search', { query: q, count: 6 }],
     ['wikipedia', { query: q, mode: 'search', limit: 2 }],
-    ['newsapi', { query: q, count: 3 }],
+    ['news', { query: q, count: 3 }],
   ]);
 
   const brief = await callPlugin(ctx, 'gemini-flash', {
-    prompt: `Create a content brief for a ${format} about "${q}":\n\nResearch: ${JSON.stringify(results['brave-search'])}\n\nBackground: ${JSON.stringify(results['wikipedia'])}\n\nRecent news: ${JSON.stringify(results['newsapi'])}\n\nOutput: 1) Title Options (3), 2) Target Audience, 3) Key Points to Cover, 4) Outline (H2/H3 structure), 5) Data Points to Include, 6) Call to Action Suggestions.`,
+    prompt: `Create a content brief for a ${format} about "${q}":\n\nResearch: ${JSON.stringify(results['brave-search'])}\n\nBackground: ${JSON.stringify(results['wikipedia'])}\n\nRecent news: ${JSON.stringify(results['news'])}\n\nOutput: 1) Title Options (3), 2) Target Audience, 3) Key Points to Cover, 4) Outline (H2/H3 structure), 5) Data Points to Include, 6) Call to Action Suggestions.`,
   });
 
   return { research: results, brief };

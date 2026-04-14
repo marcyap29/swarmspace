@@ -175,14 +175,14 @@
   <ul>
     <li><strong>Verified</strong> <span class="transparency-note">Planned</span> — Intended for plugins that pass merit-based review and are suitable for receiving personal context. Criteria are designed but not yet enforced.</li>
     <li><strong>Community</strong> <span class="transparency-note">Planned</span> — Intended for plugins that pass safety review. Standard catalogue placement with clear manifests.</li>
-    <li><strong>Experimental</strong> <span class="transparency-note">Planned</span> — Intended for prototypes, clearly flagged in catalogue and APIs. Limited context access; conservative agents would exclude this tier entirely.</li>
+    <li><strong>Experimental</strong> <span class="transparency-note">Not in launch scope</span> — Was previously considered for prototypes with limited context access. Not planned for launch; only Community and Verified tiers will exist at launch.</li>
   </ul>
   <p>Once trust tiers are implemented, a cautious integration will be able to restrict execution to <strong>Verified-only</strong> plugins regardless of the user’s subscription tier.</p>
 
   <h2>4. The review process</h2>
   <ol style="margin:12px 0 18px 22px; color:var(--muted); font-size:14px; max-width:720px;">
     <li style="margin-bottom:12px;"><strong>Manifest submission</strong> — JSON schema validation, field consistency checks, HTTPS <code>endpoint_url</code>, reachability probes.</li>
-    <li style="margin-bottom:12px;"><strong>Sandbox testing</strong> — Prompt-injection probes where applicable, PRISM minimization checks against <code>privacy_data_required</code>, latency against <code>latency_class</code>, outbound traffic against <code>network_domains</code>.</li>
+    <li style="margin-bottom:12px;"><strong>Sandbox testing</strong> — Prompt-injection probes where applicable, PRISM minimization checks against <code>privacy_data_required</code>, latency against <code>latency_class</code>, outbound traffic against <code>network_domains</code> <span class="transparency-note">Planned</span>.</li>
     <li style="margin-bottom:12px;"><strong>Safety review</strong> — Human review for abuse, third-party ToS alignment, privacy proportionality, developer identity.</li>
     <li style="margin-bottom:12px;"><strong>Listing</strong> — Community tier publication and discovery indexing.</li>
     <li style="margin-bottom:12px;"><strong>Monthly merit review</strong> — Promotion to Verified for sustained quality; demotion or removal if signals fail.</li>
@@ -195,7 +195,7 @@
       <li><strong>Indirect prompt injection</strong> remains a residual risk. A compliant plugin can still retrieve hostile web content at runtime. Mitigations include monitoring, disclosure, and contract terms; they reduce risk but do not remove it.</li>
       <li><strong>Third-party APIs</strong> are not audited by SwarmSpace. We review how your plugin uses the network; we do not certify upstream vendors’ data retention or security.</li>
       <li><strong>Merit scores</strong> are operational signals, not a security certification. High merit means consistent usage and quality metrics, not a formal pen-test pass.</li>
-      <li><strong>Manifest honesty</strong> — PRISM enforces declared fields. If a developer over-declares or mis-declares needs, safety review is the backstop; automation does not read intent.</li>
+      <li><strong>Manifest honesty</strong> — PRISM records and logs declared fields; active enforcement is planned. If a developer over-declares or mis-declares needs, safety review is the backstop; automation does not read intent.</li>
     </ul>
   </div>
 

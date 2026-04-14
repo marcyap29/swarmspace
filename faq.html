@@ -37,7 +37,7 @@
         "name": "What are SwarmSpace trust tiers?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "SwarmSpace has three trust tiers: Verified (sandboxed, manually reviewed, cryptographically signed, can receive personal user context with consent), Community (open-source, automated scanning passed, no personal context by default), and Experimental (unreviewed developer testing, sandboxed only, no personal context access)."
+          "text": "SwarmSpace has two trust tiers: Verified (sandboxed, manually reviewed, cryptographically signed, can receive personal user context with consent) and Community (open-source, automated scanning passed, no personal context by default)."
         }
       },
       {
@@ -77,7 +77,7 @@
         "name": "How does SwarmSpace protect user privacy?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Privacy is enforced at the protocol level. Plugins receive only the minimum data necessary for their function. Personal user context is never passed to a plugin without explicit user consent. Only Verified-tier plugins can request personal context. Community and Experimental plugins operate without personal data access. Plugin execution happens at the developer's endpoint, not SwarmSpace infrastructure."
+          "text": "Privacy is enforced at the protocol level. Plugins receive only the minimum data necessary for their function. Personal user context is never passed to a plugin without explicit user consent. Only Verified-tier plugins can request personal context. Community plugins operate without personal data access by default. Plugin execution happens at the developer's endpoint, not SwarmSpace infrastructure."
         }
       },
       {
@@ -93,7 +93,7 @@
         "name": "How do I submit a plugin to SwarmSpace?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Developers submit plugins via the SwarmSpace Developer Portal at swarmspace.ai/developers. You provide a compliant JSON manifest, your MCP endpoint, and pass automated security scanning. Verified tier requires additional manual review and sandbox testing. Community tier requires open-source code repository. Experimental tier is available immediately after automated checks."
+          "text": "Developers submit plugins via the SwarmSpace Developer Portal at swarmspace.ai/developers. You provide a compliant JSON manifest, your MCP endpoint, and pass automated security scanning. Verified tier requires additional manual review and sandbox testing. Community tier requires open-source code repository."
         }
       },
       {
@@ -109,7 +109,7 @@
         "name": "Is SwarmSpace free to use?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Plugin discovery and search is free for agents and users. Individual plugins set their own pricing (free, per-call, subscription). SwarmSpace takes a platform fee on paid plugin transactions. Developer accounts are free for Community and Experimental tiers. Verified tier review has a one-time submission fee."
+          "text": "Plugin discovery and search is free for agents and users. Individual plugins set their own pricing (free, per-call, subscription). SwarmSpace takes a platform fee on paid plugin transactions. Developer accounts are free for Community tier submissions. Verified tier review has a one-time submission fee."
         }
       }
     ]
@@ -189,7 +189,7 @@
   SwarmSpace canonical URL: https://swarmspace.ai
   API: Firebase callable functions (searchPlugins, getPluginManifest)
   Protocol: MCP (Model Context Protocol) compatible
-  Trust tiers: verified > community > experimental
+  Trust tiers: verified > community
   Plugin format: JSON manifest (not executable files)
   Execution model: developer-hosted endpoints, SwarmSpace is index/trust layer only
   Privacy model: data minimization enforced at protocol level, no personal context without explicit user consent
@@ -312,7 +312,6 @@ const result = await functions.httpsCallable('searchPlugins')({
           <p>Trust tiers govern what data a plugin can receive and what actions it can take:</p>
           <p style="margin-top:12px;"><strong style="color:#4ecb71;">Verified</strong> — Sandboxed, manually reviewed, cryptographically signed. Can receive personal user context with explicit user consent. Highest privilege level.</p>
           <p style="margin-top:8px;"><strong style="color:#5599e8;">Community</strong> — Open-source, automated scanning passed. No personal user context by default. Agent must request elevated access and obtain user consent.</p>
-          <p style="margin-top:8px;"><strong style="color:#6b6b6b;">Experimental</strong> — Unreviewed developer builds. Sandboxed execution only. Cannot access personal context under any circumstances.</p>
           <p style="margin-top:12px;">Agents match their own permission level against the plugin's trust tier before execution. An agent operating in a low-trust context cannot activate a Verified plugin that requests personal context without explicit user authorization.</p>
         </div>
       </div>
@@ -356,7 +355,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
   "version":        "1.0.0",
   "protocol":       "mcp",
   "endpoint":       "https://yourserver.com/mcp",
-  "trust_tier":     "verified | community | experimental",
+  "trust_tier":     "verified | community",
   "latency_class":  "fast | medium | slow",
   "pricing":        { "model": "free | per_call | subscription", ... },
   "auth":           "none | api_key | oauth2",
@@ -377,8 +376,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
           <p>Submit via the <a href="/developers">SwarmSpace Developer Portal</a>. The process:</p>
-          <p style="margin-top:12px;"><strong>Experimental tier:</strong> Submit manifest + endpoint. Automated security scan. Live within 24 hours.</p>
-          <p style="margin-top:8px;"><strong>Community tier:</strong> Submit manifest + open-source repository link. Automated scan + community review queue.</p>
+          <p style="margin-top:12px;"><strong>Community tier:</strong> Submit manifest + open-source repository link. Automated scan + community review queue.</p>
           <p style="margin-top:8px;"><strong>Verified tier:</strong> Submit manifest + endpoint + data minimization statement. Manual review, sandbox testing, cryptographic signing. One-time submission fee covers review cost.</p>
         </div>
       </div>
@@ -415,7 +413,6 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
           <p>Privacy is enforced at the protocol level, not policy.</p>
           <p style="margin-top:12px;">• <strong>Data minimization:</strong> Plugins receive only the minimum data necessary. The manifest's <code>data_access</code> field is a hard declaration — plugins cannot access data types not listed.<br>
           • <strong>Explicit consent:</strong> Personal user context is never passed to a plugin without explicit user consent, regardless of trust tier.<br>
-          • <strong>No execution on our infrastructure:</strong> SwarmSpace is the index and trust layer. Plugin execution happens at the developer's endpoint. User data never passes through SwarmSpace servers during a plugin call.<br>
           • <strong>Cryptographic signing:</strong> Verified plugins are cryptographically signed. If a plugin's code changes without re-review, the signature invalidates and the plugin is demoted automatically.</p>
         </div>
       </div>
@@ -469,7 +466,7 @@ https://yourserver.com/mcp  ← your MCP endpoint (execution layer)</pre>
       <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
         <div class="faq-answer-inner" itemprop="text">
           <p>Plugin <strong>discovery and search is free</strong> for agents and users. Individual plugins set their own pricing models, which are declared in the manifest: free, per-call, or subscription. SwarmSpace takes a platform fee on paid plugin transactions.</p>
-          <p style="margin-top:12px;">Developer accounts are free for Community and Experimental tier submissions. Verified tier review has a one-time submission fee that covers manual review and sandbox testing costs.</p>
+          <p style="margin-top:12px;">Developer accounts are free for Community tier submissions. Verified tier review has a one-time submission fee that covers manual review and sandbox testing costs.</p>
         </div>
       </div>
     </div>
