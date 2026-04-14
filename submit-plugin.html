@@ -51,7 +51,7 @@
     textarea.form-input { min-height:80px; resize:vertical; }
     .form-note { font-size:12px; color:var(--dim); line-height:1.5; }
     .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media(max-width:640px){ .form-grid { grid-template-columns:1fr; } }
+    @media(max-width:640px){ .form-grid { grid-template-columns:1fr !important; } }
 
     /* ── CHECKBOX ── */
     .checkbox-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:16px; }
@@ -102,15 +102,93 @@
     .badge-pending { background:rgba(251,146,60,0.15); color:var(--orange); }
     .badge-approved { background:rgba(52,211,153,0.15); color:var(--green); }
     .badge-rejected { background:rgba(255,107,107,0.15); color:#FF6B6B; }
+    .badge-needs-info { background:rgba(251,146,60,0.15); color:var(--orange); }
 
     .review-notes {
-      font-size:12px; color:#FF8A8A; margin-top:4px; padding:6px 10px;
+      font-size:12px; color:#FF8A8A; margin-top:8px; padding:8px 12px;
       background:rgba(255,107,107,0.06); border-radius:6px; line-height:1.5;
     }
 
     .empty-state {
       text-align:center; padding:40px 20px; color:var(--muted); font-size:14px;
     }
+
+    /* ── SUBMISSION CARDS ── */
+    .submission-list { display:flex; flex-direction:column; gap:16px; }
+    .submission-item {
+      background:var(--bg); border:1px solid var(--border); border-radius:10px;
+      padding:18px 20px; transition:border-color 0.15s;
+    }
+    .submission-item:hover { border-color:var(--purple); }
+    .submission-header {
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:8px; margin-bottom:12px;
+    }
+    .submission-name { font-weight:700; font-size:15px; color:var(--text); }
+    .submission-category { font-size:12px; font-family:var(--mono); color:var(--dim); }
+    .submission-meta {
+      display:flex; gap:16px; font-size:12px; font-family:var(--mono);
+      color:var(--dim); margin-top:10px; flex-wrap:wrap;
+    }
+
+    /* ── STATUS TIMELINE ── */
+    .status-timeline {
+      display:inline-flex; align-items:center; gap:0; margin:10px 0 6px;
+    }
+    .status-timeline .step {
+      font-size:11px; font-family:var(--mono); font-weight:600;
+      padding:4px 12px; border-radius:20px; white-space:nowrap;
+      background:rgba(255,255,255,0.03); color:var(--dim);
+      border:1px solid var(--border); position:relative;
+    }
+    .status-timeline .step + .step { margin-left:24px; }
+    .status-timeline .step + .step::before {
+      content:''; position:absolute; left:-22px; top:50%;
+      width:18px; height:1px; background:var(--border);
+    }
+    .status-timeline .step.done {
+      background:rgba(52,211,153,0.1); color:var(--green);
+      border-color:rgba(52,211,153,0.3);
+    }
+    .status-timeline .step.done + .step::before { background:var(--green); }
+    .status-timeline .step.active {
+      background:rgba(91,91,214,0.12); color:var(--purple);
+      border-color:rgba(91,91,214,0.3);
+    }
+    .status-timeline .step.active.orange {
+      background:rgba(251,146,60,0.12); color:var(--orange);
+      border-color:rgba(251,146,60,0.3);
+    }
+    .status-timeline .step.active.red {
+      background:rgba(255,107,107,0.12); color:#FF6B6B;
+      border-color:rgba(255,107,107,0.3);
+    }
+    .status-timeline .step.active.green {
+      background:rgba(52,211,153,0.1); color:var(--green);
+      border-color:rgba(52,211,153,0.3);
+    }
+
+    /* ── CHECK RESULTS ── */
+    .check-results {
+      margin-top:10px; font-size:12px; color:var(--muted);
+    }
+    .check-results summary {
+      cursor:pointer; font-family:var(--mono); font-size:11px;
+      color:var(--dim); font-weight:600; text-transform:uppercase;
+      letter-spacing:0.04em; padding:4px 0;
+    }
+    .check-results summary:hover { color:var(--text); }
+    .check-results ul {
+      list-style:none; padding:8px 0 0 0; display:flex; flex-direction:column; gap:4px;
+    }
+    .check-results li {
+      font-family:var(--mono); font-size:12px; color:var(--muted); padding:2px 0;
+    }
+    .check-pass { color:var(--green); }
+    .check-fail { color:#FF6B6B; }
+    .check-na { color:var(--dim); }
+
+    .submission-actions { margin-top:12px; display:flex; gap:8px; }
 
     /* ── VALIDATION PROGRESS ── */
     .validation-progress {
@@ -154,6 +232,28 @@
     .success-panel a { color:var(--purple); text-decoration:none; font-weight:600; font-size:14px; }
     .success-panel a:hover { text-decoration:underline; }
 
+    /* ── RESUBMIT BANNER ── */
+    .resubmit-banner {
+      background:rgba(251,146,60,0.08); border:1px solid rgba(251,146,60,0.25);
+      border-radius:10px; padding:16px 20px; margin-bottom:20px; display:none;
+      align-items:flex-start; gap:12px; justify-content:space-between;
+    }
+    .resubmit-banner.visible { display:flex; }
+    .resubmit-banner p { font-size:13px; color:var(--orange); line-height:1.6; flex:1; }
+    .resubmit-banner p strong { color:var(--text); }
+    .btn-ghost {
+      background:transparent; border:1px solid var(--border); color:var(--muted);
+      border-radius:6px; padding:5px 12px; font-size:12px; font-family:var(--mono);
+      cursor:pointer; transition:all 0.15s; white-space:nowrap;
+    }
+    .btn-ghost:hover { border-color:var(--purple); color:var(--text); }
+    .btn-resubmit {
+      background:rgba(251,146,60,0.1); border:1px solid rgba(251,146,60,0.3);
+      color:var(--orange); border-radius:6px; padding:5px 12px; font-size:12px;
+      font-family:var(--mono); cursor:pointer; transition:all 0.15s; white-space:nowrap;
+    }
+    .btn-resubmit:hover { background:rgba(251,146,60,0.2); color:var(--text); }
+
     /* ── RESPONSIVE NAV ── */
     @media(max-width:640px){
       .navbar { padding:0 16px; height:auto; min-height:56px; flex-wrap:wrap; gap:8px; padding-top:12px; padding-bottom:12px; }
@@ -179,6 +279,12 @@
 
   <h1 class="page-title">Submit a Plugin</h1>
   <p class="page-subtitle">Share your capability with the SwarmSpace ecosystem. Plugins are reviewed within 2-3 business days.</p>
+
+  <!-- ── RESUBMIT BANNER ── -->
+  <div class="resubmit-banner" id="resubmit-banner">
+    <p id="resubmit-info"></p>
+    <button class="btn-ghost" onclick="cancelResubmission()">Cancel</button>
+  </div>
 
   <!-- ── FORM ── -->
   <div class="submit-card" id="form-card">
@@ -244,6 +350,58 @@
         </div>
       </div>
 
+      <!-- Access Tier -->
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label" for="f-access-tier">Access Tier *</label>
+          <select class="form-input" id="f-access-tier" required>
+            <option value="">Select access tier</option>
+            <option value="free">Free — included in all plans</option>
+            <option value="standard">Standard — $30/mo subscribers</option>
+            <option value="premium">Premium — $50/mo subscribers</option>
+          </select>
+          <div class="form-note">Which subscription tier is required to use your plugin?</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="f-version">Version <span style="color:var(--dim);font-weight:400;">(optional)</span></label>
+          <input class="form-input" id="f-version" type="text" placeholder="1.0.0" value="1.0.0" />
+          <div class="form-note">Semantic version (e.g., 1.0.0)</div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div class="form-row">
+        <label class="form-label" for="f-capabilities">Capabilities * <span style="color:var(--dim);font-weight:400;">(comma-separated, 1-10 items)</span></label>
+        <input class="form-input" id="f-capabilities" type="text" required placeholder="web_search, ai_optimized, research" />
+        <div class="form-note">Comma-separated capability tags (e.g., web_search, ai_optimized, research)</div>
+      </div>
+
+      <!-- Example Query -->
+      <div class="form-row">
+        <label class="form-label" for="f-example-query">Example Query <span style="color:var(--dim);font-weight:400;">(optional, max 200 chars)</span></label>
+        <input class="form-input" id="f-example-query" type="text" maxlength="200" placeholder="What's the weather in San Francisco this weekend?" />
+        <div class="form-note">A sample query that demonstrates your plugin (shown to AI agents)</div>
+      </div>
+
+      <!-- Rate Limits -->
+      <div class="form-row">
+        <label class="form-label">Rate Limits (calls/day) <span style="color:var(--dim);font-weight:400;">(optional)</span></label>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="form-row" style="margin-bottom:0;">
+            <label class="form-label" for="f-rate-free" style="font-size:11px;">Free tier</label>
+            <input class="form-input" id="f-rate-free" type="number" min="0" value="20" />
+          </div>
+          <div class="form-row" style="margin-bottom:0;">
+            <label class="form-label" for="f-rate-standard" style="font-size:11px;">Standard tier</label>
+            <input class="form-input" id="f-rate-standard" type="number" min="0" value="500" />
+          </div>
+          <div class="form-row" style="margin-bottom:0;">
+            <label class="form-label" for="f-rate-premium" style="font-size:11px;">Premium tier</label>
+            <input class="form-input" id="f-rate-premium" type="number" min="0" value="500" />
+          </div>
+        </div>
+      </div>
+
       <!-- Description -->
       <div class="form-row">
         <label class="form-label" for="f-description">Description * <span style="color:var(--dim);font-weight:400;">(min 50 chars)</span></label>
@@ -304,8 +462,8 @@
 
       <!-- Privacy data required -->
       <div class="form-row">
-        <label class="form-label" for="f-privacy">Privacy data required <span style="color:var(--dim);font-weight:400;">(optional)</span></label>
-        <textarea class="form-input" id="f-privacy" placeholder="e.g. location, name, or 'none'" style="min-height:60px;"></textarea>
+        <label class="form-label" for="f-privacy">Privacy data required <span style="color:var(--dim);font-weight:400;">(comma-separated field names, e.g. user.location, user.email — leave blank if none)</span></label>
+        <textarea class="form-input" id="f-privacy" placeholder="e.g. user.location, user.email or leave blank for no personal data" style="min-height:60px;"></textarea>
       </div>
 
       <!-- Network domains -->
@@ -328,14 +486,7 @@
   <div class="section-head">My Submissions</div>
   <div class="submit-card" id="submissions-card">
     <div class="empty-state" id="submissions-empty">No submissions yet. Submit your first plugin above.</div>
-    <div class="table-wrap" id="submissions-table-wrap" style="display:none;">
-      <table>
-        <thead>
-          <tr><th>Name</th><th>Category</th><th>Status</th><th>Submitted</th></tr>
-        </thead>
-        <tbody id="submissions-tbody"></tbody>
-      </table>
-    </div>
+    <div class="submission-list" id="submissions-list" style="display:none;"></div>
   </div>
 
 </div>
@@ -344,7 +495,7 @@
   import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut }
                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy }
+  import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, onSnapshot, serverTimestamp, orderBy }
                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
   import { getFunctions, httpsCallable }
                                from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
@@ -362,9 +513,14 @@
   const functions = getFunctions(app);
 
   let currentUser = null;
+  let resubmissionId = null;
+  let unsubSubmissions = null;
 
   // ── Auth Gate ──
   onAuthStateChanged(auth, async user => {
+    // Clean up previous listener on auth change
+    if (unsubSubmissions) { unsubSubmissions(); unsubSubmissions = null; }
+
     if (!user) {
       window.location.href = '/signup.html?redirect=submit-plugin';
       return;
@@ -447,6 +603,23 @@
     const tagsRaw       = document.getElementById('f-tags').value.trim();
     const privacyData   = document.getElementById('f-privacy').value.trim();
     const domainsRaw    = document.getElementById('f-domains').value.trim();
+    const accessTier    = document.getElementById('f-access-tier').value;
+    const capabilitiesRaw = document.getElementById('f-capabilities').value.trim();
+    const exampleQuery  = document.getElementById('f-example-query').value.trim();
+    const version       = document.getElementById('f-version').value.trim();
+    const rateFree      = parseInt(document.getElementById('f-rate-free').value, 10) || 0;
+    const rateStandard  = parseInt(document.getElementById('f-rate-standard').value, 10) || 0;
+    const ratePremium   = parseInt(document.getElementById('f-rate-premium').value, 10) || 0;
+
+    // Parse capabilities
+    const capabilitiesArray = capabilitiesRaw
+      ? capabilitiesRaw.split(',').map(c => c.trim()).filter(Boolean)
+      : [];
+
+    // Parse privacy data as array of dot-notation field names
+    const privacyArray = privacyData
+      ? privacyData.split(',').map(f => f.trim()).filter(Boolean)
+      : [];
     const termsChecked  = document.getElementById('f-terms').checked;
 
     // Parse tags
@@ -470,6 +643,9 @@
     if (endpointUrl && !endpointUrl.startsWith('https://')) errors.push('Endpoint URL must start with https://');
     if (!authMethod)    errors.push('Auth method is required.');
     if (!pricingModel)  errors.push('Pricing model is required.');
+    if (!accessTier)    errors.push('Access tier is required.');
+    if (capabilitiesArray.length < 1) errors.push('At least 1 capability is required.');
+    if (capabilitiesArray.length > 10) errors.push('Maximum 10 capabilities allowed (you have ' + capabilitiesArray.length + ').');
     if (tagsArray.length < 2) errors.push('At least 2 semantic tags are required.');
     if (tagsArray.length > 10) errors.push('Maximum 10 semantic tags allowed (you have ' + tagsArray.length + ').');
     if (!termsChecked)  errors.push('You must accept the terms to submit.');
@@ -498,8 +674,14 @@
       pricing_model: pricingModel,
       website: website || null,
       semantic_tags: tagsArray,
-      privacy_data_required: privacyData || "none",
-      network_domains: networkDomainsArray
+      privacy_data_required: privacyArray,
+      network_domains: networkDomainsArray,
+      access_tier: accessTier,
+      capabilities: capabilitiesArray,
+      example_query: exampleQuery || null,
+      version: version || '1.0.0',
+      rate_limits: { free: rateFree, standard: rateStandard, premium: ratePremium },
+      resubmission_of: resubmissionId || null
     };
 
     let validationResult;
@@ -549,8 +731,14 @@
         pricing_model: pricingModel,
         website: website || null,
         semantic_tags: tagsArray,
-        privacy_data_required: privacyData || "none",
+        privacy_data_required: privacyArray,
         network_domains: networkDomainsArray,
+        access_tier: accessTier,
+        capabilities: capabilitiesArray,
+        example_query: exampleQuery || null,
+        version: version || '1.0.0',
+        rate_limits: { free: rateFree, standard: rateStandard, premium: ratePremium },
+        resubmission_of: resubmissionId || null,
         developer_uid: currentUser.uid,
         developer_email: currentUser.email,
         status: "pending",
@@ -565,11 +753,14 @@
       successPanel.classList.add('visible');
       vpProgress.classList.remove('visible');
 
+      // Clear resubmission state
+      resubmissionId = null;
+      document.getElementById('resubmit-banner').classList.remove('visible');
+
       // Clear form
       form.reset();
 
-      // Refresh submissions
-      loadSubmissions(currentUser);
+      // Submissions refresh automatically via onSnapshot
 
       btnSubmit.innerHTML = 'Submit for review &rarr;';
       btnSubmit.disabled = false;
@@ -614,25 +805,26 @@
   }
 
   function updateValidationProgress(checks) {
-    // Manifest fields check
-    if (checks.manifest_fields !== undefined) {
-      setVPItem('manifest-fields', checks.manifest_fields.passed ? 'pass' : 'fail',
-        checks.manifest_fields.detail || '');
+    // Schema validation check (server returns checks.schema)
+    if (checks.schema !== undefined) {
+      setVPItem('manifest-fields', checks.schema.passed ? 'pass' : 'fail',
+        checks.schema.errors?.join('; ') || '');
     }
-    // Endpoint reachability check
-    if (checks.endpoint_reachability !== undefined) {
-      const ep = checks.endpoint_reachability;
+    // Endpoint reachability check (server returns checks.endpoint)
+    if (checks.endpoint !== undefined) {
+      const ep = checks.endpoint;
       const latencyStr = ep.latency_ms ? ep.latency_ms + 'ms' : '';
-      setVPItem('endpoint', ep.passed ? 'pass' : (ep.warning ? 'warn' : 'fail'),
-        latencyStr || ep.detail || '');
+      const status = ep.reachable ? (ep.valid_response ? 'pass' : 'warn') : 'fail';
+      setVPItem('endpoint', status,
+        latencyStr || ep.error || '');
     }
-    // Manifest URL fetch check
-    if (checks.manifest_url !== undefined) {
-      const mu = checks.manifest_url;
-      if (mu.skipped) {
+    // Manifest URL fetch check (server returns checks.manifest)
+    if (checks.manifest !== undefined) {
+      const mf = checks.manifest;
+      if (!mf.fetched && !mf.error) {
         setVPItem('manifest-url', 'skip', 'not provided');
       } else {
-        setVPItem('manifest-url', mu.passed ? 'pass' : 'fail', mu.detail || '');
+        setVPItem('manifest-url', mf.valid ? 'pass' : 'fail', mf.error || '');
       }
     }
   }
@@ -645,69 +837,211 @@
     }
   });
 
-  // ── Load My Submissions ──
-  async function loadSubmissions(user) {
-    const emptyEl   = document.getElementById('submissions-empty');
-    const tableWrap = document.getElementById('submissions-table-wrap');
-    const tbody     = document.getElementById('submissions-tbody');
+  // ── Timestamp formatting helper ──
+  function formatTimestamp(ts) {
+    if (!ts) return '\u2014';
+    const d = new Date(ts.seconds * 1000);
+    return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })
+      + ' ' + d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+  }
 
-    try {
-      const q = query(
-        collection(db, 'plugin_submissions'),
-        where('developer_uid', '==', user.uid),
-        orderBy('submitted_at', 'desc')
-      );
-      const snapshot = await getDocs(q);
+  // ── Build status timeline HTML ──
+  function buildTimeline(status) {
+    const s = status || 'pending';
+    let steps;
+    if (s === 'approved') {
+      steps = [
+        { label:'Submitted', cls:'done' },
+        { label:'In Review', cls:'done' },
+        { label:'Approved',  cls:'done active green' }
+      ];
+    } else if (s === 'rejected') {
+      steps = [
+        { label:'Submitted', cls:'done' },
+        { label:'Rejected',  cls:'active red' },
+        { label:'Approved',  cls:'' }
+      ];
+    } else if (s === 'needs-info') {
+      steps = [
+        { label:'Submitted',  cls:'done' },
+        { label:'Needs Info', cls:'active orange' },
+        { label:'Approved',   cls:'' }
+      ];
+    } else {
+      // pending
+      steps = [
+        { label:'Submitted', cls:'done' },
+        { label:'In Review', cls:'active' },
+        { label:'Approved',  cls:'' }
+      ];
+    }
+    return '<div class="status-timeline">' +
+      steps.map(st => '<span class="step ' + st.cls + '">' + st.label + '</span>').join('') +
+      '</div>';
+  }
 
+  // ── Build automated check results HTML ──
+  function buildCheckResults(checks) {
+    if (!checks) return '';
+    const schema = checks.schema;
+    const ep = checks.endpoint;
+    const mf = checks.manifest;
+
+    const schemaPass = schema?.passed;
+    const epReachable = ep?.reachable;
+    const epLatency = ep?.latency_ms;
+    const mfValid = (!mf?.fetched && !mf?.error) ? null : mf?.valid;
+
+    return '<details class="check-results">' +
+      '<summary>Validation Results</summary>' +
+      '<ul>' +
+        '<li>Schema: <span class="' + (schemaPass ? 'check-pass' : 'check-fail') + '">' + (schemaPass ? '\u2713' : '\u2717') + '</span></li>' +
+        '<li>Endpoint: <span class="' + (epReachable ? 'check-pass' : 'check-fail') + '">' + (epReachable ? '\u2713' : '\u2717') + '</span>' +
+          (epLatency != null ? ' (' + epLatency + 'ms)' : '') + '</li>' +
+        '<li>Manifest: <span class="' + (mfValid === null ? 'check-na' : mfValid ? 'check-pass' : 'check-fail') + '">' +
+          (mfValid === null ? 'N/A' : mfValid ? '\u2713' : '\u2717') + '</span></li>' +
+      '</ul>' +
+    '</details>';
+  }
+
+  // ── Load My Submissions (real-time) ──
+  function loadSubmissions(user) {
+    const emptyEl = document.getElementById('submissions-empty');
+    const listEl  = document.getElementById('submissions-list');
+
+    const q = query(
+      collection(db, 'plugin_submissions'),
+      where('developer_uid', '==', user.uid),
+      orderBy('submitted_at', 'desc')
+    );
+
+    unsubSubmissions = onSnapshot(q, (snapshot) => {
       if (snapshot.empty) {
         emptyEl.style.display = 'block';
-        tableWrap.style.display = 'none';
+        listEl.style.display = 'none';
         return;
       }
 
       emptyEl.style.display = 'none';
-      tableWrap.style.display = 'block';
-      tbody.innerHTML = '';
+      listEl.style.display = 'flex';
+      listEl.innerHTML = '';
 
       snapshot.forEach(docSnap => {
         const d = docSnap.data();
-        const tr = document.createElement('tr');
+        const item = document.createElement('div');
+        item.className = 'submission-item';
 
-        const dateStr = d.submitted_at
-          ? new Date(d.submitted_at.seconds * 1000).toLocaleDateString()
-          : '\u2014';
+        const canResubmit = (d.status === 'rejected' || d.status === 'needs-info');
 
-        const statusClass = d.status === 'approved' ? 'badge-approved'
-                          : d.status === 'rejected' ? 'badge-rejected'
-                          : 'badge-pending';
+        const submittedStr = formatTimestamp(d.submitted_at);
+        const reviewedStr = d.reviewed_at ? formatTimestamp(d.reviewed_at) : null;
 
-        let nameCell = escHtml(d.name || 'Unnamed');
+        const reviewNotesHtml = d.review_notes
+          ? '<div class="review-notes"><strong>Review notes:</strong> ' + escHtml(d.review_notes) + '</div>'
+          : '';
 
-        let statusCell = '<span class="status-badge ' + statusClass + '">' + escHtml(d.status || 'pending') + '</span>';
+        const checksHtml = buildCheckResults(d.automated_checks);
 
-        tr.innerHTML =
-          '<td style="font-weight:600;color:var(--text);">' + nameCell + '</td>' +
-          '<td>' + escHtml(d.category || '\u2014') + '</td>' +
-          '<td>' + statusCell + '</td>' +
-          '<td style="font-family:var(--mono);font-size:12px;">' + dateStr + '</td>';
+        const resubmitBtn = canResubmit
+          ? '<button class="btn-resubmit" data-doc-id="' + escHtml(docSnap.id) + '">Resubmit</button>'
+          : '';
 
-        tbody.appendChild(tr);
+        item.innerHTML =
+          '<div class="submission-header">' +
+            '<div>' +
+              '<span class="submission-name">' + escHtml(d.name || 'Unnamed') + '</span>' +
+              ' <span class="submission-category">' + escHtml(d.category || '') + '</span>' +
+            '</div>' +
+          '</div>' +
+          buildTimeline(d.status) +
+          reviewNotesHtml +
+          checksHtml +
+          '<div class="submission-meta">' +
+            '<span>Submitted: ' + submittedStr + '</span>' +
+            (reviewedStr ? '<span>Reviewed: ' + reviewedStr + '</span>' : '') +
+          '</div>' +
+          (resubmitBtn ? '<div class="submission-actions">' + resubmitBtn + '</div>' : '');
 
-        // If rejected, show review notes
-        if (d.status === 'rejected' && d.review_notes) {
-          const notesTr = document.createElement('tr');
-          notesTr.innerHTML = '<td colspan="4"><div class="review-notes"><strong>Review notes:</strong> ' + escHtml(d.review_notes) + '</div></td>';
-          tbody.appendChild(notesTr);
+        // Attach resubmit handler
+        if (canResubmit) {
+          const btn = item.querySelector('.btn-resubmit');
+          btn.addEventListener('click', () => prefillForm({ ...d, _id: docSnap.id }));
         }
-      });
 
-    } catch (err) {
+        listEl.appendChild(item);
+      });
+    }, (err) => {
       console.error('Failed to load submissions:', err);
       emptyEl.textContent = 'Failed to load submissions.';
       emptyEl.style.display = 'block';
-      tableWrap.style.display = 'none';
-    }
+      listEl.style.display = 'none';
+    });
   }
+
+  // ── Resubmission: Prefill Form ──
+  function prefillForm(data) {
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Set resubmission tracking
+    resubmissionId = data._id;
+
+    // Show banner
+    const banner = document.getElementById('resubmit-banner');
+    const info = document.getElementById('resubmit-info');
+    const notes = data.review_notes ? data.review_notes : 'No review notes provided.';
+    info.innerHTML = '<strong>Resubmitting: ' + escHtml(data.name || 'Unnamed') + '</strong> — review notes: ' + escHtml(notes);
+    banner.classList.add('visible');
+
+    // Hide success panel if visible
+    successPanel.classList.remove('visible');
+    hideAllMsgs();
+
+    // Prefill simple text/select fields
+    document.getElementById('f-name').value = data.name || '';
+    document.getElementById('f-category').value = data.category || '';
+    document.getElementById('f-description').value = data.description || '';
+    document.getElementById('f-guidance').value = data.agent_guidance || '';
+    document.getElementById('f-endpoint').value = data.endpoint_url || '';
+    document.getElementById('f-manifest').value = data.manifest_url || '';
+    document.getElementById('f-auth').value = data.auth_method || '';
+    document.getElementById('f-pricing').value = data.pricing_model || '';
+    document.getElementById('f-website').value = data.website || '';
+    document.getElementById('f-access-tier').value = data.access_tier || '';
+    document.getElementById('f-example-query').value = data.example_query || '';
+    document.getElementById('f-version').value = data.version || '1.0.0';
+
+    // Prefill array fields as comma strings
+    document.getElementById('f-tags').value = Array.isArray(data.semantic_tags)
+      ? data.semantic_tags.join(', ') : (data.semantic_tags || '');
+    document.getElementById('f-capabilities').value = Array.isArray(data.capabilities)
+      ? data.capabilities.join(', ') : (data.capabilities || '');
+    document.getElementById('f-privacy').value = Array.isArray(data.privacy_data_required)
+      ? data.privacy_data_required.join(', ') : (data.privacy_data_required || '');
+
+    // Prefill network domains as newline string
+    document.getElementById('f-domains').value = Array.isArray(data.network_domains)
+      ? data.network_domains.join('\n') : (data.network_domains || '');
+
+    // Prefill rate limits
+    if (data.rate_limits) {
+      document.getElementById('f-rate-free').value = data.rate_limits.free ?? 20;
+      document.getElementById('f-rate-standard').value = data.rate_limits.standard ?? 500;
+      document.getElementById('f-rate-premium').value = data.rate_limits.premium ?? 500;
+    }
+
+    // Terms checkbox must be re-accepted
+    document.getElementById('f-terms').checked = false;
+  }
+
+  // ── Cancel Resubmission ──
+  window.cancelResubmission = function() {
+    resubmissionId = null;
+    document.getElementById('resubmit-banner').classList.remove('visible');
+  };
+
+  // Expose prefillForm globally for inline handlers (not used, but safe)
+  window.prefillForm = prefillForm;
 </script>
 </body>
 </html>

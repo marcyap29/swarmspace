@@ -16,11 +16,12 @@ PRISM is the **privacy architecture** that governs how user data flows through S
 
 Three enforcement boundaries work together:
 
-| Boundary | Role |
-|----------|------|
-| **Manifest declaration** | The plugin declares required context in **`privacy_data_required`** (see developer guide). That list is the contract for what may ever enter the call. |
-| **Sandbox enforcement** | A **Cloudflare Dynamic Worker** V8 **isolate** runs the invocation. Only the declared subset is injected into the **`context`** parameter the plugin receives. |
-| **Network control** | **`globalOutbound: null`** (default posture) blocks all outbound network access **except** hostnames allowlisted in **`network_domains`** on the manifest. |
+| Boundary | Role | Status |
+|----------|------|--------|
+| **Manifest declaration** | The plugin declares required context in **`privacy_data_required`** (see developer guide). That list is the contract for what may ever enter the call. | **Active** |
+| **Router-layer PRISM enforcement** | The **swarmspaceRouter** classifies each plugin by **PrivacyTier** (`ANONYMOUS`, `USER_CONTENT`, `STRUCTURED_PERSONAL`), gates consent, and strips undeclared fields before forwarding to workers. See §2a below. | **Active** |
+| **Sandbox enforcement** | A **Cloudflare Dynamic Worker** V8 **isolate** runs the invocation. Only the declared subset is injected into the **`context`** parameter the plugin receives. | **Planned** |
+| **Network control** | **`globalOutbound: null`** (default posture) blocks all outbound network access **except** hostnames allowlisted in **`network_domains`** on the manifest. | **Planned** |
 
 **Structural vs policy:**  
 - **Structural:** Context shape, sandbox APIs, outbound fetch allowlists, credential injection at the network layer.  
@@ -41,6 +42,28 @@ When LUMARA invokes a SwarmSpace plugin, the **full** user context (e.g. CHRONIC
 5. Plugin code has **no supported mechanism** to request additional CHRONICLE fields mid-flight; undeclared channels are outside the exposed API.
 
 This is **structural minimization** at the protocol and sandbox boundary: omitted data is not present in the request object the plugin can read, not merely “disallowed” by a comment in documentation.
+
+### 2a. Router-layer enforcement (ACTIVE)
+
+The **swarmspaceRouter** Cloud Function enforces PRISM at the Firebase routing layer before any request reaches a worker. This is **active in production** as of v1.3.0.
+
+**What the router enforces:**
+
+1. **PrivacyTier classification** — Every plugin in the registry declares a `privacyTier`: `ANONYMOUS`, `USER_CONTENT`, or `STRUCTURED_PERSONAL`. Developer-submitted plugins default to `ANONYMOUS` if not specified.
+
+2. **Consent gating** — When a plugin's tier is `USER_CONTENT` or `STRUCTURED_PERSONAL`, the router **blocks** the call unless the caller provides `_prism_consent: true` in the request params. Blocked calls return a `PRISM_CONSENT_REQUIRED` error with the plugin's privacy tier so the client can prompt the user.
+
+3. **Context field filtering (allowlist)** — The router strips any request fields not declared in the plugin's `privacyDataRequired` allowlist before forwarding to the worker. Only declared fields are kept; undeclared fields are removed. The `_prism_consent` flag itself is always stripped and never forwarded.
+
+4. **Audit logging** — Every plugin invocation is logged with: `privacy_tier`, `consent_given`, `fields_kept`, and (when applicable) `fields_stripped`. These logs support audit and anomaly review.
+
+**What is NOT yet enforced at the router layer (planned):**
+
+- Dynamic Worker V8 isolate sandbox isolation (§3)
+- Credential injection at the network boundary (§3)
+- Network domain enforcement via `globalOutbound: null` (§3)
+
+These remain architectural goals for when plugins run inside Cloudflare Dynamic Workers. The router-layer enforcement provides the first structural privacy boundary today.
 
 ### Examples: what the plugin receives
 
@@ -82,9 +105,11 @@ Manifest: `privacy_data_required: ["none"]`
 
 ---
 
-## 3. Sandbox enforcement (Dynamic Workers)
+## 3. Sandbox enforcement (Dynamic Workers) — PLANNED
 
-Each plugin call is executed inside a **Cloudflare Dynamic Worker** V8 **isolate** (see Cloudflare’s documentation for isolate lifecycle and limits; this section states **how PRISM uses** that model, not the full platform spec).
+> **Status:** The Dynamic Worker sandbox described in this section is the **target architecture**. It is **not yet deployed**. Current enforcement is at the **router layer** (§2a above). This section documents the design so that developers understand the intended isolation model.
+
+Each plugin call will be executed inside a **Cloudflare Dynamic Worker** V8 **isolate** (see Cloudflare’s documentation for isolate lifecycle and limits; this section states **how PRISM will use** that model, not the full platform spec).
 
 ### Isolation
 
@@ -191,7 +216,7 @@ Violations can result in **rejection**, **delisting**, or **account** action reg
 
 | Requirement | How it was addressed |
 |-------------|----------------------|
-| **Layers of enforcement** | Manifest → client minimization → Dynamic Worker isolate → network allowlist → credential injection → monitoring; DO and catalogue paths called out separately. |
+| **Layers of enforcement** | Manifest → client minimization → **router-layer consent gating + field filtering (active)** → Dynamic Worker isolate → network allowlist → credential injection → monitoring (sandbox/network layers planned); DO and catalogue paths called out separately. |
 | **Structural vs policy** | Called out explicitly in §1, §2 override note, §3 monitoring paragraph, §5, §6 table, §7. |
 | **Examples** | JSON request bodies for `["location"]` and `["none"]`. |
 | **Non-goals** | §6 lists transport, E2EE, user override, third-party handling, prompt injection residual risk without marketing language. |

@@ -26,6 +26,15 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { enforceAuth, isAdminEmail } from "../authGuard";
 import { loadUserLlmSettings } from "../userLlmSettings";
 import { LLM_SETTINGS_ENCRYPTION_KEY } from "../config";
+// ── Inline PRISM privacy types (from lib/types/privacy-tiers.ts) ────────────
+enum PrivacyTier {
+  ANONYMOUS = "anonymous",
+  USER_CONTENT = "user_content",
+  STRUCTURED_PERSONAL = "structured_personal",
+}
+function requiresUserConsent(tier: PrivacyTier): boolean {
+  return tier !== PrivacyTier.ANONYMOUS;
+}
 
 const PLUGIN_ACTIVITY_COLLECTION = "plugin_activity_log";
 const CATALOG_VERSION = "2026-04-10T18:00:00Z";
@@ -59,14 +68,19 @@ interface PluginConfig {
   exampleQuery: string;
   /** Optional: for future cost-aware routing */
   costTier?: Tier;
-  /** PRISM: when true, intercept expects consent or sensitive-payload handling */
-  privacy_data_required?: boolean;
+  /** PRISM: dot-notation CHRONICLE field names this plugin needs access to. [] = no personal data. */
+  privacy_data_required: string[];
+  /** Privacy tier derived from privacy_data_required classification */
+  privacyTier: PrivacyTier;
+  /** Data type categories this plugin processes */
+  dataTypes: string[];
   owner: string;
   author: { name: string; type: "first-party" | "developer" };
   pricing: { model: "included" | "per_call" | "subscription"; cost_per_call: number | null };
   version: string;
   deployed_at: string;
   rateLimits: { free: number; standard: number; premium: number | null };
+  source?: "first-party" | "developer";
 }
 
 const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
@@ -79,6 +93,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["llm", "synthesis", "writing"],
     description: "Fast AI synthesis for writing and drafting",
     exampleQuery: "Draft a LinkedIn post about my latest project",
+    privacy_data_required: ["user_text", "queries"],
+    privacyTier: PrivacyTier.USER_CONTENT,
+    dataTypes: ["user_text", "queries"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -92,6 +109,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["web_search", "general"],
     description: "Privacy-focused web search",
     exampleQuery: "What are the latest developments in AI?",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -105,6 +125,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["academic_search", "research", "papers"],
     description: "Academic paper and citation search",
     exampleQuery: "Find papers on transformer architectures",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -118,6 +141,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["weather", "real_time"],
     description: "Current weather and forecasts",
     exampleQuery: "What's the weather in San Francisco?",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -131,6 +157,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["knowledge", "encyclopedia", "general"],
     description: "Wikipedia knowledge base",
     exampleQuery: "Who invented the transistor?",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -144,6 +173,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["currency", "exchange_rates", "real_time"],
     description: "Currency exchange rates",
     exampleQuery: "What is EUR to USD right now?",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -157,6 +189,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["news", "real_time", "headlines"],
     description: "Latest news and headlines (NewsData.io)",
     exampleQuery: "Top tech news today",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -171,6 +206,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["academic_search", "preprints", "research"],
     description: "Scientific preprints from arXiv",
     exampleQuery: "Recent LLM alignment papers",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -184,6 +222,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["biomedical", "research", "clinical"],
     description: "Biomedical literature from PubMed/NCBI",
     exampleQuery: "Sleep and HRV studies",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -197,6 +238,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["geocoding", "location", "maps"],
     description: "Geocoding via OpenStreetMap",
     exampleQuery: "Coords for La Jolla, CA",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -210,6 +254,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["geography", "country_data", "reference"],
     description: "Country data and geography",
     exampleQuery: "Info about Japan",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -223,6 +270,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["developer_tools", "repositories", "open_source"],
     description: "Public GitHub repo and developer data",
     exampleQuery: "Stars on bytedance/deer-flow",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -236,6 +286,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["tech_news", "community", "discussions"],
     description: "Tech community discussions from Hacker News",
     exampleQuery: "HN posts about MCP today",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -249,6 +302,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["language", "definitions", "reference"],
     description: "Word definitions and etymology",
     exampleQuery: "Define interoperability",
+    privacy_data_required: [],
+    privacyTier: PrivacyTier.ANONYMOUS,
+    dataTypes: ["public_data"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -262,6 +318,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["url_fetch", "content_extraction", "reading"],
     description: "Fetch and extract any URL content",
     exampleQuery: "Read https://example.com",
+    privacy_data_required: ["user_urls", "web_content"],
+    privacyTier: PrivacyTier.USER_CONTENT,
+    dataTypes: ["user_urls", "web_content"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -276,7 +335,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["vision", "ocr", "image_understanding"],
     description: "Extract text (OCR) or understand images with Vision API + Gemini",
     exampleQuery: "Extract text from this screenshot / Describe this image",
-    privacy_data_required: true,
+    privacy_data_required: ["images", "documents", "personal_files"],
+    privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
+    dataTypes: ["images", "documents", "personal_files"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -290,7 +351,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["url_fetch", "content_extraction", "reading"],
     description: "Fetch and extract content from URLs",
     exampleQuery: "Read and summarize this article: https://...",
-    privacy_data_required: true,
+    privacy_data_required: ["user_urls", "web_content"],
+    privacyTier: PrivacyTier.USER_CONTENT,
+    dataTypes: ["user_urls", "web_content"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -304,7 +367,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["media_host", "image_upload"],
     description: "Upload image and get a public URL (24h TTL)",
     exampleQuery: "Upload image for sharing",
-    privacy_data_required: true,
+    privacy_data_required: ["images"],
+    privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
+    dataTypes: ["images", "media_uploads"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -318,6 +383,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["web_search", "ai_optimized", "research"],
     description: "AI-optimized search for research",
     exampleQuery: "Deep research on quantum computing applications",
+    privacy_data_required: ["user_text", "queries"],
+    privacyTier: PrivacyTier.USER_CONTENT,
+    dataTypes: ["user_text", "queries"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -332,6 +400,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["neural_search", "semantic", "research"],
     description: "Neural semantic search",
     exampleQuery: "Find content similar to this concept",
+    privacy_data_required: ["user_text", "queries"],
+    privacyTier: PrivacyTier.USER_CONTENT,
+    dataTypes: ["user_text", "queries"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -345,6 +416,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["web_search", "answer_synthesis", "research"],
     description: "Real-time answer synthesis from the web",
     exampleQuery: "Explain the current state of fusion energy",
+    privacy_data_required: ["user_text", "queries"],
+    privacyTier: PrivacyTier.USER_CONTENT,
+    dataTypes: ["user_text", "queries"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -358,7 +432,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     capabilities: ["social_publish", "social_schedule", "social_accounts"],
     description: "Publish drafts to LinkedIn, Bluesky, Threads, and more via Late.com",
     exampleQuery: "Publish this draft to my connected accounts",
-    privacy_data_required: true,
+    privacy_data_required: ["user.display_name", "user.email"],
+    privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
+    dataTypes: ["social_accounts", "user_profiles"],
     owner: "swarmspace",
     author: { name: "Orbital AI", type: "first-party" as const },
     pricing: { model: "included" as const, cost_per_call: null },
@@ -367,6 +443,58 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
 };
+
+// ── Developer plugin cache (TTL: 5 minutes) ─────────────────────────────────
+let developerPluginCache: Record<string, PluginConfig> = {};
+let developerPluginCacheTimestamp = 0;
+const DEVELOPER_PLUGIN_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+async function loadDeveloperPlugins(): Promise<Record<string, PluginConfig>> {
+  const now = Date.now();
+  if (now - developerPluginCacheTimestamp < DEVELOPER_PLUGIN_TTL_MS) {
+    return developerPluginCache;
+  }
+
+  try {
+    const db = getFirestore();
+    const snapshot = await db.collection("approved_plugins").get();
+    const plugins: Record<string, PluginConfig> = {};
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      plugins[doc.id] = {
+        workerUrl: data.workerUrl,
+        requiredTier: data.requiredTier || "free",
+        capabilities: data.capabilities || [],
+        description: data.description || "",
+        exampleQuery: data.exampleQuery || "",
+        privacy_data_required: data.privacy_data_required || [],
+        privacyTier: data.privacyTier || PrivacyTier.ANONYMOUS,
+        dataTypes: data.dataTypes || [],
+        owner: data.owner || "developer",
+        author: data.author || { name: "Developer", type: "developer" as const },
+        pricing: data.pricing || { model: "included" as const, cost_per_call: null },
+        version: data.version || "1.0.0",
+        deployed_at: data.deployed_at || data.approved_at || new Date().toISOString(),
+        rateLimits: data.rateLimits || { free: 20, standard: 500, premium: 500 },
+        source: "developer",
+      } as PluginConfig;
+    }
+
+    developerPluginCache = plugins;
+    developerPluginCacheTimestamp = now;
+    logger.info(`Loaded ${Object.keys(plugins).length} developer plugins from approved_plugins`);
+    return plugins;
+  } catch (err) {
+    logger.error("Failed to load developer plugins", err);
+    return developerPluginCache; // Return stale cache on error
+  }
+}
+
+async function getMergedRegistry(): Promise<Record<string, PluginConfig>> {
+  const devPlugins = await loadDeveloperPlugins();
+  return { ...devPlugins, ...PLUGIN_REGISTRY }; // First-party takes priority on collision
+}
 
 // ── Chain Definitions ─────────────────────────────────────────────────────────
 // Curated orchestrator workflows — extracted from workers/orchestrator/src/index.js
@@ -587,9 +715,10 @@ export const swarmspaceRouter = onCall(
       throw new HttpsError("invalid-argument", "plugin_id is required");
     }
 
-    // Step 3: Look up the plugin in the registry.
+    // Step 3: Look up the plugin in the merged registry (first-party + developer).
     // If it's not registered, we reject it — no unknown plugins allowed.
-    const plugin = PLUGIN_REGISTRY[plugin_id];
+    const registry = await getMergedRegistry();
+    const plugin = registry[plugin_id];
     if (!plugin) {
       throw new HttpsError("not-found", `Unknown plugin: ${plugin_id}`);
     }
@@ -632,33 +761,53 @@ export const swarmspaceRouter = onCall(
     }
 
     // Step 4c: PRISM middleware — intercept before worker
-    const privacyRequired = plugin.privacy_data_required === true;
-    const hasSensitivePayload =
-      typeof paramsToSend === "object" &&
-      (paramsToSend.image_b64 != null || paramsToSend.image_url != null || paramsToSend.url != null);
+    // PRISM enforcement: consent gating + context field filtering
+    const declaredFields = plugin.privacy_data_required ?? [];
+    const pluginPrivacyTier = plugin.privacyTier ?? PrivacyTier.ANONYMOUS;
     const consentGiven = paramsToSend._prism_consent === true || paramsToSend._prism_consent === "true";
-    const paramsForWorker = { ...paramsToSend };
-    delete (paramsForWorker as Record<string, unknown>)._prism_consent;
-    const dataFieldsSent = typeof paramsForWorker === "object" && paramsForWorker !== null
-      ? Object.keys(paramsForWorker).filter((k) =>
-          ["image_b64", "image_url", "url", "image_base64"].includes(k)
-        )
-      : [];
-    if (privacyRequired && hasSensitivePayload && !consentGiven) {
+    const consentRequired = requiresUserConsent(pluginPrivacyTier);
+
+    // System keys that are always allowed through to the worker
+    const SYSTEM_KEYS = new Set(["query", "limit", "count", "mode", "_apiKeyOverride",
+      "base", "word", "q", "topic", "format", "currency", "lang"]);
+
+    // Build allowlist: declared privacy fields + system keys
+    const allowedKeys = new Set([...declaredFields, ...SYSTEM_KEYS]);
+
+    // Context field filtering: strip undeclared fields before forwarding
+    const paramsForWorker: Record<string, unknown> = {};
+    const strippedFields: string[] = [];
+    for (const [key, value] of Object.entries(paramsToSend)) {
+      if (key === "_prism_consent") continue; // Always strip consent flag
+      if (allowedKeys.has(key)) {
+        paramsForWorker[key] = value;
+      } else {
+        strippedFields.push(key);
+      }
+    }
+
+    const dataFieldsSent = Object.keys(paramsForWorker).filter((k) =>
+      ["image_b64", "image_url", "url", "image_base64"].includes(k)
+    );
+
+    // Consent gating based on PrivacyTier
+    if (consentRequired && !consentGiven) {
+      // For STRUCTURED_PERSONAL: always require fresh consent
+      // For USER_CONTENT: require consent (persistent approval is a future enhancement)
       logger.info("prism_transaction", {
         phase: "pre_invoke",
         plugin_id,
         user_id: userId,
         user_tier: userTier,
-        privacy_data_required: true,
-        has_sensitive_payload: true,
+        privacy_tier: pluginPrivacyTier,
+        privacy_data_required: declaredFields,
         consent_given: false,
         ts: new Date().toISOString(),
       });
       logger.warn(`PRISM: Blocking unconsented privacy-requiring plugin call`, {
         plugin_id,
         userId,
-        hasSensitivePayload: true,
+        privacyTier: pluginPrivacyTier,
         consentGiven: false,
       });
       writePluginActivityLog({
@@ -666,7 +815,7 @@ export const swarmspaceRouter = onCall(
         plugin_id,
         plugin_name: plugin.description,
         user_tier: userTier,
-        privacy_required: true,
+        privacy_required: declaredFields.length > 0,
         consent_given: false,
         data_fields_sent: dataFieldsSent,
         result: "blocked",
@@ -678,21 +827,25 @@ export const swarmspaceRouter = onCall(
         {
           code: "PRISM_CONSENT_REQUIRED",
           plugin_id,
-          privacy_data_required: true,
+          privacy_data_required: declaredFields,
+          privacy_tier: pluginPrivacyTier,
         }
       );
-    } else {
-      logger.info("prism_transaction", {
-        phase: "pre_invoke",
-        plugin_id,
-        user_id: userId,
-        user_tier: userTier,
-        privacy_data_required: privacyRequired,
-        has_sensitive_payload: hasSensitivePayload,
-        consent_given: consentGiven,
-        ts: new Date().toISOString(),
-      });
     }
+
+    // Log the PRISM transaction (always, for audit trail)
+    logger.info("prism_transaction", {
+      phase: "pre_invoke",
+      plugin_id,
+      user_id: userId,
+      user_tier: userTier,
+      privacy_tier: pluginPrivacyTier,
+      privacy_data_required: declaredFields,
+      consent_given: consentRequired ? consentGiven : "not_required",
+      fields_kept: Object.keys(paramsForWorker),
+      ...(strippedFields.length > 0 ? { fields_stripped: strippedFields } : {}),
+      ts: new Date().toISOString(),
+    });
 
     // Step 5: Forward the request to the worker.
     // Cloudflare workers expect POST to <base>/invoke; our own HTTP functions (vision-ocr, news)
@@ -723,7 +876,7 @@ export const swarmspaceRouter = onCall(
         plugin_id,
         plugin_name: plugin.description,
         user_tier: userTier,
-        privacy_required: privacyRequired,
+        privacy_required: declaredFields.length > 0,
         consent_given: consentGiven,
         data_fields_sent: dataFieldsSent,
         result: "error",
@@ -756,7 +909,7 @@ export const swarmspaceRouter = onCall(
         plugin_id,
         plugin_name: plugin.description,
         user_tier: userTier,
-        privacy_required: privacyRequired,
+        privacy_required: declaredFields.length > 0,
         consent_given: consentGiven,
         data_fields_sent: dataFieldsSent,
         result: "error",
@@ -782,7 +935,7 @@ export const swarmspaceRouter = onCall(
       plugin_id,
       plugin_name: plugin.description,
       user_tier: userTier,
-      privacy_required: privacyRequired,
+      privacy_required: declaredFields.length > 0,
       consent_given: consentGiven,
       data_fields_sent: dataFieldsSent,
       result: "success",
@@ -810,7 +963,8 @@ export const swarmspacePluginStatus = onCall(
       throw new HttpsError("invalid-argument", "plugin_id is required");
     }
 
-    const plugin = PLUGIN_REGISTRY[plugin_id];
+    const registry = await getMergedRegistry();
+    const plugin = registry[plugin_id];
     if (!plugin) {
       return { available: false, reason: "unknown_plugin" };
     }
@@ -838,7 +992,8 @@ export const swarmspacePluginCatalog = onCall(
     const { isPremium, user } = await enforceAuth(request);
     const userTier = effectiveUserTier(request, user, isPremium);
 
-    const plugins = Object.entries(PLUGIN_REGISTRY).map(([pluginId, config]) => ({
+    const registry = await getMergedRegistry();
+    const plugins = Object.entries(registry).map(([pluginId, config]) => ({
       plugin_id: pluginId,
       description: config.description,
       required_tier: config.requiredTier,
@@ -847,13 +1002,14 @@ export const swarmspacePluginCatalog = onCall(
       author: config.author,
       capabilities: config.capabilities,
       pricing: config.pricing,
-      privacy_data_required: config.privacy_data_required === true,
+      privacy_data_required: config.privacy_data_required ?? [],
       version: config.version,
       deployed_at: config.deployed_at,
       rate_limits: config.rateLimits,
       worker_url: config.workerUrl,
       example_query: config.exampleQuery,
       cost_tier: config.costTier ?? config.requiredTier,
+      source: config.source ?? "first-party",
     }));
 
     return {
@@ -879,10 +1035,11 @@ export const swarmspaceWriteCapabilities = onCall(
       throw new HttpsError("permission-denied", "Admin only");
     }
 
+    const registry = await getMergedRegistry();
     const allCapabilities = new Set<string>();
-    Object.values(PLUGIN_REGISTRY).forEach(p => p.capabilities.forEach(c => allCapabilities.add(c)));
+    Object.values(registry).forEach(p => p.capabilities.forEach(c => allCapabilities.add(c)));
 
-    const pluginIds = Object.keys(PLUGIN_REGISTRY);
+    const pluginIds = Object.keys(registry);
 
     const doc = {
       catalog_version: CATALOG_VERSION,

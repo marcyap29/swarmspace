@@ -1,6 +1,6 @@
 # SwarmSpace — Complete Backlog for Claude Code
 
-*Compiled April 9, 2026 — from Architecture v7, Product Backlog v4, Business Model v5.2, LUMARA Backlog v7, repo backlog.md, and session history*
+*Compiled April 9, 2026 — updated April 12, 2026*
 
 ---
 
@@ -64,23 +64,18 @@ Key constraints:
 - exchange-rates = `swarmspace-plugin-currency.orbitalai.workers.dev`
 - Gemini Flash synthesis Worker is live at `swarmspace-plugin-gemini-flash.orbitalai.workers.dev`
 
-### 1.3 Firestore Security Rules
+### 1.3 Firestore Security Rules ✅ DONE
 
-Collections `developers`, `api_keys`, `plugins` are currently unprotected. Deploy rules:
+Deployed in previous session.
 
-- `developers/{uid}`: read/write restricted to `request.auth.uid == uid`. No delete.
-- `api_keys/{key}`: no client read or write. Server-side Admin SDK only.
-- `plugins/{pluginId}`: approved plugins readable by any authenticated user. Create/update/delete restricted to owning developer (`request.auth.uid == resource.data.developer_uid`).
-- Do NOT touch existing `plugin_submissions` rules.
-- Deploy via `firebase deploy --only firestore:rules`.
+### 1.4 authGuard.ts Migration ✅ DONE
 
-### 1.4 authGuard.ts Migration
+Migrated in previous session.
 
-Two functions in `functions/src/authGuard.ts` still reference the deprecated `users` collection:
-- `canLinkAccount`
-- `linkAccountData`
+### 1.5 Firebase Functions — All Deployed ✅
 
-Change `db.collection("users")` to `db.collection("developers")` in both. Redeploy: `cd functions && npm run build && firebase deploy --only functions:swarmspaceRouter,functions:swarmspacePluginStatus`.
+All SwarmSpace Firebase functions confirmed live as of April 12, 2026:
+`swarmspaceRouter`, `swarmspacePluginCatalog`, `swarmspacePluginStatus`, `swarmspaceWriteCapabilities`, `newsDataInvoke`, `visionOcrInvoke`, `updateUserModelConfig`, `validatePluginSubmission`, `swarmspaceDiscoveryAgent`, `swarmspaceClaimFoundingSpot`
 
 ---
 
@@ -88,19 +83,13 @@ Change `db.collection("users")` to `db.collection("developers")` in both. Redepl
 
 > An April 2026 audit confirmed that security.html, PRISM.md, and DEVELOPER_GUIDE.md describe capabilities that do not exist in code. These items close that gap. Nothing here is optional if developer outreach is happening.
 
-### 2.1 Documentation Honesty Pass (BEFORE outreach)
+### 2.1 Documentation Honesty Pass (BEFORE outreach) ✅ DONE (2026-04-13)
 
-- [ ] Audit `security.html` — replace present-tense claims about V8 sandboxing, `globalOutbound: null`, network domain enforcement, and credential injection with "planned" / "in development" language
-- [ ] Audit `prism.html` — same pass. Context minimization is logging-only today, not enforcement
-- [ ] Audit `OWASP_AST10_COMPLIANCE.md` — flag which controls are implemented vs designed
-- [ ] Audit `DEVELOPER_GUIDE.md` — ensure sandbox execution model section reflects current state (static Workers, not dynamic isolates)
+Completed: security.html, prism.html, OWASP_AST10_COMPLIANCE.md, DEVELOPER_GUIDE.md — removed false claims, added transparency notes, fixed CSS breakage in prism.html.
 
-### 2.2 PRISM Enforcement (code exists but is disconnected)
+### 2.2 PRISM Enforcement ✅ DONE (2026-04-13)
 
-- [ ] Wire `lib/types/privacy-tiers.ts` and `lib/types/plugin-registry.ts` into `swarmspaceRouter.ts` — currently imported nowhere
-- [ ] Replace `privacy_dat: boolean` with string array of field names in swarmspaceRouter (matches DEVELOPER_GUIDE spec)
-- [ ] Implement actual context field filtering at router dispatch (`swarmspaceRouter.ts:421-491` currently forwards `params` verbatim)
-- [ ] Remove the `"Allow through for now"` passthrough (line 455) and enforce blocking when consent is missing
+Completed: PrivacyTier enum inlined in swarmspaceRouter, all 22 registry entries have privacy_data_required (string[]), privacyTier, dataTypes. Consent gating blocks non-ANONYMOUS plugins without _prism_consent. Context field filtering strips undeclared fields before worker dispatch.
 
 ### 2.3 Credential Isolation
 
@@ -108,21 +97,17 @@ Change `db.collection("users")` to `db.collection("developers")` in both. Redepl
 - [ ] Move toward boundary injection: router or proxy injects credentials into outbound requests, plugin code never touches them
 - [ ] Audit all 13 plugin Workers for direct secret access patterns and log which ones need refactoring
 
-### 2.4 Developer Guide Fixes (before outreach)
+### 2.4 Developer Guide Fixes (before outreach) ✅ DONE (2026-04-13)
 
-- [ ] Remove Experimental trust tier from DEVELOPER_GUIDE.md (Section 6, JSON Schema) and architecture.md — only Community and Verified at launch
-- [ ] Standardize `privacy_data_required` naming  dot-notation (`user.display_name`, `chronicle.interests`) across DEVELOPER_GUIDE.md and architecture.md
-- [ ] Add user context field vocabulary table to DEVELOPER_GUIDE.md Section 10 (PRISM) — developers can't declare fields they don't know exist
-- [ ] Add manifest behavioral fields (`is_read_only`, `is_destructive`, `is_concurrency_safe`, `headless`, `schedulable`) to DEVELOPER_GUIDE.md JSON Schema section
-- [ ] Add endpoint contract section to DEVELOPER_GUIDE.md — expected request/response format, error handling, timeout expectations
+Completed: Removed Experimental tier, changed privacy_data_required to string[], added privacyTier/dataTypes to manifest schema, added context field vocabulary table, added behavioral fields, added endpoint contract section, error code format updated to match actual HttpsError shape.
 
 ---
 
 ## 3. SUPPLY-SIDE (Developer Ecosystem) — Priority: HIGH
 
-### 3.1 Developer Submission Portal
+### 3.1 Developer Submission Portal ✅ DONE (2026-04-13)
 
-Not built. Highest priority for supply-side growth. The dashboard has a basic submit form that writes to Firestore. Need a proper submission flow: manifest validation, endpoint reachability check, queue for review.
+Completed Phases 1-2. Phase 1: SSRF protection, endpoint hardening, duplicate detection, 5 new form fields (access_tier, capabilities, example_query, version, rate_limits), server-side validation. Phase 2: onSubmissionStatusChange Firestore trigger (promotion pipeline), TTL-cached developer plugin merge in swarmspaceRouter, resubmission flow, real-time status dashboard, revocation handler. Phase 3 (email notifications, health checks) deferred.
 
 ### 3.2 Developer Agreement (Legal)
 
@@ -136,9 +121,9 @@ Not provisioned. 80% to dev, 20% platform on Verified transactions. 85% for Foun
 
 Not built. Required before Verified tier launches. Show calls, revenue, merit score trajectory.
 
-### 3.5 AST10 Compliance Posture Page
+### 3.5 AST10 Compliance Posture Page ✅ DONE (2026-04-13)
 
-Not built. Publish at `swarmspace.vercel.app` before Founding Developer outreach. Map SwarmSpace architecture against OWASP Agentic Skills Top 10. High signal, low effort.
+Completed: ast10.html published. 4 renamed categories use official OWASP AST10 names with (formerly: X) annotations. Trust tier claim corrected. PRISM acronym expansion removed per policy.
 
 ### 3.6 Founding Developer Programme
 
@@ -282,12 +267,12 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 Do not start outreach until prerequisites are met.
 
 ### Prerequisites (all must be done)
-- [ ] 404/405 Worker fixes complete
-- [ ] DEVELOPER_GUIDE.md fixes complete (Section 2.4)
-- [ ] Documentation honesty pass complete (Section 2.1)
-- [ ] Developer submission portal functional (Section 3.1)
+- [x] 404/405 Worker fixes complete (2026-04-12)
+- [x] DEVELOPER_GUIDE.md fixes complete (Section 2.4) (2026-04-13)
+- [x] Documentation honesty pass complete (Section 2.1) (2026-04-13)
+- [x] Developer submission portal functional (Section 3.1) (2026-04-13)
 - [ ] At least 3 of 12 free workflows demonstrably working in LUMARA (Research & Summarise, News Briefing, Competitor Research)
-- [ ] AST10 compliance posture page published (Section 3.5)
+- [x] AST10 compliance posture page published (Section 3.5) (2026-04-13)
 
 ### Launch Sequence
 1. Identify 20-30 target developers from LinkedIn/Substack audience
