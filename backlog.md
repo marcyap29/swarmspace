@@ -889,6 +889,214 @@ Chain parameter preserved through auth flow. `signup.html` forwards `?chain=` to
 
 ---
 
+## 13. RESEARCH WRITING ASSISTANT — Priority: HIGH (Layer 2 Workflow)
+
+> *Orbital AI | April 2026 | Confidential*
+> *First Layer 2 premium workflow on SwarmSpace*
+
+### Overview
+
+The Research Writing Assistant chains existing free-tier plugins with new purpose-built steps to take a user from raw research materials to a structured, citation-verified first draft with iterative refinement capabilities. This is a writing assistant, not a paper writer. The output is a working first draft that the user edits, annotates, and refines. The workflow produces the scaffold; the user owns the final product.
+
+### Positioning
+
+- **Product category:** Layer 2 premium workflow (composed plugin chain)
+- **Credit cost:** 30-50 credits per initial generation run. Iterative refinement passes cost 10 credits each (single-section rewrites)
+- **Target users:** Graduate students, postdocs, independent researchers, R&D teams, technical writers
+- **Competitive context:** Elicit, Consensus, Scite sell research discovery. This workflow sells research-to-draft, which none of them do end-to-end
+- **Existing SwarmSpace foundation:** Builds on /academic orchestrator route and 3 live free-tier plugins (Semantic Scholar, arXiv, PubMed)
+
+### What This Is Not
+
+- Not a submission-ready paper generator. The output requires human review, editing, and intellectual contribution.
+- Not a citation fabricator. Every reference is API-verified against Semantic Scholar before inclusion.
+- Not a replacement for domain expertise. The user provides the ideas, data, and judgment. The workflow provides structure, sourcing, and drafting velocity.
+
+> **ETHICS FRAMING**
+> All output includes a visible watermark/metadata tag: 'Draft generated with AI writing assistance. All claims, citations, and conclusions require human verification.' This is non-optional and cannot be removed by the workflow.
+
+### Workflow Chain (6 Steps)
+
+Steps 1-5 run on initial generation. Step 6 is the iterative refinement loop triggered by user annotation.
+
+| Step | Plugin/Agent | New/Existing | Input | Output |
+|------|-------------|--------------|-------|--------|
+| 1. Intake & Clarification | intake-clarifier | New | User raw materials + format preferences | Structured research brief + clarifying questions |
+| 2. Literature Discovery | semantic-scholar + arXiv + pubmed | Existing (live) | Research brief keywords + domain | Candidate paper set (ranked by relevance) |
+| 3. Citation Verification | citation-verifier | New | Candidate paper set | Verified citation set with API confirmation + dead reference removals |
+| 4. Outline Generation | outline-agent | New | Research brief + verified citations + CHRONICLE context | Structured section outline with citation placement map |
+| 5. Section Drafting | section-writer | New | Outline + verified citations + user materials + reference style | Full structured first draft with inline citations |
+| 6. Iterative Refinement | refinement-agent | New (on-demand) | User annotations on specific sections + original draft context | Targeted section rewrites preserving surrounding context |
+
+Steps 2a (semantic-scholar), 2b (arXiv), and 2c (pubmed) execute in parallel. All other steps are sequential.
+
+### Step 1: Intake & Clarification
+
+**Accepted input formats:** Plain text, DOCX, PDF, LaTeX (.tex). LaTeX equations preserved verbatim (pass-through, no re-rendering).
+
+**Required clarifying questions (always asked):**
+1. Reference style: APA (7th), MLA (9th), Chicago (Author-Date or Notes-Bib), IEEE, Vancouver. Default: APA.
+2. Output format: Markdown, LaTeX, PDF, DOCX. Default: Markdown.
+3. Target venue or audience: journal, conference, class assignment, internal report, or general.
+
+**Conditional questions** (asked when input is ambiguous): thesis/research question, field prioritization, methodology description, position on competing approaches.
+
+> **UX PATTERN:** Clarifying questions appear as tappable option cards (like LUMARA's existing onboarding flow), not as a text prompt. User can tap a default, select from options, or type a custom answer.
+
+**Output:** Structured research brief JSON: title, thesis, domain, keywords, methodology_summary, data_summary, existing_references, reference_style, output_format, target_venue, user_materials_raw.
+
+### Step 2: Literature Discovery
+
+Queries existing live free-tier plugins:
+
+| Plugin | Query Strategy | Expected Return |
+|--------|---------------|-----------------|
+| Semantic Scholar | Two passes: broad (thesis keywords) then narrow (methodology terms). Filter by relevance, citation count, recency. | Top 30-50 candidates |
+| arXiv | Recent (< 2 years) preprints matching domain keywords | Top 10-15 preprints |
+| PubMed | Biomedical literature (triggered only for health/biology/medicine/neuroscience domains) | Top 10-15 papers |
+
+**Deduplication:** Merge across sources. Deduplicate by DOI (primary) or title fuzzy match (fallback). Rank by: relevance to thesis (0.4), citation count normalized by field (0.3), recency (0.2), source diversity (0.1).
+
+**Output:** 25-40 unique papers with title, authors, year, abstract, source, unique ID, relevance score.
+
+### Step 3: Citation Verification
+
+See Section 14 (Citation Verifier Plugin) for full specification.
+
+**Key principle:** Every candidate paper verified against Semantic Scholar API (primary) and CrossRef (fallback). Hallucinated citations removed. User-provided references flagged but never silently deleted.
+
+**Trust signal shown to user:** 'Literature review built from 38 verified sources (4 unverifiable candidates removed).'
+
+### Step 4: Outline Generation
+
+Produces hierarchical document structure based on research brief, verified citations, and CHRONICLE context.
+
+**Standard sections:** Abstract (generated last), Introduction, Related Work / Literature Review, Methodology, Results, Discussion, Conclusion, References.
+
+**Citation placement map:** Each section includes assigned_citations (array of paper IDs mapped to specific key points) and estimated_word_count.
+
+**CHRONICLE context injection:** Writing style data adapts tone guidance. Domain expertise adjusts explanation depth. Prior work references identify connection points.
+
+**User review gate (mandatory):** Outline presented before drafting begins. User can approve, reorder, add/remove sections, adjust citations, or add notes. Analogous to `plan` mode in orchestrator execution model.
+
+### Step 5: Section Drafting
+
+Sections drafted sequentially. Each receives: outline entry, verified citation set, user materials, CHRONICLE context, and all previously drafted sections (for coherence). Abstract generated last.
+
+**Reference style implementation:**
+
+| Style | Inline Format | Reference List Format |
+|-------|--------------|----------------------|
+| APA (7th) | (Author, Year) or Author (Year) | Author, A. A. (Year). Title. Journal, Volume(Issue), Pages. DOI |
+| MLA (9th) | (Author Page) or Author (Page) | Author. Title. Journal, vol. X, no. X, Year, pp. X-X. |
+| Chicago (Author-Date) | (Author Year, Page) | Author. Year. Title. Journal Volume (Issue): Pages. |
+| Chicago (Notes-Bib) | Superscript footnote number | Footnotes + Bibliography entry |
+| IEEE | [Number] | Numbered list in order of appearance |
+| Vancouver | (Number) or superscript | Numbered list in order of appearance, journal abbreviated |
+
+**Output formats:** Markdown (with LaTeX math blocks), LaTeX (full .tex + .bib), PDF (compiled from LaTeX), DOCX (structured with heading styles).
+
+> **WATERMARK:** Every output format includes the ethics watermark. Non-removable by the workflow.
+
+### Step 6: Iterative Refinement
+
+See Section 15 (Iterative Refinement Agent Plugin) for full specification.
+
+**Annotation types:** Section rewrite, Expand, Condense, Strengthen argument, Tone adjustment, Citation request, Factual flag.
+
+**Mechanics:** Each pass costs 10 credits. Agent rewrites only highlighted section. Tracked changes visible in output viewer. User can see diffs and revert. Credit-gated, not count-gated.
+
+### Workflow Manifest
+
+| Field | Value |
+|-------|-------|
+| name | Research Writing Assistant |
+| access_tier | premium |
+| trust_tier | verified |
+| credit_cost_per_call | 40 (initial generation). 10 (per refinement pass). |
+| semantic_tags | research, writing, academic, citations, literature review, drafting, paper, manuscript, thesis, dissertation, LaTeX, APA, MLA, Chicago, IEEE, Vancouver |
+| latency_class | slow (initial: 60-120s). fast (refinement: 10-20s). |
+| privacy_data_required | chronicle.writing_style, chronicle.domain_expertise, chronicle.prior_work_references (all optional) |
+| is_concurrency_safe | false |
+| is_read_only | true |
+| is_destructive | false |
+| headless | false (requires outline review gate + user-initiated refinement) |
+| schedulable | false |
+
+### Steps Array
+
+| Step | Plugin Slug | New/Existing | Concurrency |
+|------|------------|--------------|-------------|
+| 1 | intake-clarifier | New (build) | Sequential (first step) |
+| 2a | semantic-scholar | Existing (live) | Parallel with 2b, 2c |
+| 2b | arxiv | Existing (live) | Parallel with 2a, 2c |
+| 2c | pubmed | Existing (live, conditional) | Parallel with 2a, 2b |
+| 3 | citation-verifier | New (build) | Sequential (depends on step 2) |
+| 4 | outline-agent | New (build) | Sequential (depends on step 3) |
+| 5 | section-writer | New (build) | Sequential (depends on step 4) |
+| 6 | refinement-agent | New (on-demand) | On-demand (user-triggered) |
+
+### New Plugin Specifications
+
+| Plugin | Purpose | Credit Cost | Standalone Value |
+|--------|---------|-------------|------------------|
+| intake-clarifier | Parse multi-format input into structured brief. Surface clarifying questions. | 0 (workflow only) | Yes — structure messy research notes |
+| citation-verifier | Verify papers against Semantic Scholar + CrossRef | 5 standalone | High — verify any reference list before submission |
+| outline-agent | Generate structured outline with citation placement map | 15 standalone | Yes — structure any long-form writing project |
+| section-writer | Draft full document sections with inline citations | 30 standalone | Limited standalone. Primary value in workflow chain |
+| refinement-agent | Process annotations, produce targeted section rewrites | 10 per pass | Yes — rewrite any document section based on feedback |
+
+### Dependencies & Build Order
+
+**Hard prerequisites:** 404/405 fixes (✅ DONE), Layer 2 workflow manifest spec (Section 4.6), orchestrator execution modes (Section 5.3).
+
+**Soft prerequisites:** CHRONICLE writing/domain data, LUMARA output viewer with annotation support.
+
+| Phase | What to Build | Depends On |
+|-------|--------------|------------|
+| Phase 1 | intake-clarifier + citation-verifier plugins | 404/405 fixes ✅ |
+| Phase 2 | outline-agent + section-writer plugins | Phase 1 + Layer 2 manifest spec |
+| Phase 3 | Full chain integration + E2E testing | Phase 2 + orchestrator execution modes |
+| Phase 4 | refinement-agent + output viewer annotation UX | Phase 3 + LUMARA output viewer |
+| Phase 5 | CHRONICLE context tuning + reference style QA (6 styles x 3 scenarios = 18 test cases) | Phase 4 |
+
+### Verification & Acceptance
+
+**Per-step pass criteria:**
+- Intake: parses all 4 formats, contextual questions, LaTeX equations preserved
+- Literature Discovery: 25-40 unique papers, no duplicate DOIs, relevant results
+- Citation Verification: 100% output citations confirmed via API, removal log accurate, user refs flagged not removed
+- Outline: field-appropriate structure, every section has ≥1 citation, word counts reasonable (3K-10K)
+- Section Drafting: all 6 ref styles correct, ethics watermark in all 4 formats, no hallucinated citations
+- Refinement: rewrite limited to highlighted section, surrounding paragraphs byte-identical, tracked changes present
+
+**E2E acceptance test:** 500-word rough notes → full workflow with APA + Markdown → verify all steps → annotate 2 sections → verify refinements scoped correctly → total credits: 60 (40 + 10 + 10). Repeat with LaTeX input + IEEE + PDF.
+
+### Revenue Model
+
+| Action | Credits |
+|--------|---------|
+| Initial generation (full chain) | 40 |
+| Per refinement pass | 10 |
+| citation-verifier standalone | 5 |
+| outline-agent standalone | 15 |
+| section-writer standalone | 30 |
+
+**Revenue engine:** Iterative refinement loop. Typical draft goes through 5-10 passes → 90-140 credits per document lifecycle.
+
+> **CONVERSION:** Free /academic workflow is top of funnel. Users who outgrow 'literature summary' and want 'structured first draft with verified citations and iterative editing' upgrade to this premium workflow.
+
+### Architectural Constraints
+
+1. **PRISM enforcement:** Citation-verifier and literature discovery plugins never receive user personal context — only search keywords derived from the research brief.
+2. **Consent-first:** Outline review gate is mandatory. Maps to `plan` mode.
+3. **No fabrication:** Every citation must trace to a verified API record. Unverified citations replaced with `[CITATION NEEDED]`.
+4. **Ethics watermark:** Non-removable. Present in all output formats.
+5. **Format fidelity:** LaTeX equations pass-through only. No interpretation or re-rendering.
+6. **Reference style accuracy:** Must be correct per style guide. Approximate formatting not acceptable.
+
+---
+
 ## 16. COMPLETED (March-April 2026)
 
 - [x] Supabase to Firestore migration (all collections, auth, Stripe webhook, dashboard)
