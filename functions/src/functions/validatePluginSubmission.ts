@@ -9,8 +9,8 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { getFirestore } from "firebase-admin/firestore";
 import dns from "dns";
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
+// Ajv imported lazily to avoid Firebase 10s deployment load timeout
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 import { enforceAuth } from "../authGuard";
 
 // ── Valid enum values ────────────────────────────────────────────────────────
@@ -70,9 +70,19 @@ const PLUGIN_MANIFEST_SCHEMA = {
   },
 };
 
-const ajv = new Ajv({ allErrors: true });
-addFormats(ajv);
-const validateManifestSchema = ajv.compile(PLUGIN_MANIFEST_SCHEMA);
+// Lazy-init Ajv to avoid Firebase deployment timeout (10s load budget)
+let _validateManifestSchema: ((data: unknown) => boolean) & { errors?: Array<{ instancePath?: string; message?: string }> | null } | null = null;
+function getManifestValidator() {
+  if (!_validateManifestSchema) {
+    // Dynamic require to defer the heavy Ajv load until first invocation
+    const Ajv = require("ajv").default || require("ajv");
+    const addFormats = require("ajv-formats").default || require("ajv-formats");
+    const ajvInstance = new Ajv({ allErrors: true });
+    addFormats(ajvInstance);
+    _validateManifestSchema = ajvInstance.compile(PLUGIN_MANIFEST_SCHEMA);
+  }
+  return _validateManifestSchema;
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -799,15 +809,19 @@ async function checkManifest(
     }
 
     // Ajv JSON Schema validation
-    const ajvValid = validateManifestSchema(manifest);
+    const manifestValidator = getManifestValidator();
+    let ajvValid = true;
     const ajvErrors: string[] = [];
-    if (!ajvValid && validateManifestSchema.errors) {
-      for (const err of validateManifestSchema.errors) {
-        ajvErrors.push(`${err.instancePath || "/"}: ${err.message ?? "unknown error"}`);
+    if (manifestValidator) {
+      ajvValid = manifestValidator(manifest) as boolean;
+      if (!ajvValid && manifestValidator.errors) {
+        for (const err of manifestValidator.errors) {
+          ajvErrors.push(`${err.instancePath || "/"}: ${err.message ?? "unknown error"}`);
+        }
       }
     }
 
-    const overallValid = missing.length === 0 && (ajvValid as boolean);
+    const overallValid = missing.length === 0 && ajvValid;
 
     return {
       manifestCheck: {
