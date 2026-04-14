@@ -187,10 +187,41 @@
   </div>
 
   <!-- AST04 -->
-  <h2>AST04 &mdash; Inadequate Sandboxing</h2>
+  <h2>AST04 &mdash; Insecure Metadata <span style="font-size:13px;color:var(--dim);font-weight:400;">(formerly: Inadequate Sandboxing)</span></h2>
   <div class="control-card">
-    <h3>Inadequate Sandboxing <span class="transparency-note partial">Partially Implemented</span></h3>
-    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Insecure Metadata"</p>
+    <h3>Insecure Metadata <span class="transparency-note partial">Partially Addressed</span></h3>
+    <p>Inconsistent or misleading metadata formats allow skill impersonation and misrepresentation.</p>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li>Manifest schema validation on all plugin submissions (real, enforced)</li>
+      <li><code>scan_status</code> field records scanner version and results in the manifest</li>
+      <li>LLM-based consistency analysis of <code>capability</code> vs <code>data_required</code> fields</li>
+      <li>Structured, typed metadata fields in manifest spec (<code>capability</code>, <code>data_required</code>, <code>network_permissions</code>, etc.)</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>No runtime enforcement of metadata accuracy &mdash; a plugin&rsquo;s declared capabilities may differ from its actual behavior. Metadata fields are declared but not validated against actual plugin behavior at runtime. Ed25519 signing of metadata is spec-only (no verification code exists).</p>
+  </div>
+
+  <!-- AST05 -->
+  <h2>AST05 &mdash; Unsafe Deserialization <span style="font-size:13px;color:var(--dim);font-weight:400;">(formerly: Insecure Inter-Skill Communication)</span></h2>
+  <div class="control-card">
+    <h3>Unsafe Deserialization <span class="transparency-note partial">Partially Implemented</span></h3>
+    <p>YAML/JSON/Markdown deserialization vulnerabilities enable code execution on skill load.</p>
+    <div class="sub-heading">What SwarmSpace does</div>
+    <ul>
+      <li>Plugins are API endpoints, not installable code &mdash; no local deserialization of executable plugin content (architecturally true)</li>
+      <li>No YAML or Markdown executable loading occurs in the plugin pipeline</li>
+      <li>JSON schema validation on all plugin submissions</li>
+    </ul>
+    <div class="sub-heading">Current gaps</div>
+    <p>Plugin JSON responses are not validated against a declared output schema before being passed to agents, which leaves a vector for malformed or adversarial output injection.</p>
+  </div>
+
+  <!-- AST06 -->
+  <h2>AST06 &mdash; Weak Isolation <span style="font-size:13px;color:var(--dim);font-weight:400;">(formerly: Insufficient User Consent)</span></h2>
+  <div class="control-card">
+    <h3>Weak Isolation <span class="transparency-note partial">Partially Implemented</span></h3>
+    <p>Running skills without containerization/sandboxing exposes the host system.</p>
     <div class="sub-heading">What SwarmSpace does</div>
     <ul>
       <li>Plugins run as isolated Cloudflare Workers &mdash; separate V8 isolates per request (real, enforced)</li>
@@ -200,35 +231,6 @@
     </ul>
     <div class="sub-heading">Current gaps</div>
     <p>Credential isolation is not yet scoped per-tenant. Plugin credentials are shared across tenants rather than isolated per-user context.</p>
-  </div>
-
-  <!-- AST05 -->
-  <h2>AST05 &mdash; Insecure Inter-Skill Communication</h2>
-  <div class="control-card">
-    <h3>Insecure Inter-Skill Communication <span class="transparency-note partial">Partially Implemented</span></h3>
-    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Prompt Injection via Skills"</p>
-    <div class="sub-heading">What SwarmSpace does</div>
-    <ul>
-      <li>All inter-service calls authenticated via <code>SWARMSPACE_INTERNAL_TOKEN</code> (real, enforced)</li>
-      <li>No direct plugin-to-plugin communication path exists (architecturally true)</li>
-    </ul>
-    <div class="sub-heading">Current gaps</div>
-    <p>Output schema validation is not yet implemented. Plugin responses are not validated against a declared schema before being passed to agents, which leaves a vector for malformed or adversarial output.</p>
-  </div>
-
-  <!-- AST06 -->
-  <h2>AST06 &mdash; Insufficient User Consent</h2>
-  <div class="control-card">
-    <h3>Insufficient User Consent <span class="transparency-note designed">Designed, Not Enforced</span></h3>
-    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Weak Isolation"</p>
-    <div class="sub-heading">What SwarmSpace does</div>
-    <ul>
-      <li>Manifest spec defines <code>privacy_data_required</code>, <code>data_required</code>, and <code>_prism_consent</code> fields for consent tracking</li>
-      <li>Consent passthrough exists in the router code but is not enforced as a gate</li>
-      <li>Activity log records plugin calls with privacy metadata (real)</li>
-    </ul>
-    <div class="sub-heading">Current gaps</div>
-    <p>Plugins can be invoked without confirmed consent. The consent passthrough is present in code but does not block execution when consent is missing. Until this is enforced as a hard gate, consent is advisory only.</p>
   </div>
 
   <!-- AST07 -->
@@ -261,7 +263,7 @@
     <h3>No Governance <span class="transparency-note partial">Partially Implemented</span></h3>
     <div class="sub-heading">What SwarmSpace does</div>
     <ul>
-      <li>Trust tiers (Community and Verified) gate plugin access in production (real, enforced)</li>
+      <li>Trust tiers (Community and Verified) are declared in manifests <span class="transparency-note">Designed, not yet enforced at runtime — subscription tiers (free/standard/premium) are enforced</span></li>
       <li>Monthly merit reviews planned (manual at launch, tooling planned)</li>
     </ul>
     <div class="sub-heading">Current gaps</div>
@@ -269,18 +271,17 @@
   </div>
 
   <!-- AST10 -->
-  <h2>AST10 &mdash; Lack of Observability</h2>
+  <h2>AST10 &mdash; Cross-Platform Reuse <span style="font-size:13px;color:var(--dim);font-weight:400;">(formerly: Lack of Observability)</span></h2>
   <div class="control-card">
-    <h3>Lack of Observability <span class="transparency-note implemented">Implemented</span></h3>
-    <p style="font-size:12px;color:var(--dim);margin-bottom:10px;">OWASP official name: "Cross-Platform Reuse"</p>
+    <h3>Cross-Platform Reuse <span class="transparency-note designed">Designed</span></h3>
+    <p>Security properties lost when skills are ported across platforms without translation.</p>
     <div class="sub-heading">What SwarmSpace does</div>
     <ul>
-      <li><code>plugin_activity_log</code> collection records every plugin call with: user ID, plugin ID, tier, privacy metadata, consent status, result, and error messages</li>
-      <li>PRISM transaction logging at pre-invoke and post-invoke phases</li>
-      <li>Dashboard stat cards show live usage data</li>
+      <li>Plugins are HTTP API endpoints, inherently platform-agnostic by design</li>
+      <li>Manifest spec defines security properties (<code>network_permissions</code>, <code>deny_write</code>, <code>risk_tier</code>) that travel with the plugin declaration</li>
     </ul>
     <div class="sub-heading">Current gaps</div>
-    <p>Observability is implemented and enforced in production. No significant gaps at this time.</p>
+    <p>Security properties defined in the manifest are only enforced within the SwarmSpace runtime. When plugins are accessed outside the SwarmSpace router (e.g., direct API calls), declared security properties like <code>network_permissions</code> and <code>deny_write</code> have no enforcement mechanism. No cross-platform security property translation or verification exists.</p>
   </div>
 
   <!-- Lethal Trifecta -->
@@ -362,7 +363,7 @@
       <li><a href="https://owasp.org/www-project-agentic-skills-top-10/" rel="noopener noreferrer">OWASP Agentic Skills Top 10 Project</a></li>
       <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026" rel="noopener noreferrer">OWASP Top 10 for Agentic Applications (2026)</a></li>
       <li><a href="/security.html">SwarmSpace Security &amp; Trust Architecture</a></li>
-      <li><a href="/prism.html">PRISM &mdash; Privacy-Respecting Invocation Safety Model</a></li>
+      <li><a href="/prism.html">PRISM</a></li>
       <li><a href="https://github.com/marcyap29/swarmspace/blob/main/Docs/OWASP_AST10_COMPLIANCE.md">Full compliance matrix (source document)</a></li>
     </ul>
   </div>

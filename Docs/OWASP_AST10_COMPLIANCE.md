@@ -14,7 +14,7 @@
 
 The OWASP Agentic Skills Top 10 (AST10), published March 2026, is the first comprehensive security framework for AI agent skills. SwarmSpace aligns with AST10 as a core trust differentiator.
 
-> **Naming note:** This document was drafted against a pre-release AST10 taxonomy. The final OWASP AST10 v1.0 (2026 Edition) renamed several controls. Where our internal naming differs from the published standard, the official name is noted in parentheses.
+> **Naming note:** This document was drafted against a pre-release AST10 taxonomy. The final OWASP AST10 v1.0 (2026 Edition) renamed several controls. Headings now use the official OWASP names; former internal names are retained as "(formerly: X)" for one version cycle.
 
 ## Compliance Matrix
 
@@ -34,25 +34,31 @@ The OWASP Agentic Skills Top 10 (AST10), published March 2026, is the first comp
 - Intent: `network_permissions` replaces binary network on/off with explicit domain allowlist; `deny_write` protects identity, memory, and context files; `data_required` lists what user data a plugin needs
 - No code currently validates or enforces these constraints at execution time
 
-### AST04 — Inadequate Sandboxing *(OWASP official: "Insecure Metadata")*
+### AST04 — Insecure Metadata (formerly: Inadequate Sandboxing)
+**Status: Partially Addressed**
+- Inconsistent or misleading metadata formats allow skill impersonation and misrepresentation
+- Manifest schema validation on all plugin submissions (real, enforced)
+- `scan_status` field records scanner version and results in the manifest
+- LLM-based consistency analysis of `capability` vs `data_required` fields
+- Structured, typed metadata fields in manifest spec (`capability`, `data_required`, `network_permissions`, etc.)
+- **Gap:** No runtime enforcement of metadata accuracy — a plugin's declared capabilities may differ from its actual behavior; Ed25519 metadata signing is spec-only (no verification code exists)
+
+### AST05 — Unsafe Deserialization (formerly: Insecure Inter-Skill Communication)
 **Status: Partially Implemented**
-- Plugins run as isolated Cloudflare Workers — separate V8 isolates per request (real, enforced)
+- YAML/JSON/Markdown deserialization vulnerabilities enable code execution on skill load
+- Plugins are API endpoints, not installable code — no local deserialization of executable plugin content (architecturally true)
+- No YAML or Markdown executable loading occurs in the plugin pipeline
+- JSON schema validation on all plugin submissions
+- **Gap:** Plugin JSON responses are not validated against a declared output schema before being passed to agents, leaving a vector for malformed or adversarial output injection
+
+### AST06 — Weak Isolation (formerly: Insufficient User Consent)
+**Status: Partially Implemented**
+- Running skills without containerization/sandboxing exposes the host system
+- Plugins run as isolated Cloudflare Workers — static, pre-deployed V8 isolates (not dynamically created per request); each invocation runs in its own isolate with no shared mutable state (real, enforced)
 - No shared state between plugins (architecturally true)
 - Plugins cannot access SwarmSpace infrastructure; only the reverse: router calls plugins (real)
 - 25-second execution timeout enforced (real)
 - **Gap:** Credential isolation — plugin credentials are not yet scoped per-tenant
-
-### AST05 — Insecure Inter-Skill Communication *(OWASP official: "Prompt Injection via Skills")*
-**Status: Partially Implemented**
-- All inter-service calls authenticated via `SWARMSPACE_INTERNAL_TOKEN` (real, enforced)
-- No direct plugin-to-plugin communication path exists (architecturally true)
-- **Gap:** Output schema validation is not yet implemented — plugin responses are not validated against a declared schema before being passed to agents
-
-### AST06 — Insufficient User Consent *(OWASP official: "Weak Isolation")*
-**Status: Designed, Not Enforced**
-- Manifest spec defines `privacy_data_required`, `data_required`, and `_prism_consent` fields for consent tracking
-- Consent passthrough exists at `swarmspaceRouter.ts:455` but is not enforced as a gate — plugins can be invoked without confirmed consent
-- Activity log records plugin calls with privacy metadata (real)
 
 ### AST07 — Update Drift
 **Status: Designed**
@@ -68,25 +74,25 @@ The OWASP Agentic Skills Top 10 (AST10), published March 2026, is the first comp
 
 ### AST09 — No Governance
 **Status: Partially Implemented**
-- Trust tiers (community/verified) gate plugin access in production (real, enforced)
+- Subscription-based access tiers (Free/Standard/Premium) gate plugin access in production (real, enforced); trust-based quality tiers (community/verified) are planned but not yet enforced
 - `risk_tier` field (L0–L3) exists in the manifest spec but is not enforced at runtime
 - Monthly merit reviews (manual at launch, tooling planned)
 
-### AST10 — Lack of Observability *(OWASP official: "Cross-Platform Reuse")*
-**Status: Implemented**
-- `plugin_activity_log` collection records every plugin call with:
-  - User ID, plugin ID, tier, privacy metadata, consent status, result, error messages
-- PRISM transaction logging at pre-invoke and post-invoke phases
-- Dashboard stat cards show live usage data
+### AST10 — Cross-Platform Reuse (formerly: Lack of Observability)
+**Status: Designed**
+- Security properties lost when skills are ported across platforms without translation
+- Plugins are HTTP API endpoints, inherently platform-agnostic by design
+- Manifest spec defines security properties (`network_permissions`, `deny_write`, `risk_tier`) that travel with the plugin declaration
+- **Gap:** Security properties defined in the manifest are only enforced within the SwarmSpace runtime — when plugins are accessed outside the SwarmSpace router (e.g., direct API calls), declared security properties have no enforcement mechanism; no cross-platform security property translation or verification exists
 
 ## OWASP "Lethal Trifecta" Mapping
 
 OWASP defines the lethal trifecta as three capabilities that, combined, create maximum risk:
-1. **Access to private data** — SwarmSpace: `data_required` field + PRISM consent flow (designed, not enforced)
+1. **Access to private data** — SwarmSpace: `privacy_data_required` string[] field + PRISM consent flow (enforced in router: blocks unconsented calls, strips undeclared fields)
 2. **Exposure to untrusted content** — SwarmSpace: output schema validation (planned, not implemented) + untrusted data wrapping
 3. **Ability to communicate externally** — SwarmSpace: `network_permissions` allowlist + `deny_write` protection (spec-only, no runtime enforcement)
 
-PRISM consent fields are defined in the manifest spec; runtime enforcement is not yet in place. Full lethal trifecta coverage requires implementing the controls listed in the Compliance Timeline.
+PRISM consent gating and context field filtering are enforced in the router. Items 2 and 3 (output validation and network restrictions) remain spec-only. Full lethal trifecta coverage requires implementing the controls listed in the Compliance Timeline.
 
 ## Compliance Timeline
 

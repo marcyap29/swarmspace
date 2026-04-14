@@ -21,7 +21,6 @@
     a { color:var(--accent2); text-decoration:none; }
     a:hover { text-decoration:underline; }
 
-```
 nav {
   position:sticky; top:0; z-index:100;
   display:flex; align-items:center; justify-content:space-between;
@@ -106,7 +105,6 @@ footer p { font-size:13px; color:var(--dim); }
   .page{padding:40px 20px 64px;}
   footer{flex-direction:column;align-items:flex-start;padding:28px 20px;}
 }
-```
 
   </style>
 </head>
@@ -140,7 +138,7 @@ footer p { font-size:13px; color:var(--dim); }
       <tbody>
         <tr>
           <td>Manifest declaration</td>
-          <td>The plugin declares required context in <code>privacy_data_required</code>. <span class="badge badge-current">Current</span> This is currently a boolean flag on the router (requires personal context or not). <span class="badge badge-planned">Planned</span> Field-level declaration (a list of specific CHRONICLE fields) is planned but not yet implemented.</td>
+          <td>The plugin declares required context fields in <code>privacy_data_required</code> as a <code>string[]</code> of dot-notation CHRONICLE field names. <span class="badge badge-current">Current</span> The router enforces this: only declared fields are forwarded to the plugin, and calls to non-ANONYMOUS plugins are blocked unless the user provides <code>_prism_consent</code>.</td>
         </tr>
         <tr>
           <td>Sandbox enforcement</td>
@@ -167,14 +165,10 @@ footer p { font-size:13px; color:var(--dim); }
     <li style="margin-bottom:10px;">Plugin code has no supported mechanism to request additional CHRONICLE fields mid-flight. Undeclared channels are outside the exposed API.</li>
   </ol>
 
-  <h3>What the plugin receives — weather plugin (declares location only)</h3>
-  <div class="code-block"><pre><span class="comment">// Planned: privacy_data_required: ["location"]</span>
-<span class="comment">// Current: privacy_data_required: true (boolean flag)</span>
+  <h3>What the plugin receives — weather plugin (declares no personal context)</h3>
+  <div class="code-block"><pre><span class="comment">// privacy_data_required: [] (ANONYMOUS tier)</span>
 {
   <span class="key">"query"</span>: <span class="val">"What's the weather like this afternoon?"</span>,
-  <span class="key">"context"</span>: {
-    <span class="key">"location"</span>: <span class="val">"San Diego, CA"</span>
-  },
   <span class="key">"metadata"</span>: {
     <span class="key">"caller"</span>: <span class="val">"lumara"</span>,
     <span class="key">"request_id"</span>: <span class="val">"7b2c9f1a-4e8d-4b3c-9f01-123456789abc"</span>,
@@ -182,11 +176,10 @@ footer p { font-size:13px; color:var(--dim); }
   }
 }</pre></div>
 
-  <p>The plugin does not receive the user's name, journal text, full CHRONICLE graph, or any undeclared field. Those values are never attached at the client minimization step and are not injected by the worker.</p>
+  <p><span class="badge badge-current">Current</span> The router enforces context field filtering: only fields declared in <code>privacy_data_required</code> are forwarded. Undeclared fields are stripped before the request reaches the worker. Plugins with <code>privacy_data_required: []</code> (ANONYMOUS tier) receive no personal context.</p>
 
   <h3>What the plugin receives — research plugin (declares no personal context)</h3>
-  <div class="code-block"><pre><span class="comment">// Planned: privacy_data_required: ["none"]</span>
-<span class="comment">// Current: privacy_data_required: false (boolean flag)</span>
+  <div class="code-block"><pre><span class="comment">// privacy_data_required: [] (ANONYMOUS tier)</span>
 {
   <span class="key">"query"</span>: <span class="val">"Summarize recent papers on transformer scaling laws"</span>,
   <span class="key">"context"</span>: {},

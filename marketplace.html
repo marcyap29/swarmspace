@@ -67,7 +67,6 @@
   .trust-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .trust-dot.verified { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .trust-dot.community { background: var(--amber); }
-  .trust-dot.experimental { background: var(--text-dim); }
 
   /* MAIN */
   .main { padding: 24px; overflow-y: auto; }
@@ -113,7 +112,6 @@
   .trust-pill { display: flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; }
   .trust-pill.verified { background: var(--green-bg); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
   .trust-pill.community { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
-  .trust-pill.experimental { background: rgba(107,114,128,0.1); color: var(--text-dim); border: 1px solid var(--border); }
   .plugin-rating { display: flex; align-items: center; gap: 3px; font-family: var(--mono); font-size: 10px; color: var(--amber); }
   .plugin-price { margin-left: auto; font-family: var(--mono); font-size: 11px; font-weight: 600; }
   .plugin-price.free { color: var(--green); }
@@ -356,11 +354,6 @@
           <span style="flex:1;font-size:12px;">Community</span>
           <span class="sidebar-count">681</span>
         </div>
-        <div class="trust-badge-filter">
-          <div class="trust-dot experimental"></div>
-          <span style="flex:1;font-size:12px;">Experimental</span>
-          <span class="sidebar-count">254</span>
-        </div>
       </div>
     </div>
 
@@ -564,23 +557,6 @@
           <span class="trust-pill verified">● Verified</span>
           <span class="plugin-rating">★ 4.8 <span style="color:var(--text-dim)">(334)</span></span>
           <span class="latency-badge fast">⚡ 45ms</span>
-          <span class="plugin-price free">Free</span>
-        </div>
-      </div>
-
-      <div class="plugin-card">
-        <div class="plugin-header">
-          <div class="plugin-icon">🧬</div>
-          <div class="plugin-meta">
-            <div class="plugin-name">GeneticContext</div>
-            <div class="plugin-author">by biobridge · 1.2k installs</div>
-          </div>
-        </div>
-        <div class="plugin-desc">23andMe/AncestryDNA reader. Converts raw genetic data to structured health predispositions. Fully local, no upload.</div>
-        <div class="plugin-footer">
-          <span class="trust-pill experimental">○ Experimental</span>
-          <span class="plugin-rating">★ 3.9 <span style="color:var(--text-dim)">(44)</span></span>
-          <span class="latency-badge fast">⚡ 60ms</span>
           <span class="plugin-price free">Free</span>
         </div>
       </div>
