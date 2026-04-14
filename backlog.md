@@ -1097,6 +1097,110 @@ See Section 15 (Iterative Refinement Agent Plugin) for full specification.
 
 ---
 
+## 14. CITATION VERIFIER PLUGIN — Priority: HIGH (Phase 1 of Research Writing Assistant)
+
+> **Plugin slug:** `citation-verifier` | **Category:** Research / Lookup | **Credit cost:** 5 standalone, 0 within workflow | **Trust tier:** Verified | **Privacy:** No user personal context required
+
+### Purpose
+
+Verifies existence and accuracy of academic citations against Semantic Scholar and CrossRef APIs. Takes candidate papers (from any source) and returns a verified set with full metadata, a removal log for unverifiable papers, and a flag log for user-provided references that failed verification. Callable independently (verify a reference list before submission) and as Step 3 within the Research Writing Assistant workflow.
+
+### Plugin Manifest
+
+```json
+{
+  "name": "Citation Verifier",
+  "slug": "citation-verifier",
+  "version": "1.0.0",
+  "description": "Verifies academic citations against Semantic Scholar and CrossRef. Returns verified papers with full metadata, removes unverifiable candidates, and flags user-provided references that cannot be confirmed.",
+  "semantic_tags": ["citation", "verification", "academic", "references", "Semantic Scholar", "CrossRef", "bibliography", "research", "fact-check"],
+  "access_tier": "premium",
+  "trust_tier": "verified",
+  "credit_cost_per_call": 5,
+  "latency_class": "medium",
+  "privacy_data_required": [],
+  "auth_method": "api_key",
+  "is_concurrency_safe": true,
+  "is_read_only": true,
+  "is_destructive": false,
+  "headless": true,
+  "schedulable": false
+}
+```
+
+### Accepted Input Formats
+
+**Format A: Structured JSON array** — `candidates` array with title, authors, year, doi, source_id, source, user_provided fields. Options: `fuzzy_threshold` (default 0.85), `crossref_fallback` (default true).
+
+**Format B: BibTeX string** — Parsed into internal representation. All BibTeX entries treated as `user_provided: true`.
+
+**Format C: Plain text reference list** — LLM extraction to parse into structured fields. All entries treated as `user_provided: true`.
+
+### Verification Process
+
+**Step 1: Semantic Scholar Lookup (Primary)**
+1. If `source_id` present → query by paper ID
+2. If `doi` present → query by DOI: `GET https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}`
+3. If neither → query by title search: `GET https://api.semanticscholar.org/graph/v1/paper/search?query={title}&limit=5`
+
+**Step 2: Field Matching**
+
+| Field | Match Criteria | Required |
+|-------|---------------|----------|
+| Title | Fuzzy match, Levenshtein ratio >= threshold (default 0.85). Normalize: lowercase, strip punctuation, collapse whitespace. | Yes |
+| First Author | Last name exact match (case-insensitive) against first author in API response | Yes |
+| Year | Exact match | Yes |
+| Abstract | Non-empty string exists in API response | No (informational) |
+
+Paper passes if title + first author + year all match.
+
+**Step 3: CrossRef Fallback** — If Semantic Scholar fails and `crossref_fallback` is true, query CrossRef: `GET https://api.crossref.org/works?query.bibliographic={title}&rows=3`. Same field matching criteria.
+
+**Step 4: Classification**
+
+| Outcome | Condition | Action |
+|---------|-----------|--------|
+| **Verified** | Passes field matching on Semantic Scholar or CrossRef | Added to verified set with full API metadata |
+| **Removed** | Fails all attempts AND `user_provided: false` | Removed. Entry added to removal log with reason. |
+| **Flagged** | Fails all attempts AND `user_provided: true` | Kept but marked unverified. Entry added to flag log. **NOT silently removed.** |
+
+### Output Schema
+
+```json
+{
+  "verified_citations": [{ "title": "...", "authors": [...], "year": 2017, "abstract": "...", "doi": "...", "semantic_scholar_id": "...", "citation_count": 98000, "verification_source": "semantic_scholar", "verification_timestamp": "..." }],
+  "removal_log": [{ "original_title": "...", "reason": "No match found on Semantic Scholar or CrossRef.", "attempts": ["semantic_scholar_title_search", "crossref_title_search"] }],
+  "flag_log": [{ "original_title": "...", "reason": "Title fuzzy match scored 0.72 (below 0.85 threshold).", "closest_match": "...", "closest_match_score": 0.72, "user_provided": true }],
+  "verification_summary": { "total_candidates": 42, "verified": 38, "removed": 3, "flagged": 1, "verification_rate": 0.905, "display_message": "Literature review built from 38 verified sources (3 unverifiable candidates removed, 1 user-provided reference flagged for review)." }
+}
+```
+
+### Rate Limiting & Error Handling
+
+- **Semantic Scholar:** 100 requests / 5 min (unauthenticated). On 429: exponential backoff, 3 retries, then CrossRef fallback. On 5xx: skip to CrossRef.
+- **CrossRef:** Include `?mailto=marcyap@orbitalai.net` for priority queue. On timeout (>10s): log in removal/flag reason.
+- **Batch processing:** Sets >20 papers → batches of 10 with 1s delay. Total plugin timeout: 60s. If approaching timeout, return partial results with `partial: true`.
+
+### Acceptance Tests
+
+1. **Known paper test:** 10 well-known papers with correct metadata → all 10 verified
+2. **Hallucinated paper test:** 5 fabricated titles → all 5 removed with accurate removal log
+3. **Typo test:** 3 real papers with slight misspellings → within threshold verify, below threshold flag (not remove)
+4. **Mixed source test:** 3 Semantic Scholar IDs + 3 DOIs + 4 title-only → all paths work
+5. **BibTeX input test:** 5-entry BibTeX → parser extracts all fields, treats as user_provided
+6. **Plain text input test:** APA reference list → parser extracts title, authors, year
+7. **Rate limit test:** 50 papers simultaneously → batching respects Semantic Scholar limits
+8. **Partial timeout test:** 100 papers → partial results with `partial: true` if timeout approaching
+
+### Constraints
+
+1. **PRISM compliance:** Receives only paper metadata. Never receives user personal context, CHRONICLE data, or raw user materials.
+2. **No fabrication:** Verifies only. Never generates citations. Never suggests alternatives.
+3. **User references are sacred:** Never silently remove a user-provided reference. Flag with clear explanation.
+4. **Deterministic output:** Same input → same output. No LLM in verification pipeline (LLM only for Format C plain text parsing).
+
+---
+
 ## 16. COMPLETED (March-April 2026)
 
 - [x] Supabase to Firestore migration (all collections, auth, Stripe webhook, dashboard)
