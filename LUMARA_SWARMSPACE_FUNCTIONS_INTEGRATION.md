@@ -64,7 +64,7 @@ These will be added as the developer ecosystem grows:
 
 | Function | Purpose | Status |
 |----------|---------|--------|
-| `swarmspacePackageCatalog` | Outcome package bundles | Planned |
+| `swarmspacePackageCatalog` | Role catalogue (Work Chain bundles) | Planned |
 | `swarmspaceSubmissionReview` | Automated plugin submission pipeline | Planned |
 
 Developer-submitted plugins may also add Firebase functions (those that can't run as Cloudflare Workers).

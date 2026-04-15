@@ -176,15 +176,19 @@ node scripts/seed-founding-programme.js
 
 ---
 
-## Outcome Packages (Planned)
+## Work Chains & Roles (Planned)
+
+> **Terminology update (April 2026):** "Outcome Packages" is retired. Infrastructure uses **Work Chains** (what developers build and list). End users see **Roles** (the marketing skin for a Work Chain).
 
 **Status:** Defined | **Priority:** After Discovery Agent (Idea 1) ships | **Added:** April 2026
 
 ### Overview
 
-Outcome Packages are pre-configured bundles of SwarmSpace workflows and plugins sold as a single product that delivers a specific result. Instead of selling individual plugin calls or workflow runs, sell "Competitive Intelligence Suite" or "Content Creator Kit." Each package bundles multiple workflows, configures them for a specific persona, and includes recurring agent variants where applicable.
+Work Chains are sequenced sets of plugins executing a defined workflow. What developers build, list, and maintain on SwarmSpace. Roles are the human-facing names for Work Chains — what end users browse, deploy, and subscribe to (e.g. "Your Competitive Intelligence Analyst").
 
-This is the Dream Team concept from the backlog, reframed as a purchasable product with its own landing page, pricing, and onboarding flow.
+Instead of selling individual plugin calls or workflow runs, sell Roles like "Competitive Intelligence Analyst" or "Content Creator Kit." Each Role sits on top of a Work Chain that bundles multiple workflows, configures them for a specific persona, and includes recurring agent variants where applicable.
+
+This is the Roles concept from the backlog (formerly "Dream Team"), reframed as a purchasable product with its own landing page, pricing, and onboarding flow.
 
 **Example:** A "Personal Trainer AI" package includes a client check-in workflow (scheduled), a workout log generator, a nutrition research chain, and a progress tracking agent. The trainer buys the package, and the outcome is a functioning AI-assisted training practice.
 
@@ -196,42 +200,42 @@ This is the Dream Team concept from the backlog, reframed as a purchasable produ
 
 | Source | Pattern | Application |
 |---|---|---|
-| FlowHunt marketplace | Pre-built agent templates as complete solutions | Each Outcome Package = complete solution for a persona |
+| FlowHunt marketplace | Pre-built agent templates as complete solutions | Each Role = complete solution for a persona |
 | n8n Self-Hosted AI Starter Kit | Bundles tools as single installable unit | One purchase, fully configured, no assembly |
 | Zapier Agent templates | Pre-configured multi-step automations, NL config | Pre-configured chains, user customizes via CHRONICLE context |
 | agenticaipricing.com | Essential/Professional/Enterprise tiers | Free preview / Pro / Premium per package |
 
-### Starter Packages (5)
+### Starter Roles (5)
 
-#### Package 1: Competitive Intelligence Suite
+#### Role 1: Competitive Intelligence Analyst (Work Chain: `/competitor`, `/news-brief`, `/tech-scout`, `/market-scan`)
 - **Persona:** Founders, product managers, marketing leads
 - **Workflows:** `/competitor`, `/news-brief`, `/tech-scout`, `/market-scan`
 - **Recurring Agents:** Weekly Competitor Diff, Daily News Briefing, Trend Spotter alerts
 - **CHRONICLE:** User tells LUMARA competitors once; every workflow uses that context
 - **Free Preview:** One-shot `/competitor` run | **Pro ($15/mo):** All 4 + recurring on mobile | **Premium ($20/mo):** + CHRONICLE personalization
 
-#### Package 2: Content Creator Kit
+#### Role 2: Content Creator Kit (Work Chain: `/content-brief`, `/research`, `/news-brief`, `/marketing`)
 - **Persona:** Solo creators, indie writers, small marketing teams
 - **Workflows:** `/content-brief`, `/research`, `/news-brief`, `/marketing`
 - **Recurring Agents:** Daily trend feed, Weekly content calendar seed
 - **CHRONICLE:** Writing voice, topic interests, audience profile shape every output
 - **Free Preview:** One-shot `/content-brief` | **Pro:** All 4 + trending alerts | **Premium:** + CHRONICLE voice calibration + recurring calendar
 
-#### Package 3: Research & Academic Suite
+#### Role 3: Research & Academic Analyst (Work Chain: `/academic`, `/research`, `/fact-check`, `/health-research`)
 - **Persona:** Graduate students, researchers, analysts, consultants
 - **Workflows:** `/academic`, `/research`, `/fact-check`, `/health-research`
 - **Recurring Agents:** Weekly literature watch (keyword alerts), Monthly field review
 - **CHRONICLE:** Research interests, citation preferences, methodological notes
 - **Free Preview:** One-shot `/research` | **Pro:** All 4 + literature alerts | **Premium:** + CHRONICLE-enriched summaries
 
-#### Package 4: Startup Founder Pack
+#### Role 4: Startup Founder (Work Chain: `/competitor`, `/market-scan`, `/tech-scout`, `/plugins`, `/content-brief`)
 - **Persona:** Early-stage founders, solo entrepreneurs, indie hackers
 - **Workflows:** `/competitor`, `/market-scan`, `/tech-scout`, `/plugins`, `/content-brief`
 - **Recurring Agents:** Weekly competitor diff, Market pulse (monthly), Tech landscape shifts
 - **CHRONICLE:** Company description, product positioning, target market feed all outputs
 - **Free Preview:** One-shot `/competitor` | **Pro:** All 5 + recurring intelligence | **Premium:** + full CHRONICLE strategic framing
 
-#### Package 5: Location & Travel Intelligence
+#### Role 5: Location & Travel Intelligence (Work Chain: `/location-brief`, `/market-scan`, `/research`, `/news-brief`)
 - **Persona:** Digital nomads, relocation researchers, travel planners, real estate investors
 - **Workflows:** `/location-brief`, `/market-scan`, `/research`, `/news-brief`
 - **Recurring Agents:** Monthly location pulse, News alerts for target cities
@@ -241,26 +245,26 @@ This is the Dream Team concept from the backlog, reframed as a purchasable produ
 
 | Prerequisite | Status | Blocks |
 |---|---|---|
-| 404/405 Worker fixes | IMMEDIATE BLOCKER | Packages are workflow bundles. Workflows broken until Workers wired. |
-| At least 3 workflows working E2E | BLOCKED on 404/405 | Cannot sell packages of things that don't work. |
-| Credit system enforcement | LIVE | Package pricing maps to credits. |
-| swarmspacePluginCatalog | LIVE | Package display pulls from this. |
-| Discovery Agent (Idea 1) shipped | NOT STARTED | Primary funnel into packages. Ship Idea 1 first. |
+| 404/405 Worker fixes | DONE | Work Chains are workflow bundles. Workflows must work. |
+| At least 3 workflows working E2E | UNBLOCKED | Roles depend on working Work Chains. |
+| Credit system enforcement | LIVE | Role pricing maps to credits. |
+| swarmspacePluginCatalog | LIVE | Role display pulls from this. |
+| Discovery Agent (Idea 1) shipped | LIVE | Primary funnel into Roles. |
 | Durable Object prototype | NOT STARTED | Recurring variants are the premium differentiator. At least one DO needed for launch. |
 
 ### Data Model
 
-**Firestore collection:** `packages`
+**Firestore collection:** `roles`
 
 ```json
 {
-  "packageId": "string",
+  "roleId": "string",
   "name": "string",
   "description": "string",
   "persona": "string",
-  "includedWorkflows": ["route slugs"],
+  "workChainRoutes": ["route slugs"],
   "includedPlugins": ["plugin slugs"],
-  "recurringAgents": ["agent definitions"],
+  "recurringVariants": ["DO variant definitions"],
   "tiers": {
     "free": { "description": "...", "price": 0 },
     "pro": { "description": "...", "price": 15 },
@@ -273,50 +277,50 @@ This is the Dream Team concept from the backlog, reframed as a purchasable produ
 }
 ```
 
-**Cloud Function:** `swarmspacePackageCatalog` — returns all packages sorted by sortOrder, no auth required.
+**Cloud Function:** `swarmspacePackageCatalog` — returns all Roles sorted by sortOrder, no auth required.
 
 **Constraints:**
-- Packages curated by Orbital AI, not user-created (editorial, not UGC)
-- Package tiers map 1:1 to existing SwarmSpace tiers (Free/Pro/Premium)
-- No package editor UI for v1. Seed via Firestore console or scripts
+- Roles curated by Orbital AI, not user-created (editorial, not UGC)
+- Role tiers map 1:1 to existing SwarmSpace tiers (Free/Pro/Premium)
+- No Role editor UI for v1. Seed via Firestore console or scripts
 
 ### Implementation Phases
 
-#### Phase 1: Package Data Model & Catalogue (1 day)
-- Create `packages` Firestore collection
+#### Phase 1: Role Data Model & Catalogue (1 day)
+- Create `roles` Firestore collection
 - Create `swarmspacePackageCatalog` Cloud Function
-- Seed 5 starter packages
+- Seed 5 starter Roles
 
-#### Phase 2: Package Landing Pages (2-3 days)
-- `/packages.html` master listing (grid of cards: name, persona, workflow count, tier badges, CTA)
-- `/package.html?id={packageId}` detail page (full description, workflow list, recurring capabilities, tier comparison, signup/upgrade CTA)
-- Add "Packages" to main nav
+#### Phase 2: Roles Browsing Page (2-3 days)
+- `/roles.html` master listing (grid of cards: Role name, persona, Work Chain detail, tier badges, CTA)
+- `/role.html?id={roleId}` detail page (full description, Work Chain routes, recurring capabilities, tier comparison, signup/upgrade CTA)
+- Add "Roles" to main nav
 - "Try this now (free)" buttons route through discovery agent
-- "Popular Packages" section on homepage below discovery agent
+- "Popular Roles" section on homepage below discovery agent
 - Static HTML, no build step. Data loaded from `swarmspacePackageCatalog`
 
-#### Phase 3: Discovery Agent Package Awareness (1 day)
+#### Phase 3: Discovery Agent Role Awareness (1 day)
 - Extend `swarmspaceDiscoveryAgent` to query `swarmspacePackageCatalog`
-- If chain matches a package's `includedWorkflows`, add `matchedPackage` to response
-- If user intent maps to a persona, prioritize showing matching package over custom chain
+- If chain matches a Role's `workChainRoutes`, add `matchedRole` to response
+- If user intent maps to a persona, prioritize showing matching Role over custom chain
 
-#### Phase 4: Package Onboarding Flow (1-2 days)
-- `/signup.html?package={packageId}` parameter
-- Dashboard welcome screen showing package workflows + "Run your first workflow" CTA
-- Store `selectedPackage` on `developers/{uid}` (UI personalization, not purchase)
-- Surface package workflows prominently on dashboard
+#### Phase 4: Role Onboarding Flow (1-2 days)
+- `/signup.html?role={roleId}` parameter
+- Dashboard welcome screen showing Role Work Chains + "Run your first workflow" CTA
+- Store `selectedRole` on `developers/{uid}` (UI personalization, not purchase)
+- Surface Role Work Chains prominently on dashboard
 - Upgrade prompt on recurring agents for free-tier users
 
 **Total estimated: 5-7 days.** Critical path: Discovery Agent (Idea 1) should ship first.
 
 ### Cross-Idea Sequencing
 
-| Week | Idea 1 (Discovery Agent) | Idea 2 (Outcome Packages) |
+| Week | Idea 1 (Discovery Agent) | Idea 2 (Work Chains & Roles) |
 |---|---|---|
-| Pre-work | Fix 404/405 blockers | Package specs defined (this document) |
+| Pre-work | Fix 404/405 blockers | Role specs defined (this document) |
 | Week 1 | Phase 1: Cloud Function | Phase 1: Data model + seed Firestore |
-| Week 2 | Phase 2: Homepage chat UI | Phase 2: Package pages (after Idea 1 UI patterns) |
-| Week 3 | Phase 3: Chain-to-signup handoff | Phase 3: Package-aware agent + Phase 4: Onboarding |
+| Week 2 | Phase 2: Homepage chat UI | Phase 2: Roles page (after Idea 1 UI patterns) |
+| Week 3 | Phase 3: Chain-to-signup handoff | Phase 3: Role-aware agent + Phase 4: Onboarding |
 | Week 4 | Polish, test full flow | Polish, connect both ideas end-to-end |
 
-Both ideas converge in Week 3 when the discovery agent becomes package-aware. From that point, the front-page agent is both a standalone conversion tool and the entry point into outcome packages.
+Both ideas converge in Week 3 when the discovery agent becomes Role-aware. From that point, the front-page agent is both a standalone conversion tool and the entry point into Roles.

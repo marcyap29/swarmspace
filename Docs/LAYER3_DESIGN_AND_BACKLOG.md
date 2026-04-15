@@ -3,11 +3,13 @@
 
 ---
 
-## Layer 3: Agents & Dream Team — Architecture Design
+## Layer 3: Agents & Roles — Architecture Design
+
+> **Terminology update (April 2026):** "Dream Teams" is retired. Infrastructure uses **Work Chains** (what developers build and list). End users see **Roles** (the marketing skin for a Work Chain). Pre-configured agent bundles are now **Roles**, not "Dream Team Packs."
 
 ### Overview
 
-Layer 3 extends SwarmSpace from a plugin marketplace (Layer 1) and workflow orchestration platform (Layer 2) into a **persistent agent runtime**. Agents are long-lived processes that can be scheduled, event-triggered, and composed into pre-configured teams ("Dream Teams").
+Layer 3 extends SwarmSpace from a plugin marketplace (Layer 1) and Work Chain orchestration platform into a **persistent agent runtime**. Agents are long-lived processes that can be scheduled, event-triggered, and composed into pre-configured Roles.
 
 Layer 3 is architecturally dependent on LUMARA desktop as the persistent runtime environment.
 
@@ -15,9 +17,9 @@ Layer 3 is architecturally dependent on LUMARA desktop as the persistent runtime
 
 ### Core Concepts
 
-#### 1. Dream Team Packs
+#### 1. Roles (end-user skin for Work Chains)
 
-Pre-configured agent bundles installable as a single unit. Shifts UX from "assemble your team" to "install the pack."
+Pre-configured agent bundles installable as a single unit. Shifts UX from "assemble your team" to "install the Role." Each Role sits on top of one or more Work Chains.
 
 ```json
 {
@@ -139,7 +141,7 @@ Both platforms read/write the same Firestore layer. No separate sync mechanism n
 | # | Item | Status | Dependencies | Notes |
 |---|---|---|---|---|
 | L3-01 | Add `schedulable` field to manifest spec | Not built | architecture.md | Spec defined above, needs formal addition |
-| L3-02 | Define Dream Team pack manifest format | Defined | None | JSON schema for pack bundles (spec above) |
+| L3-02 | Define Role pack manifest format | Defined | None | JSON schema for Role bundles (spec above) |
 | L3-03 | Design CHRONICLE goal ancestry data model | Defined | LUMARA CHRONICLE subsystem | Firestore schema for goal chains |
 | L3-04 | Resolve autonomy ladder UX patterns | Defined | None | Approval queue UI, veto window mechanism |
 
@@ -153,13 +155,13 @@ Both platforms read/write the same Firestore layer. No separate sync mechanism n
 | L3-08 | Desktop job history UI | Not built | L3-05, L3-06, L3-07 | Table view with status, duration, results |
 | L3-09 | Firestore sync for job history | Not built | L3-07 | Bidirectional sync with iOS CHRONICLE |
 
-### Phase 3C: First Dream Team
+### Phase 3C: First Role
 
 | # | Item | Status | Dependencies | Notes |
 |---|---|---|---|---|
 | L3-10 | Social Media Manager agent: Content Strategist | Not built | L3-06, orchestrator Worker | Uses /news-brief + /content-brief workflows |
 | L3-11 | Social Media Manager agent: Social Publisher | Not built | L3-10, social-publisher Worker | Drafts → approval queue → publish |
-| L3-12 | Dream Team pack install UX | Not built | L3-05, L3-02 | "Install the pack" one-click flow |
+| L3-12 | Role pack install UX | Not built | L3-05, L3-02 | "Install the Role" one-click flow |
 | L3-13 | Autonomy level selector per agent | Not built | L3-04, L3-12 | User override controls |
 
 ### Phase 3D: Agent Marketplace
