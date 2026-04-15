@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-14
 **Status:** ✅ Synced
 
 ---
@@ -52,7 +52,7 @@ When running a doc sync or release:
 | overview.md | root | 2026-03-01 | ✅ Synced | |
 | README.md | root | 2026-04-06 | ✅ Synced | Firebase submit/admin; file structure |
 | SWARMSPACE_API_CONTEXT.md | root | — | ✅ Synced | |
-| architecture.md | root | — | ✅ Synced | |
+| architecture.md | root | 2026-04-14 | ✅ Synced | v1.4.1 full rewrite — PRISM, discovery, founding dev, orchestrator, 22 plugins, 10 collections |
 | submit.html | root | 2026-04-04 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` (legacy shape + `developer_uid`) |
 | submit-plugin.html | root | 2026-04-06 | ✅ Synced | Primary submit portal; `plugin_submissions`; client-sorted history |
 | Docs/RULE.md | Docs/ | 2026-04-04 | ✅ Synced | Cursor/agent guidance |
@@ -91,6 +91,25 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-04-14 — Terminology update: Outcome Packages → Work Chains / Roles
+
+**Action:** Retired "Outcome Packages" term across all docs. Introduced two-layer model: Work Chains (infrastructure/developer) and Roles (marketing skin/end user). Updated backlog, backend, architecture, LAYER3, founding-developers.html, LUMARA integration docs. Added Work Chains catalogue (15 live/near-complete/recurring items), Roles browsing page items, and Market Intelligence Analyst DO variant to backlog Section 5.2.
+
+**Changes:**
+- Modified: `backlog.md` (renamed Section 4.6, Section 6 Dream Team → Roles, added Sections 14-16 terminology + Work Chains catalogue + Roles page, added Market Intelligence DO to 5.2, updated Layer 2 → Work Chain references)
+- Modified: `Docs/backend.md` (Outcome Packages → Work Chains & Roles, Package → Role throughout, packages → roles collection, prerequisite statuses updated)
+- Modified: `Docs/LAYER3_DESIGN_AND_BACKLOG.md` (Dream Team → Roles, pack → Role, Layer 2 → Work Chain)
+- Modified: `founding-developers.html` (Outcome Packages → Work Chains & Roles)
+- Modified: `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` (swarmspacePackageCatalog description)
+- Modified: `architecture.md` (Layer 2 → Work Chain)
+
+### 2026-04-14 — architecture.md full rewrite (4.7)
+
+**Action:** Rewrote `architecture.md` to close significant drift with the current codebase. The document had not been updated since before PRISM enforcement, discovery agent, founding dev programme, v2 validation pipeline, and orchestrator were implemented.
+
+**Changes:**
+- Rewrote: `architecture.md` (full rewrite: 22 plugins, 5 standard-tier, PRISM section, discovery agent section, founding dev section, orchestrator & workflow chains section, 10 Firestore collections, updated architecture diagram, updated pricing, plugin promotion pipeline with state transitions and resubmission, v2 validation pipeline details)
 
 ### 2026-04-13 — validatePluginSubmission v2 upgrade
 

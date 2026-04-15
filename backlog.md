@@ -16,7 +16,7 @@ Fix plugin Workers (404) → Fix orchestrator (405) → LUMARA calling SwarmSpac
                                                    → Founding Developer outreach
 ```
 
-Orchestrator execution modes (plan/auto/bubble/interactive) must land before Layer 2 workflow chaining and before Durable Objects dispatch.
+Orchestrator execution modes (plan/auto/bubble/interactive) must land before Work Chain chaining and before Durable Objects dispatch.
 
 ---
 
@@ -160,13 +160,15 @@ Not built. `/catalogue/updates` on swarmspaceRouter. Builds on live `swarmspaceP
 - Credit rollover policy: No rollover at launch. Partial carry-forward (20% cap) under review.
 - Per-user credit visibility in UI: Defined, not implemented.
 
-### 4.6 Workflow Manifest Spec (Layer 2)
+### 4.6 Work Chain Manifest Spec
+
+> **Terminology update (April 2026):** "Layer 2" and "Outcome Packages" are retired. Infrastructure uses **Work Chains** (what developers build and list). End users see **Roles** (the marketing skin for a Work Chain). See Terminology Update section below.
 
 Drafted conceptually. Needs formal specification. Must include `is_concurrency_safe` declarations per step for orchestrator parallelization.
 
-### 4.7 architecture.md in Repo
+### 4.7 architecture.md in Repo ✅ DONE (2026-04-14)
 
-Significantly out of date. Needs full update to reflect v7 decisions.
+Completed: Full rewrite to reflect v1.4.1 codebase — 22 plugins, PRISM enforcement, discovery agent, founding dev programme, orchestrator workflows, v2 validation pipeline, 10 Firestore collections, updated architecture diagram.
 
 ---
 
@@ -190,6 +192,7 @@ Depends on: orchestrator execution modes landing first.
 - [ ] Prototype News Briefing delta variant: store previous output, diff on next run, return delta (wraps live `/news-brief` route)
 - [ ] Prototype Competitor Research delta variant (wraps `/competitor` route, weekly diff)
 - [ ] Prototype Trend Spotter delta variant (wraps `/tech-scout` route, sentiment baseline alerts)
+- [ ] Prototype Market Intelligence delta variant (wraps `/market-scan` route, weekly market movement summary with currency, news, and sector signals)
 - [ ] Implement Alarms API scheduling (`setAlarm` / `alarm()`) for cron-style recurring execution
 - [ ] Implement tier gating: reject DO scheduling requests from free-tier mobile users
 - [ ] CHRONICLE context injection at execution time (request fresh context, never persist in DO)
@@ -199,7 +202,7 @@ Cost model: Workers Paid $5/mo base. 1M requests + 400K GB-seconds included. Est
 
 ### 5.3 Orchestrator Execution Modes
 
-Must land before Layer 2 workflow chaining and before DO dispatch.
+Must land before Work Chain chaining and before DO dispatch.
 
 - [ ] Implement `plan` mode — full chain proposal, no execution until confirmation (the Run Screen confirmation tap)
 - [ ] Implement `auto` mode — headless dispatch for DO/scheduler runs, check `is_destructive` and `is_read_only` manifest fields before plugin execution. `headless: true` prerequisite for DO dispatch. Destructive plugins auto-deny.
@@ -225,7 +228,7 @@ Current stack (unchanged until benchmarking):
 
 Architecture update (April 2026): Layer 3 no longer depends on LUMARA desktop. Durable Objects provide server-side persistent runtime.
 
-- [ ] Dream Team UX — pre-configured agent packs (Social Media Manager + Content Strategist first)
+- [ ] Roles (end-user skin for Work Chains) — browse/deploy surface for pre-configured Work Chains presented as Roles (e.g. "Social Media Manager", "Content Strategist"). These are Roles, not Work Chains themselves — Roles are the marketing skin on top of Work Chain infrastructure.
 - [ ] Agent Identity Token (AIT) system — autonomous agent self-registration with human-in-the-loop verification at first registration
 - [ ] `schedulable` manifest field — declares plugin supports scheduled invocation. Verified-only. Required before DO dispatch.
 - [ ] `headless` manifest field — declares plugin designed to run without user approval step. Verified-only. Required for `auto` execution mode.
@@ -583,7 +586,7 @@ When this ships, update:
 
 ---
 
-## 11. SESSION BROKER (ORGANIZER) — Priority: LAYER 2/3 (future, after orchestrator modes land)
+## 11. SESSION BROKER (ORGANIZER) — Priority: Work Chain / Agent Layer (future, after orchestrator modes land)
 
 ### Overview
 
@@ -1103,4 +1106,79 @@ New section on `dashboard.html`: **Scheduled Workflows**
 
 ---
 
-*SwarmSpace Full Backlog — Orbital AI — April 11, 2026*
+## 14. TERMINOLOGY UPDATE — April 2026
+
+> **"Outcome Packages" is retired.** All future references use the two-layer model below.
+> Do not use "Outcome Packages" in any user-facing copy, developer docs, or new backlog entries.
+
+| Layer | Term | Definition | Audience |
+|---|---|---|---|
+| Infrastructure | **Work Chain** | A sequenced set of plugins executing a defined workflow. What developers build, list, and maintain on SwarmSpace. | Developers |
+| Marketing skin | **Role** | The human-facing name for a Work Chain. e.g. "Your Competitive Intelligence Analyst." What end users browse, deploy, and subscribe to. | End Users |
+
+**Renamed backlog items:**
+- "Outcome Packages" (was Section 5 / Layer 2) → **Work Chains**
+- "Dream Team UX — pre-configured agent packs" (Section 6) → **Roles** — the end-user skin for Work Chains. Roles are what users browse and deploy. Work Chains are the infrastructure underneath.
+- Discovery Agent homepage panel → consumer-facing copy uses **Roles**, developer-facing docs use **Work Chains**
+- "Competitive Intelligence Suite", "Content Creator Kit" etc. → these are **Role names** sitting on top of Work Chains. Flag them as such wherever they appear.
+
+---
+
+## 15. WORK CHAINS — CATALOGUE
+
+### 15.1 Live Now — Needs Role Framing and Roles Page Card Only
+
+All six are deployed and functional on the orchestrator. No new build required. Each needs a Role name, plain-language description, and a card on the Roles browsing page.
+
+| Role Name | Work Chain Route | Plugin Chain | Tier |
+|---|---|---|---|
+| Competitive Intelligence Analyst | `/competitor` | brave-search + news + hackernews → gemini-flash | Free |
+| Research Analyst | `/research` + `/academic` | brave-search + wikipedia + semantic-scholar + arxiv + pubmed → gemini-flash | Free |
+| Market Intelligence Analyst | `/market-scan` | brave-search + news + currency → gemini-flash | Free |
+| Tech Scout | `/tech-scout` | github-public + hackernews + brave-search + arxiv → gemini-flash | Free |
+| News Desk | `/news-brief` | news + hackernews + brave-search → gemini-flash | Free |
+| Content Brief Writer | `/content-brief` + social-publisher | brave-search + wikipedia + news → gemini-flash + social-publisher | Standard |
+
+### 15.2 Near-Complete — One Plugin Needed to Close the Loop
+
+Research and extraction half is built. Needs a write-side or action plugin to complete the chain.
+
+| Role Name | What Exists | Missing Plugin | Priority |
+|---|---|---|---|
+| Lead Gen + Outreach Specialist | brave-search, tavily-search, exa-search for prospect research and scoring | CRM write plugin (HubSpot / Airtable) or email draft plugin. This is the action layer that closes the loop from research to outreach. | High — strong subscription candidate |
+| Data Entry + Processing Specialist | vision-ocr + jina-reader for unstructured data extraction from PDFs, images, URLs | CRM / spreadsheet write plugin to push extracted data into a structured destination. Without this the chain stops at extraction. | High — high SMB willingness to pay |
+
+### 15.3 Recurring / Subscription Candidates — Durable Object Variants
+
+Strong candidates for DO wrapping. More value on a recurring schedule than as one-off runs.
+
+| Role Name | Cadence | Value Delivered | DO Variant |
+|---|---|---|---|
+| Competitive Intelligence Analyst | Weekly | Delta report vs. prior week. Highlights only what changed. | Competitor Research DO — already in backlog (Section 5.2) |
+| News Desk | Daily | Delta briefing vs. yesterday. No repeated stories. | News Briefing DO — already in backlog (Section 5.2) |
+| Tech Scout | Weekly | Community signal shift alerts. Emerging repos, trending discussions. | Trend Spotter DO — already in backlog (Section 5.2) |
+| Market Intelligence Analyst | Weekly | Market movement summary with currency, news, and sector signals. | Market Intelligence DO — **added to Section 5.2** |
+
+---
+
+## 16. ROLES BROWSING PAGE — New Surface Required
+
+SwarmSpace currently has no end-user browsing surface for pre-configured Work Chains. The 12 orchestrator routes exist but are not presented as deployable Roles.
+
+A Roles page (or dedicate the homepage) should list each Role with:
+
+- Role name and persona framing
+- Plain-language description of what it does
+- The Work Chain it runs on (expandable detail for developers)
+- Tier required and credit cost per run
+- One-click deploy button
+
+| Item | Status | Notes |
+|---|---|---|
+| Roles browsing page | Not built | Lists all deployable Work Chains as Roles. Consumer-facing. Priority surface before developer outreach. |
+| Role cards for 6 live Work Chains | Not built | Name, description, tier, deploy CTA. No new backend required. |
+| Market Intelligence Analyst — Durable Object variant | Not started | Added to Section 5.2 alongside existing News Briefing, Competitor Research, and Trend Spotter DO variants. Weekly cadence. market-scan route + currency plugin. |
+
+---
+
+*SwarmSpace Full Backlog — Orbital AI — April 14, 2026*
