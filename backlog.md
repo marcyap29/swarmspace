@@ -172,16 +172,78 @@ Completed: Full rewrite to reflect v1.4.1 codebase — 22 plugins, PRISM enforce
 
 ---
 
-## 5. CLOUDFLARE AGENT INFRASTRUCTURE — Priority: MEDIUM-LOW
+## 5. CLOUDFLARE AGENT INFRASTRUCTURE — Priority: MEDIUM (upgrade 5.1 to HIGH for security posture)
 
-### 5.1 Dynamic Worker Loader (Plugin Sandbox)
+### 5.1 Dynamic Workers Plugin Sandbox — Priority: HIGH (security differentiator)
 
-- [ ] Prototype one plugin running inside Dynamic Worker Loader (V8 isolate sandbox, open beta)
-- [ ] Configure `globalOutbound: null` — verify network restriction works
-- [ ] Implement `network_domains` allowlist check against plugin manifest before dispatch
-- [ ] Evaluate DX and cost vs current static Worker deployment
-- [ ] Add `@cloudflare/codemode` or equivalent if adopting Dynamic Workers
-- [ ] Runtime behavioral monitoring: log and monitor plugin behavior during execution
+> **Product:** Cloudflare Dynamic Workers (open beta since March 24, 2026). Available to all paid Workers plan users. No waitlist.
+
+**What it is:** A host Cloudflare Worker can instantiate new Workers at runtime with dynamically specified code. Each dynamic Worker runs in its own isolated V8 sandbox with hardware-enforced memory isolation (Memory Protection Keys), isolate groups, and risk-based dynamic cordoning. This is the correct primitive for running untrusted third-party plugin code.
+
+**Why this matters for SwarmSpace:** Currently all 15 plugin Workers are static deployments where plugin code has direct access to `env.SWARMSPACE_INTERNAL_TOKEN` and unrestricted `fetch()`. Dynamic Workers would let us:
+1. **Eliminate direct secret access** — credentials injected via `globalOutbound` gateway, never visible to plugin code
+2. **Enforce network allowlists** — each plugin's manifest `network_permissions` maps to `globalOutbound` gateway rules
+3. **Centralize deployment** — one orchestrator Worker loads plugin code dynamically; no more `wrangler deploy` per plugin
+4. **Enable runtime monitoring** — Tail Workers capture all `fetch` events and `console.log` output
+5. **Strengthen security marketing** — "V8 hardware-isolated sandboxes with credential injection and network allowlists" is a concrete trust signal for developer outreach and AST10 compliance
+
+**Pricing:**
+
+| Dimension | Rate | Beta Status |
+|-----------|------|-------------|
+| Unique Workers loaded per day | $0.002 per unique Worker/day | **Waived during open beta** |
+| Requests | Standard Workers rates (included in plan) | Active |
+| CPU time | Standard Workers rates; **includes startup/parse time** | Active |
+
+Requires Workers Paid ($5/mo base). At ~50 plugins active/day, post-beta per-load cost is ~$3/month. Worth it for the security posture.
+
+**Key capabilities confirmed:**
+
+| Capability | Status | Detail |
+|-----------|--------|--------|
+| `globalOutbound: null` (kill network) | ✅ Available | Completely cuts off all `fetch()` and `connect()` |
+| Domain allowlists | ✅ Available | `globalOutbound` gateway inspects and enforces allowed domains per plugin manifest |
+| Credential injection at boundary | ✅ Available | Gateway intercepts outbound requests, attaches auth headers from host env. Plugin never sees API keys. |
+| Per-plugin warm isolates | ✅ Available | `env.LOADER.get(pluginId, callback)` — cached by ID, reused across requests |
+| Ephemeral per-request isolates | ✅ Available | `env.LOADER.load()` — fresh isolate per call |
+| Runtime monitoring via Tail Workers | ✅ Available | Captures all fetch events and console output |
+| Hardware memory isolation (MPK) | ✅ Automatic | Isolate groups with Memory Protection Keys — key mismatch kills attacker's script |
+| Risk-based dynamic cordoning | ✅ Automatic | Higher-risk executions auto-routed to more isolated infrastructure |
+| Bindings (KV, R2, D1, DO) | Via RPC only | Must expose via custom RPC interfaces from host Worker (security advantage: narrows scope) |
+
+**Wrangler config:**
+```toml
+[[worker_loaders]]
+binding = "LOADER"
+```
+
+**Host Worker loading pattern:**
+```typescript
+const worker = env.LOADER.load({
+  compatibilityDate: "2026-01-28",
+  mainModule: "worker.js",
+  modules: { "worker.js": pluginCode },
+  globalOutbound: null // or gateway binding
+});
+const response = await worker.getEntrypoint().fetch(request);
+```
+
+For TypeScript/npm deps: use `@cloudflare/worker-bundler` to transpile and bundle before passing to `load()`.
+
+**Implementation tasks:**
+
+- [ ] Prototype one existing plugin (e.g., hackernews) running inside Dynamic Workers with `globalOutbound: null`
+- [ ] Build `globalOutbound` gateway Worker implementing domain allowlist check against plugin manifest `network_permissions`
+- [ ] Implement credential injection pattern in gateway (API keys from host env injected into outbound requests)
+- [ ] Evaluate `load()` vs `get(pluginId)` for SwarmSpace use case (warm isolates preferred)
+- [ ] Migrate one plugin end-to-end: static Worker → Dynamic Worker with gateway, verify identical behavior
+- [ ] Attach Tail Worker for runtime behavioral monitoring and anomaly logging
+- [ ] Benchmark latency: cold start + parse time for dynamic loading vs current static Worker invocation
+- [ ] Cost model: project post-beta costs at 10K users with current plugin catalogue
+- [ ] If viable: plan migration path for all 15 plugin Workers to Dynamic Workers
+- [ ] Update security.html, AST10 compliance page, and DEVELOPER_GUIDE to reflect actual (not planned) V8 sandbox enforcement
+
+**Decision gate:** If prototype shows acceptable latency (<100ms cold start overhead) and the gateway pattern works cleanly, migrate all plugins. The security posture upgrade alone justifies the ~$8-15/mo additional cost at current scale.
 
 ### 5.2 Durable Objects (Recurring Agent Runtime)
 
@@ -1181,4 +1243,446 @@ A Roles page (or dedicate the homepage) should list each Role with:
 
 ---
 
-*SwarmSpace Full Backlog — Orbital AI — April 14, 2026*
+## 17. RESEARCH WRITING ASSISTANT — Priority: HIGH (Layer 2 Workflow)
+
+> *Orbital AI | April 2026 | Confidential*
+> *First Layer 2 premium workflow on SwarmSpace*
+
+### Overview
+
+The Research Writing Assistant chains existing free-tier plugins with new purpose-built steps to take a user from raw research materials to a structured, citation-verified first draft with iterative refinement capabilities. This is a writing assistant, not a paper writer. The output is a working first draft that the user edits, annotates, and refines. The workflow produces the scaffold; the user owns the final product.
+
+### Positioning
+
+- **Product category:** Layer 2 premium workflow (composed plugin chain)
+- **Credit cost:** 30-50 credits per initial generation run. Iterative refinement passes cost 10 credits each (single-section rewrites)
+- **Target users:** Graduate students, postdocs, independent researchers, R&D teams, technical writers
+- **Competitive context:** Elicit, Consensus, Scite sell research discovery. This workflow sells research-to-draft, which none of them do end-to-end
+- **Existing SwarmSpace foundation:** Builds on /academic orchestrator route and 3 live free-tier plugins (Semantic Scholar, arXiv, PubMed)
+
+### What This Is Not
+
+- Not a submission-ready paper generator. The output requires human review, editing, and intellectual contribution.
+- Not a citation fabricator. Every reference is API-verified against Semantic Scholar before inclusion.
+- Not a replacement for domain expertise. The user provides the ideas, data, and judgment. The workflow provides structure, sourcing, and drafting velocity.
+
+> **ETHICS FRAMING**
+> All output includes a visible watermark/metadata tag: 'Draft generated with AI writing assistance. All claims, citations, and conclusions require human verification.' This is non-optional and cannot be removed by the workflow.
+
+### Workflow Chain (6 Steps)
+
+Steps 1-5 run on initial generation. Step 6 is the iterative refinement loop triggered by user annotation.
+
+| Step | Plugin/Agent | New/Existing | Input | Output |
+|------|-------------|--------------|-------|--------|
+| 1. Intake & Clarification | intake-clarifier | New | User raw materials + format preferences | Structured research brief + clarifying questions |
+| 2. Literature Discovery | semantic-scholar + arXiv + pubmed | Existing (live) | Research brief keywords + domain | Candidate paper set (ranked by relevance) |
+| 3. Citation Verification | citation-verifier | New | Candidate paper set | Verified citation set with API confirmation + dead reference removals |
+| 4. Outline Generation | outline-agent | New | Research brief + verified citations + CHRONICLE context | Structured section outline with citation placement map |
+| 5. Section Drafting | section-writer | New | Outline + verified citations + user materials + reference style | Full structured first draft with inline citations |
+| 6. Iterative Refinement | refinement-agent | New (on-demand) | User annotations on specific sections + original draft context | Targeted section rewrites preserving surrounding context |
+
+Steps 2a (semantic-scholar), 2b (arXiv), and 2c (pubmed) execute in parallel. All other steps are sequential.
+
+### Step 1: Intake & Clarification
+
+**Accepted input formats:** Plain text, DOCX, PDF, LaTeX (.tex). LaTeX equations preserved verbatim (pass-through, no re-rendering).
+
+**Required clarifying questions (always asked):**
+1. Reference style: APA (7th), MLA (9th), Chicago (Author-Date or Notes-Bib), IEEE, Vancouver. Default: APA.
+2. Output format: Markdown, LaTeX, PDF, DOCX. Default: Markdown.
+3. Target venue or audience: journal, conference, class assignment, internal report, or general.
+
+**Conditional questions** (asked when input is ambiguous): thesis/research question, field prioritization, methodology description, position on competing approaches.
+
+> **UX PATTERN:** Clarifying questions appear as tappable option cards (like LUMARA's existing onboarding flow), not as a text prompt. User can tap a default, select from options, or type a custom answer.
+
+**Output:** Structured research brief JSON: title, thesis, domain, keywords, methodology_summary, data_summary, existing_references, reference_style, output_format, target_venue, user_materials_raw.
+
+### Step 2: Literature Discovery
+
+Queries existing live free-tier plugins:
+
+| Plugin | Query Strategy | Expected Return |
+|--------|---------------|-----------------|
+| Semantic Scholar | Two passes: broad (thesis keywords) then narrow (methodology terms). Filter by relevance, citation count, recency. | Top 30-50 candidates |
+| arXiv | Recent (< 2 years) preprints matching domain keywords | Top 10-15 preprints |
+| PubMed | Biomedical literature (triggered only for health/biology/medicine/neuroscience domains) | Top 10-15 papers |
+
+**Deduplication:** Merge across sources. Deduplicate by DOI (primary) or title fuzzy match (fallback). Rank by: relevance to thesis (0.4), citation count normalized by field (0.3), recency (0.2), source diversity (0.1).
+
+**Output:** 25-40 unique papers with title, authors, year, abstract, source, unique ID, relevance score.
+
+### Step 3: Citation Verification
+
+See Section 14 (Citation Verifier Plugin) for full specification.
+
+**Key principle:** Every candidate paper verified against Semantic Scholar API (primary) and CrossRef (fallback). Hallucinated citations removed. User-provided references flagged but never silently deleted.
+
+**Trust signal shown to user:** 'Literature review built from 38 verified sources (4 unverifiable candidates removed).'
+
+### Step 4: Outline Generation
+
+Produces hierarchical document structure based on research brief, verified citations, and CHRONICLE context.
+
+**Standard sections:** Abstract (generated last), Introduction, Related Work / Literature Review, Methodology, Results, Discussion, Conclusion, References.
+
+**Citation placement map:** Each section includes assigned_citations (array of paper IDs mapped to specific key points) and estimated_word_count.
+
+**CHRONICLE context injection:** Writing style data adapts tone guidance. Domain expertise adjusts explanation depth. Prior work references identify connection points.
+
+**User review gate (mandatory):** Outline presented before drafting begins. User can approve, reorder, add/remove sections, adjust citations, or add notes. Analogous to `plan` mode in orchestrator execution model.
+
+### Step 5: Section Drafting
+
+Sections drafted sequentially. Each receives: outline entry, verified citation set, user materials, CHRONICLE context, and all previously drafted sections (for coherence). Abstract generated last.
+
+**Reference style implementation:**
+
+| Style | Inline Format | Reference List Format |
+|-------|--------------|----------------------|
+| APA (7th) | (Author, Year) or Author (Year) | Author, A. A. (Year). Title. Journal, Volume(Issue), Pages. DOI |
+| MLA (9th) | (Author Page) or Author (Page) | Author. Title. Journal, vol. X, no. X, Year, pp. X-X. |
+| Chicago (Author-Date) | (Author Year, Page) | Author. Year. Title. Journal Volume (Issue): Pages. |
+| Chicago (Notes-Bib) | Superscript footnote number | Footnotes + Bibliography entry |
+| IEEE | [Number] | Numbered list in order of appearance |
+| Vancouver | (Number) or superscript | Numbered list in order of appearance, journal abbreviated |
+
+**Output formats:** Markdown (with LaTeX math blocks), LaTeX (full .tex + .bib), PDF (compiled from LaTeX), DOCX (structured with heading styles).
+
+> **WATERMARK:** Every output format includes the ethics watermark. Non-removable by the workflow.
+
+### Step 6: Iterative Refinement
+
+See Section 15 (Iterative Refinement Agent Plugin) for full specification.
+
+**Annotation types:** Section rewrite, Expand, Condense, Strengthen argument, Tone adjustment, Citation request, Factual flag.
+
+**Mechanics:** Each pass costs 10 credits. Agent rewrites only highlighted section. Tracked changes visible in output viewer. User can see diffs and revert. Credit-gated, not count-gated.
+
+### Workflow Manifest
+
+| Field | Value |
+|-------|-------|
+| name | Research Writing Assistant |
+| access_tier | premium |
+| trust_tier | verified |
+| credit_cost_per_call | 40 (initial generation). 10 (per refinement pass). |
+| semantic_tags | research, writing, academic, citations, literature review, drafting, paper, manuscript, thesis, dissertation, LaTeX, APA, MLA, Chicago, IEEE, Vancouver |
+| latency_class | slow (initial: 60-120s). fast (refinement: 10-20s). |
+| privacy_data_required | chronicle.writing_style, chronicle.domain_expertise, chronicle.prior_work_references (all optional) |
+| is_concurrency_safe | false |
+| is_read_only | true |
+| is_destructive | false |
+| headless | false (requires outline review gate + user-initiated refinement) |
+| schedulable | false |
+
+### Steps Array
+
+| Step | Plugin Slug | New/Existing | Concurrency |
+|------|------------|--------------|-------------|
+| 1 | intake-clarifier | New (build) | Sequential (first step) |
+| 2a | semantic-scholar | Existing (live) | Parallel with 2b, 2c |
+| 2b | arxiv | Existing (live) | Parallel with 2a, 2c |
+| 2c | pubmed | Existing (live, conditional) | Parallel with 2a, 2b |
+| 3 | citation-verifier | New (build) | Sequential (depends on step 2) |
+| 4 | outline-agent | New (build) | Sequential (depends on step 3) |
+| 5 | section-writer | New (build) | Sequential (depends on step 4) |
+| 6 | refinement-agent | New (on-demand) | On-demand (user-triggered) |
+
+### New Plugin Specifications
+
+| Plugin | Purpose | Credit Cost | Standalone Value |
+|--------|---------|-------------|------------------|
+| intake-clarifier | Parse multi-format input into structured brief. Surface clarifying questions. | 0 (workflow only) | Yes — structure messy research notes |
+| citation-verifier | Verify papers against Semantic Scholar + CrossRef | 5 standalone | High — verify any reference list before submission |
+| outline-agent | Generate structured outline with citation placement map | 15 standalone | Yes — structure any long-form writing project |
+| section-writer | Draft full document sections with inline citations | 30 standalone | Limited standalone. Primary value in workflow chain |
+| refinement-agent | Process annotations, produce targeted section rewrites | 10 per pass | Yes — rewrite any document section based on feedback |
+
+### Dependencies & Build Order
+
+**Hard prerequisites:** 404/405 fixes (✅ DONE), Layer 2 workflow manifest spec (Section 4.6), orchestrator execution modes (Section 5.3).
+
+**Soft prerequisites:** CHRONICLE writing/domain data, LUMARA output viewer with annotation support.
+
+| Phase | What to Build | Depends On |
+|-------|--------------|------------|
+| Phase 1 | intake-clarifier + citation-verifier plugins | 404/405 fixes ✅ |
+| Phase 2 | outline-agent + section-writer plugins | Phase 1 + Layer 2 manifest spec |
+| Phase 3 | Full chain integration + E2E testing | Phase 2 + orchestrator execution modes |
+| Phase 4 | refinement-agent + output viewer annotation UX | Phase 3 + LUMARA output viewer |
+| Phase 5 | CHRONICLE context tuning + reference style QA (6 styles x 3 scenarios = 18 test cases) | Phase 4 |
+
+### Verification & Acceptance
+
+**Per-step pass criteria:**
+- Intake: parses all 4 formats, contextual questions, LaTeX equations preserved
+- Literature Discovery: 25-40 unique papers, no duplicate DOIs, relevant results
+- Citation Verification: 100% output citations confirmed via API, removal log accurate, user refs flagged not removed
+- Outline: field-appropriate structure, every section has ≥1 citation, word counts reasonable (3K-10K)
+- Section Drafting: all 6 ref styles correct, ethics watermark in all 4 formats, no hallucinated citations
+- Refinement: rewrite limited to highlighted section, surrounding paragraphs byte-identical, tracked changes present
+
+**E2E acceptance test:** 500-word rough notes → full workflow with APA + Markdown → verify all steps → annotate 2 sections → verify refinements scoped correctly → total credits: 60 (40 + 10 + 10). Repeat with LaTeX input + IEEE + PDF.
+
+### Revenue Model
+
+| Action | Credits |
+|--------|---------|
+| Initial generation (full chain) | 40 |
+| Per refinement pass | 10 |
+| citation-verifier standalone | 5 |
+| outline-agent standalone | 15 |
+| section-writer standalone | 30 |
+
+**Revenue engine:** Iterative refinement loop. Typical draft goes through 5-10 passes → 90-140 credits per document lifecycle.
+
+> **CONVERSION:** Free /academic workflow is top of funnel. Users who outgrow 'literature summary' and want 'structured first draft with verified citations and iterative editing' upgrade to this premium workflow.
+
+### Architectural Constraints
+
+1. **PRISM enforcement:** Citation-verifier and literature discovery plugins never receive user personal context — only search keywords derived from the research brief.
+2. **Consent-first:** Outline review gate is mandatory. Maps to `plan` mode.
+3. **No fabrication:** Every citation must trace to a verified API record. Unverified citations replaced with `[CITATION NEEDED]`.
+4. **Ethics watermark:** Non-removable. Present in all output formats.
+5. **Format fidelity:** LaTeX equations pass-through only. No interpretation or re-rendering.
+6. **Reference style accuracy:** Must be correct per style guide. Approximate formatting not acceptable.
+
+---
+
+## 18. CITATION VERIFIER PLUGIN — Priority: HIGH (Phase 1 of Research Writing Assistant)
+
+> **Plugin slug:** `citation-verifier` | **Category:** Research / Lookup | **Credit cost:** 5 standalone, 0 within workflow | **Trust tier:** Verified | **Privacy:** No user personal context required
+
+### Purpose
+
+Verifies existence and accuracy of academic citations against Semantic Scholar and CrossRef APIs. Takes candidate papers (from any source) and returns a verified set with full metadata, a removal log for unverifiable papers, and a flag log for user-provided references that failed verification. Callable independently (verify a reference list before submission) and as Step 3 within the Research Writing Assistant workflow.
+
+### Plugin Manifest
+
+```json
+{
+  "name": "Citation Verifier",
+  "slug": "citation-verifier",
+  "version": "1.0.0",
+  "description": "Verifies academic citations against Semantic Scholar and CrossRef. Returns verified papers with full metadata, removes unverifiable candidates, and flags user-provided references that cannot be confirmed.",
+  "semantic_tags": ["citation", "verification", "academic", "references", "Semantic Scholar", "CrossRef", "bibliography", "research", "fact-check"],
+  "access_tier": "premium",
+  "trust_tier": "verified",
+  "credit_cost_per_call": 5,
+  "latency_class": "medium",
+  "privacy_data_required": [],
+  "auth_method": "api_key",
+  "is_concurrency_safe": true,
+  "is_read_only": true,
+  "is_destructive": false,
+  "headless": true,
+  "schedulable": false
+}
+```
+
+### Accepted Input Formats
+
+**Format A: Structured JSON array** — `candidates` array with title, authors, year, doi, source_id, source, user_provided fields. Options: `fuzzy_threshold` (default 0.85), `crossref_fallback` (default true).
+
+**Format B: BibTeX string** — Parsed into internal representation. All BibTeX entries treated as `user_provided: true`.
+
+**Format C: Plain text reference list** — LLM extraction to parse into structured fields. All entries treated as `user_provided: true`.
+
+### Verification Process
+
+**Step 1: Semantic Scholar Lookup (Primary)**
+1. If `source_id` present → query by paper ID
+2. If `doi` present → query by DOI: `GET https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}`
+3. If neither → query by title search: `GET https://api.semanticscholar.org/graph/v1/paper/search?query={title}&limit=5`
+
+**Step 2: Field Matching**
+
+| Field | Match Criteria | Required |
+|-------|---------------|----------|
+| Title | Fuzzy match, Levenshtein ratio >= threshold (default 0.85). Normalize: lowercase, strip punctuation, collapse whitespace. | Yes |
+| First Author | Last name exact match (case-insensitive) against first author in API response | Yes |
+| Year | Exact match | Yes |
+| Abstract | Non-empty string exists in API response | No (informational) |
+
+Paper passes if title + first author + year all match.
+
+**Step 3: CrossRef Fallback** — If Semantic Scholar fails and `crossref_fallback` is true, query CrossRef: `GET https://api.crossref.org/works?query.bibliographic={title}&rows=3`. Same field matching criteria.
+
+**Step 4: Classification**
+
+| Outcome | Condition | Action |
+|---------|-----------|--------|
+| **Verified** | Passes field matching on Semantic Scholar or CrossRef | Added to verified set with full API metadata |
+| **Removed** | Fails all attempts AND `user_provided: false` | Removed. Entry added to removal log with reason. |
+| **Flagged** | Fails all attempts AND `user_provided: true` | Kept but marked unverified. Entry added to flag log. **NOT silently removed.** |
+
+### Output Schema
+
+```json
+{
+  "verified_citations": [{ "title": "...", "authors": [...], "year": 2017, "abstract": "...", "doi": "...", "semantic_scholar_id": "...", "citation_count": 98000, "verification_source": "semantic_scholar", "verification_timestamp": "..." }],
+  "removal_log": [{ "original_title": "...", "reason": "No match found on Semantic Scholar or CrossRef.", "attempts": ["semantic_scholar_title_search", "crossref_title_search"] }],
+  "flag_log": [{ "original_title": "...", "reason": "Title fuzzy match scored 0.72 (below 0.85 threshold).", "closest_match": "...", "closest_match_score": 0.72, "user_provided": true }],
+  "verification_summary": { "total_candidates": 42, "verified": 38, "removed": 3, "flagged": 1, "verification_rate": 0.905, "display_message": "Literature review built from 38 verified sources (3 unverifiable candidates removed, 1 user-provided reference flagged for review)." }
+}
+```
+
+### Rate Limiting & Error Handling
+
+- **Semantic Scholar:** 100 requests / 5 min (unauthenticated). On 429: exponential backoff, 3 retries, then CrossRef fallback. On 5xx: skip to CrossRef.
+- **CrossRef:** Include `?mailto=marcyap@orbitalai.net` for priority queue. On timeout (>10s): log in removal/flag reason.
+- **Batch processing:** Sets >20 papers → batches of 10 with 1s delay. Total plugin timeout: 60s. If approaching timeout, return partial results with `partial: true`.
+
+### Acceptance Tests
+
+1. **Known paper test:** 10 well-known papers with correct metadata → all 10 verified
+2. **Hallucinated paper test:** 5 fabricated titles → all 5 removed with accurate removal log
+3. **Typo test:** 3 real papers with slight misspellings → within threshold verify, below threshold flag (not remove)
+4. **Mixed source test:** 3 Semantic Scholar IDs + 3 DOIs + 4 title-only → all paths work
+5. **BibTeX input test:** 5-entry BibTeX → parser extracts all fields, treats as user_provided
+6. **Plain text input test:** APA reference list → parser extracts title, authors, year
+7. **Rate limit test:** 50 papers simultaneously → batching respects Semantic Scholar limits
+8. **Partial timeout test:** 100 papers → partial results with `partial: true` if timeout approaching
+
+### Constraints
+
+1. **PRISM compliance:** Receives only paper metadata. Never receives user personal context, CHRONICLE data, or raw user materials.
+2. **No fabrication:** Verifies only. Never generates citations. Never suggests alternatives.
+3. **User references are sacred:** Never silently remove a user-provided reference. Flag with clear explanation.
+4. **Deterministic output:** Same input → same output. No LLM in verification pipeline (LLM only for Format C plain text parsing).
+
+---
+
+## 19. ITERATIVE REFINEMENT AGENT PLUGIN — Priority: HIGH (Phase 4 of Research Writing Assistant)
+
+> **Plugin slug:** `refinement-agent` | **Category:** AI Synthesis | **Credit cost:** 10 per pass | **Trust tier:** Verified | **Privacy:** `chronicle.writing_style` (optional)
+
+### Purpose
+
+Processes user annotations on specific document sections and produces targeted rewrites. User highlights a passage, adds a comment, and the agent rewrites only that section while preserving all surrounding context. Callable independently against any document (blog posts, reports, emails, research papers) and as Step 6 within the Research Writing Assistant workflow.
+
+### Plugin Manifest
+
+```json
+{
+  "name": "Iterative Refinement Agent",
+  "slug": "refinement-agent",
+  "version": "1.0.0",
+  "description": "Processes user annotations on specific document sections and produces targeted rewrites. Supports rewrite, expand, condense, strengthen, tone adjustment, citation request, and factual verification.",
+  "semantic_tags": ["editing", "writing", "refinement", "rewrite", "revision", "feedback", "annotation", "iterative", "document", "proofreading"],
+  "access_tier": "premium",
+  "trust_tier": "verified",
+  "credit_cost_per_call": 10,
+  "latency_class": "fast",
+  "privacy_data_required": ["chronicle.writing_style"],
+  "auth_method": "api_key",
+  "is_concurrency_safe": false,
+  "is_read_only": true,
+  "is_destructive": false,
+  "headless": false,
+  "schedulable": false
+}
+```
+
+### Input Schema
+
+```json
+{
+  "document": { "content": "<full document>", "format": "markdown | latex | plain_text", "metadata": { "title": "...", "reference_style": "apa | mla | ... | null", "verified_citations": [] } },
+  "annotation": { "selection": { "start_offset": 1240, "end_offset": 1890, "selected_text": "<highlighted text>" }, "comment": "User's feedback", "type": "rewrite | expand | condense | strengthen | tone | citation_request | factual_check | auto", "context_window": { "before": "<2 paragraphs before>", "after": "<2 paragraphs after>" } },
+  "chronicle_context": { "writing_style": "<optional>" }
+}
+```
+
+### Annotation Type Resolution (auto mode)
+
+| Detected Pattern | Resolved Type |
+|-----------------|---------------|
+| "rewrite", "redo", "try again", "different approach" | `rewrite` |
+| "expand", "more detail", "elaborate", "flesh out" | `expand` |
+| "shorten", "condense", "more concise", "tighten" | `condense` |
+| "strengthen", "more support", "needs evidence" | `strengthen` |
+| "more formal", "less formal", "assertive", "softer", "academic tone" | `tone` |
+| "needs citation", "add source", "reference", "cite" | `citation_request` |
+| "check this", "verify", "is this accurate", "fact check" | `factual_check` |
+| No pattern match | `rewrite` (default) |
+
+### Type-Specific Processing
+
+**rewrite** — Rewrite using comment as guidance. Preserve approximate length. Match surrounding tone (or CHRONICLE style). Maintain inline citations unless irrelevant.
+
+**expand** — Add depth. Target 1.5-2x word count. New content grounded in document, verified citations, or hedged domain knowledge. No new uncited claims unless verified citation set provides support.
+
+**condense** — Reduce to 0.5-0.7x. Prioritize: cited claims > uncited claims > transitions > filler. Never drop a cited claim. If passage is mostly cited material, inform user instead of forcing condensation.
+
+**strengthen** — Search verified citation set for supporting papers. If found: integrate with proper formatting. If not found: flag "No verified source found. Consider adding evidence or softening the assertion." Never hallucinate citations.
+
+**tone** — Rewrite matching requested tone direction. Preserve all factual content and citations. If CHRONICLE data available and comment is vague, use CHRONICLE to match user's natural voice.
+
+**citation_request** — Search verified citation set only (no external APIs). If found: insert citation in document's reference style. If not found: return original unchanged with flag.
+
+**factual_check** — Cross-reference against verified citations, other document claims, and internal consistency. Return one of three verdicts: "Supported by [citation]", "Unverified: could not confirm against your sources", or "Inconsistent: conflicts with [passage/citation]". **Read-only — no rewriting.**
+
+### Output Schema
+
+```json
+{
+  "rewritten_section": { "text": "<replacement text>", "format": "markdown | latex | plain_text" },
+  "diff": { "original_text": "...", "new_text": "...", "change_type": "...", "word_count_original": 145, "word_count_new": 162, "citations_added": [], "citations_removed": [], "insertions": [...], "deletions": [...] },
+  "flags": [{ "type": "no_citation_found", "message": "...", "suggestion": "..." }],
+  "unchanged": false
+}
+```
+
+For `factual_check` or `citation_request` with no match: `unchanged: true`, value is in the `flags` array.
+
+### Boundary Enforcement (Critical)
+
+**The agent must not modify any text outside the selected boundaries.**
+
+Verification procedure (runs on every pass):
+1. Take full document. Replace text between offsets with `rewritten_section.text`.
+2. Compare resulting document against original character-by-character outside replacement zone.
+3. If any character outside changed: reject output, re-run with explicit constraint injection, verify again.
+4. If violation persists after 2 retries: return error "Refinement could not be completed without affecting surrounding text. Try selecting a larger section."
+
+### UX Integration (LUMARA Output Viewer)
+
+**Selection flow:** User taps/long-presses passage → selection handles → "Add Comment" floating action button.
+
+**Comment flow:** Comment card with text input + annotation type chips (Rewrite, Expand, Condense, Strengthen, Tone, Add Citation, Fact Check). Chips optional — `auto` inference if none selected.
+
+**Result flow:** Loading indicator on selection → rewritten section replaces original → change indicator in sidebar → tap for diff view (red removed, green added) → "Keep Changes" / "Revert" buttons → flags shown as yellow callouts.
+
+**History:** Local revision history per document. Timestamp, annotation type, selected text preview, comment, "Restore this version". Stored locally only — not sent to SwarmSpace or CHRONICLE.
+
+### Acceptance Tests
+
+1. **Boundary integrity:** 5-paragraph doc, rewrite paragraph 3 → paragraphs 1,2,4,5 byte-identical
+2. **Expand:** 50-word passage → 75-100 words, no new uncited claims
+3. **Condense:** 200-word passage → 100-140 words, no citations dropped
+4. **Citation request with match:** Relevant paper in verified set → correctly inserted in reference style
+5. **Citation request without match:** No relevant papers → `unchanged: true` with flag
+6. **Factual check consistency:** Contradictory claims in document → inconsistency detected and reported
+7. **Tone with CHRONICLE:** Formal academic CHRONICLE data + casual passage → matches CHRONICLE style
+8. **Tone without CHRONICLE:** Same test → infers from surrounding context
+9. **Auto type inference:** 7 comments matching different patterns → correct type for each
+10. **LaTeX preservation:** `\cite{}` commands and equation references preserved in rewrite
+11. **Reference style fidelity:** Rewrite + strengthen across all 6 styles → correct inline formatting
+12. **Concurrent rejection:** Two simultaneous passes on same doc → `is_concurrency_safe: false` enforced
+
+### Constraints
+
+1. **Boundary enforcement is non-negotiable.** Verified programmatically on every pass.
+2. **No citation fabrication.** Only uses verified citation set.
+3. **User-provided references never removed.** Flagged, not deleted.
+4. **CHRONICLE data optional.** Works without it.
+5. **Format preservation.** Markdown in → markdown out. LaTeX in → LaTeX out.
+6. **Revision history is local.** No data stored on SwarmSpace or sent to CHRONICLE.
+7. **Credit per pass.** Each annotation = 1 pass = 10 credits. No bulk discount (preserves targeted annotation incentive).
+
+---
+
+*SwarmSpace Full Backlog — Orbital AI — April 16, 2026*
