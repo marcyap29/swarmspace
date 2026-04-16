@@ -1,3 +1,18 @@
+## Session: 2026-05-14 — SMB Intelligence Layer Backlog + MCP Deployment Confirmed
+
+### What was done
+- MCP Remote Server cherry-picked to `main` and deployed (LUMARA session 50). `swarmspace-mcp-server.orbitalai.workers.dev` live. `generateMcpApiKey` + `revokeMcpApiKey` Firebase functions deployed to `arc-epi`. Both secrets set (`MCP_KEY_SECRET` in Google Secret Manager + Cloudflare; `SWARMSPACE_INTERNAL_TOKEN` in Cloudflare).
+- SMB Intelligence Layer Backlog added to `backlog.md` — 5 areas: MCP compliance audit (gates both marketplace listings), Anthropic + OpenAI marketplace applications, anchor content piece, homepage copy update, Profile D developer outreach, Roles page seeding, Decision Synthesis workflow (later).
+- **Niche decision locked:** SwarmSpace positions as a business intelligence connector in both Anthropic and OpenAI marketplace directories.
+- Resolved stale merge conflict at end of `backlog.md` (lines 2775-2778, from commit 733d5a9).
+
+### Next
+1. MCP compliance audit — OAuth 2.1 + Dynamic Client Registration (OpenAI gate); Remote MCP Server + MCP Apps (Anthropic gate). One audit clears both.
+2. Anchor content piece — solo founder use case, LinkedIn + Substack.
+3. Homepage copy update — "business intelligence layer for people running lean".
+
+---
+
 ## Session: 2026-05-14 — MCP Remote Server
 
 **Branch:** claude/review-swarm-agents-workflows-0BqPd  

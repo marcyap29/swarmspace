@@ -2023,6 +2023,7 @@ If none of these are present by day 60: recommend content pivot, not channel cha
 
 ---
 
+<<<<<<< HEAD
 ## 21. Safe Room — Structural Prompt Injection Defense
 
 **Status:** Not started
@@ -2771,4 +2772,140 @@ Token refresh is LUMARA's responsibility. If the Worker returns `{ "error": "cal
 
 ---
 
-*SwarmSpace Full Backlog — Orbital AI — May 3, 2026*
+## SMB Intelligence Layer — Positioning & Distribution *(added 2026-05-14)*
+
+**Context:** Anthropic launched Claude for Small Business (May 13, 2026) — 15 operational workflows on Claude Cowork (payroll, invoicing, campaigns, contracts). They built the execution layer. SwarmSpace already has the intelligence layer. This section captures the actions needed to position, distribute, and build toward that opportunity.
+
+**Niche decision locked (2026-05-14):** SwarmSpace will position as a **business intelligence connector** in both the Anthropic and OpenAI marketplace directories. Not a pivot — an honest reframe of what already exists.
+
+---
+
+### NOW — MCP Compliance Audit *(gates both listings)*
+
+**What:** Audit `swarmspaceRouter` + `workers/mcp-server/` against current MCP spec for both platforms simultaneously.
+
+Specific checks:
+- OAuth 2.1 compliance (mandatory for OpenAI — Bearer tokens rejected)
+- Dynamic Client Registration support (mandatory for OpenAI)
+- Remote MCP Server endpoint qualification (Anthropic)
+- MCP Apps compatibility for UI previews (Anthropic — optional but advantageous)
+
+**Why this is the gate:** One audit clears both directories. Do not do this twice.
+
+**Output:** Internal compliance note — compliant / gaps to close / estimated effort per gap. Flag OpenAI OAuth 2.1 and Dynamic Client Registration as explicit checkboxes.
+
+---
+
+### NOW — Apply for Anthropic Marketplace Listing
+
+**What:** Submit SwarmSpace to `claude.com/platform/marketplace` as a Remote MCP Server, categorized as a business intelligence connector.
+
+**Listing framing:**
+> SwarmSpace is the business intelligence layer for solo founders and small teams. While Claude for Small Business handles execution (payroll, invoicing, campaigns), SwarmSpace handles understanding — competitive analysis, market scanning, meeting prep, tech evaluation, research synthesis. 13 intelligence workflows. Privacy-first architecture.
+
+**Blocked by:** MCP compliance audit.
+
+**Key differentiation:** Most listed connectors are single-purpose data pipes (Stripe, GitHub, Notion, Slack). SwarmSpace is a workflow orchestration layer — research, competitor analysis, meeting prep, decision framing. A real gap in the directory.
+
+---
+
+### NOW — Apply for OpenAI App Directory Listing
+
+**What:** Submit SwarmSpace to OpenAI's App Directory (Beta) as an MCP-based business intelligence app.
+
+**Listing framing:** Same intelligence layer niche. Emphasize structured JSON outputs and source attribution — OpenAI users skew technical. Same workflow suite + privacy architecture pitch.
+
+**Blocked by:** MCP compliance audit. OAuth 2.1 + Dynamic Client Registration must be confirmed before submission.
+
+**Note:** File both marketplace applications in parallel after audit clears. ChatGPT added MCP support September 2025; early listings get in before named-partner relationships solidify.
+
+---
+
+### NOW — Write Anchor Content Piece
+
+**What:** "Here's how I actually use SwarmSpace to run Orbital AI as a solo founder."
+
+**Why:** Most credible thing publishable right now — you're the user. Demonstrates the product through lived use, not feature announcements. Doubles as a pitch document.
+
+**Workflows to feature:** `/meeting-prep`, `/competitor`, `/market-scan`, `/tech-scout`, `news-brief` DO, `/fact-check`
+
+**Constraint:** Be precise about `/meeting-prep` — it pulls LinkedIn via jina-reader which is fragile. Say what it actually does, don't oversell it.
+
+**Format:** LinkedIn post first (hook + personal story + workflow list). Substack long-form second (full walkthrough with example outputs).
+
+---
+
+### NOW — Update Homepage Positioning Copy
+
+**What:** Add "business intelligence layer for people running lean" framing to swarmspace.app hero copy, website context brief, and outreach templates.
+
+**Not a redesign.** Copy update only. Current "consumer plugin marketplace for personal AI companions" framing is accurate but misses the SMB resonance entirely.
+
+---
+
+### SOON — Add Profile D to Developer Outreach Playbook
+
+**What:** Existing playbook has three developer archetypes. Add a fourth:
+
+**Profile D: The SMB Integration Developer** — builds/maintains integrations for SMB tools (QuickBooks, HubSpot, PayPal, Canva, DocuSign, Stripe). Their integrations are exactly what SwarmSpace needs to extend into the operational layer.
+
+| Signal | Where to Find | Why They Convert |
+|---|---|---|
+| Published QuickBooks/HubSpot/Stripe integrations | GitHub, RapidAPI, Product Hunt | Already built the hard part. SwarmSpace is new distribution. |
+| Active in SMB developer communities | QuickBooks developer forums, HubSpot developer Slack | They understand the user. Easy onboarding. |
+| Indie developer shipping SMB SaaS tools | Indie Hackers, Twitter/X | Motivated to monetize. SwarmSpace adds a revenue channel. |
+
+**Blocked by:** DEVELOPER_GUIDE.md + AST10 posture page before any outreach sends (already done — unblocked).
+
+---
+
+### SOON — Seed Roles Page with SMB-Oriented Role Labels *(when §16.1 ships)*
+
+| Role Name | Underlying Workflow | Job It Does |
+|---|---|---|
+| Competitor Pulse | `/competitor` | Weekly competitive awareness brief |
+| Market Entry Brief | `/market-scan` | Before committing to a new market or product |
+| Meeting Intel | `/meeting-prep` | Background on anyone you're meeting |
+| Tech Evaluator | `/tech-scout` | Before adopting a new tool or vendor |
+| Morning Brief | `news-brief` DO | Daily news digest, recurring |
+| Research Sprint | `/research` | Deep research on any topic |
+| Fact Checker | `/fact-check` | Verify before acting |
+| Campaign Brief | `/content-brief` + `/marketing` | Content and campaign starting point |
+
+**Blocked by:** Roles browsing page build (§16.1 in backlog).
+
+---
+
+### LATER — Decision Synthesis Workflow
+
+**What:** A workflow that takes research inputs from multiple endpoints and structures output as a recommendation frame — options, tradeoffs, recommendation, confidence level, sources. Completes the intelligence suite.
+
+**Inputs:** Can chain `/research`, `/competitor`, `/market-scan` outputs.
+
+**Why it matters:** SwarmSpace has strong input gathering but no explicit synthesis layer that frames findings as a decision. This is the capstone of the intelligence suite.
+
+**Blocked by:** Nothing architectural. Design work required first.
+
+---
+
+### Sequencing Summary
+
+```
+Now:     MCP compliance audit (OAuth 2.1 + Dynamic Client Registration for OpenAI;
+         Remote MCP Server + MCP Apps for Anthropic)
+         Anchor content piece (LinkedIn + Substack)
+         Homepage copy update
+
+Soon:    Anthropic Marketplace application (if audit clears)
+         OpenAI App Directory application (if audit clears)
+         Profile D added to outreach playbook
+
+When §16.1 ships:
+         Seed Roles page with SMB-oriented labels
+
+Later:   Decision synthesis workflow design
+```
+
+---
+
+*SwarmSpace Full Backlog — Orbital AI — May 14, 2026*
