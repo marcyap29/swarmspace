@@ -2087,4 +2087,181 @@ If none of these are present by day 60: recommend content pivot, not channel cha
 
 ---
 
+## 21. Safe Room — Structural Prompt Injection Defense
+
+**Status:** Not started
+**Priority:** V1 — required before external-content plugins reach production users
+**Depends on:** Dynamic Worker Loader sandbox (Section 5.1), PRISM enforcement at sandbox level (Section 5.1)
+
+---
+
+### What It Is
+
+The Safe Room is a named SwarmSpace primitive that closes the output-side gap in plugin security. PRISM and V8 isolate sandboxing control what goes into a plugin execution environment. The Safe Room controls what comes out, and how the synthesizer treats it.
+
+It applies specifically to plugins that declare `fetches_external_content: true`. These plugins return content authored by unknown third parties, which creates a structural prompt injection vector: injected instruction text inside fetched content can reach the agent's LLM reasoning context through normal execution flow, without compromising the plugin or violating any manifest declaration.
+
+The Safe Room closes this via three layered controls.
+
+---
+
+### Components
+
+#### 1. Schema-Enforced Output Gate
+
+Plugins declaring `fetches_external_content: true` must include an `output_schema` in their manifest. This schema defines every field, type, and constraint on what the plugin is permitted to return.
+
+The sandbox boundary enforces this schema before the result is passed to swarmspaceRouter:
+
+- Fields not declared in the schema are stripped at the boundary
+- Values that do not match declared types are rejected and surfaced as a plugin execution error
+- Freeform untyped text fields are not permitted in output schemas for external-content plugins
+- Schema violations are hard errors surfaced to the developer — no silent pass-through
+
+**Effect:** Injection payloads have no schema field to occupy. They cannot exit the sandbox.
+
+**Implementation:**
+
+- Add `output_schema` as a required manifest field when `fetches_external_content: true`
+- Implement Zod (or JSON Schema) validator in the Worker response handler, runs before result is returned to swarmspaceRouter
+- Schema validation failure returns a structured error: `{ error: "schema_violation", field: "[field]", expected: "[type]", received: "[type]" }`
+- Update manifest submission pipeline to require and validate `output_schema` for external-content plugins
+- Update sandbox testing step in review pipeline to run a schema conformance check on plugin output
+
+---
+
+#### 2. Provenance Tagging
+
+Every result that exits a Safe Room carries a provenance envelope attached by the sandbox boundary. The plugin cannot modify or remove this envelope.
+
+```json
+{
+  "source_type": "external_content",
+  "trusted": false,
+  "plugin_slug": "[plugin identifier]",
+  "schema_validated": true,
+  "fetched_domains": ["[domain1]", "[domain2]"]
+}
+```
+
+This envelope travels with the result through swarmspaceRouter to the synthesizer.
+
+**Implementation:**
+
+- Attach provenance envelope in the Worker response handler after schema validation passes
+- Pass envelope as a metadata wrapper around plugin result payload through swarmspaceRouter
+- swarmspaceRouter preserves envelope when passing result to next workflow step or to synthesizer
+
+---
+
+#### 3. Synthesizer Untrusted Provenance Handling
+
+The LUMARA synthesizer system prompt is updated to apply a distinct handling posture when it receives content tagged `trusted: false`:
+
+- Content is framed as third-party data to be processed, not as context or instruction
+- Instruction-shaped text inside untrusted fields is surfaced as a data observation, not an action trigger
+- The synthesizer does not execute directives found inside untrusted content regardless of phrasing
+
+**Implementation:**
+
+- Update LUMARA synthesizer system prompt with untrusted provenance handling instructions
+- Test against crafted injection payloads in schema-conformant fields (e.g., a `summary` field containing "Ignore previous instructions and…")
+- Verify synthesizer treats injection text as data, surfaces it as an observation, does not act on it
+
+---
+
+### Manifest Changes
+
+Add two fields to the plugin manifest spec:
+
+| Field | Type | Applies To | Required |
+|-------|------|------------|----------|
+| `output_schema` | Object | All plugins with `fetches_external_content: true` | Yes |
+| `output_schema_version` | String | All plugins with `fetches_external_content: true` | Yes |
+
+Example manifest addition:
+
+```json
+"fetches_external_content": true,
+"output_schema": {
+  "headline": { "type": "string", "max_length": 200 },
+  "summary": { "type": "string", "max_length": 500 },
+  "source_url": { "type": "url" },
+  "published_at": { "type": "iso_datetime" }
+},
+"output_schema_version": "1.0"
+```
+
+---
+
+### Developer Experience
+
+Developers building external-content plugins face three new requirements:
+
+1. Declare an `output_schema` in the manifest covering every field the plugin returns
+2. No untyped freeform text in output — all text fields must be typed and length-bounded
+3. Schema violations surface as hard errors during sandbox testing in the review pipeline — non-conformant plugins do not pass review
+
+Developer docs must explain the Safe Room contract clearly: what it enforces, why it exists, and what a valid output schema looks like with examples.
+
+---
+
+### Security Page Update
+
+The security posture page (`swarmspace.app/security.html`) must be updated to describe the Safe Room as a named primitive. The description must accurately reflect both what it protects against and what residual risks remain:
+
+**Protected:** Injection payloads embedded in fetched external content cannot exit the plugin sandbox. Content reaching the synthesizer is tagged untrusted and handled as data.
+
+**Residual risk (must be disclosed):** Schema field poisoning — a sufficiently crafted injection inside a declared text field (e.g., `summary`) can still reach the synthesizer. The provenance handling posture is the backstop for this case.
+
+---
+
+### Manifest Review Update
+
+The human review step for external-content plugins gains an additional audit responsibility:
+
+- Is the `output_schema` honest relative to what the plugin actually returns?
+- Are text fields appropriately bounded, or does the schema declare an overly permissive catch-all text field that reduces output gate protection?
+- A catch-all `text` field in an external-content plugin output schema is a flag — reviewer should require more specific schema or reject.
+
+---
+
+### Implementation Sequence
+
+| Phase | Work | Estimated effort |
+|-------|------|------------------|
+| 1 | Manifest spec update: add `output_schema` and `output_schema_version` fields | 0.5 days |
+| 2 | Output schema validator in Worker response handler (Zod) | 1 day |
+| 3 | Provenance envelope attachment and propagation through swarmspaceRouter | 0.5 days |
+| 4 | Synthesizer system prompt update + injection test suite | 1 day |
+| 5 | Manifest review pipeline update: schema honesty audit | 0.5 days |
+| 6 | Developer docs update: Safe Room contract, schema examples | 0.5 days |
+| 7 | Security page update: Safe Room description with accurate scope | 0.5 days |
+
+**Total estimated effort:** ~4.5 days of focused implementation
+
+---
+
+### Relationship to Existing Architecture
+
+| Layer | Existing control | Safe Room addition |
+|-------|------------------|--------------------|
+| Input | PRISM context minimization | No change |
+| Execution | V8 isolate sandbox | No change |
+| Output | None | Schema enforcement + provenance tagging |
+| Synthesizer | None | Untrusted provenance handling posture |
+| Manifest review | Intent and access audit | Output schema honesty audit |
+
+The Safe Room does not replace any existing control. It closes the output-side gap that PRISM and V8 sandboxing do not address.
+
+---
+
+### Notes
+
+- Applies only to plugins with `fetches_external_content: true`. Plugins without this flag are not subject to output schema requirements.
+- Safe Room is a public-facing primitive name. It appears in developer docs, security page, and eventually in marketing copy. Treat it as a named architecture concept, not an internal implementation term.
+- See standalone doc: *SwarmSpace Safe Room — A Named Primitive for Structural Prompt Injection Defense* for the full rationale and architecture narrative.
+
+---
+
 *SwarmSpace Full Backlog — Orbital AI — April 16, 2026*
