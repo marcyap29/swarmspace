@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-04-14
+**Last Updated:** 2026-04-19
 **Status:** ✅ Synced
 
 ---
@@ -51,11 +51,12 @@ When running a doc sync or release:
 |----------|----------|---------------|--------|-------|
 | overview.md | root | 2026-03-01 | ✅ Synced | |
 | README.md | root | 2026-04-06 | ✅ Synced | Firebase submit/admin; file structure |
-| SWARMSPACE_API_CONTEXT.md | root | — | ✅ Synced | |
+| SWARMSPACE_API_CONTEXT.md | root | 2026-04-19 | ✅ Synced | Full Workflow/Work Chain API section added (12 orchestrator routes) |
 | architecture.md | root | 2026-04-14 | ✅ Synced | v1.4.1 full rewrite — PRISM, discovery, founding dev, orchestrator, 22 plugins, 10 collections |
 | submit.html | root | 2026-04-04 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` (legacy shape + `developer_uid`) |
 | submit-plugin.html | root | 2026-04-06 | ✅ Synced | Primary submit portal; `plugin_submissions`; client-sorted history |
-| Docs/RULE.md | Docs/ | 2026-04-04 | ✅ Synced | Cursor/agent guidance |
+| Docs/Agents.md | Docs/ | 2026-04-19 | ✅ Synced | Agent prompt rules reference |
+| Docs/CHRONICLE.md | Docs/ | 2026-04-19 | ✅ Synced | CHRONICLE summary generation reference |
 | admin-submissions.html | root | 2026-04-04 | ✅ Synced | `/admin-submissions`; `plugin_submissions` review UI |
 | security.html | root | 2026-04-06 | ✅ Synced | Security & trust architecture (static page) |
 | prism.html | root | 2026-04-06 | ✅ Synced | Public PRISM reference |
@@ -64,7 +65,7 @@ When running a doc sync or release:
 | Docs/PRIVACY.md | Docs/ | 2026-04-06 | ✅ Synced | Privacy policy (Markdown) |
 | DEVELOPER_GUIDE.md | root | 2026-04-04 | ✅ Synced | Developer / manifest reference |
 | Docs/PRISM.md | Docs/ | 2026-04-04 | ✅ Synced | PRISM reference |
-| Docs/claude.md | Docs/ | 2026-04-06 | ✅ Synced | |
+| Docs/claude.md | Docs/ | 2026-04-19 | ✅ Synced | v1.4.0: earnings.html reference, Backlog Sections Reference table |
 | Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-04-06 | ✅ Synced | |
 | Docs/CHANGELOG.md | Docs/ | 2026-04-06 | ✅ Synced | |
 | Docs/FEATURES.md | Docs/ | 2026-04-06 | ✅ Synced | |
@@ -77,8 +78,10 @@ When running a doc sync or release:
 | ast10.html | root | 2026-04-10 | ✅ Synced | OWASP AST10 compliance page (public) |
 | LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md | root | 2026-04-10 | ✅ Synced | Cross-repo function ownership |
 | SWARMSPACE_ANSWERS_TO_LUMARA.md | root | 2026-04-10 | ✅ Synced | Responses to LUMARA integration questions |
-| backlog.md | root | 2026-04-10 | ✅ Synced | Long-term feature backlog |
-| planner.md | root | 2026-04-10 | ✅ Synced | Active task scratchpad |
+| backlog.md | root | 2026-04-19 | ✅ Synced | Long-term feature backlog |
+| planner.md | root | 2026-04-19 | ✅ Synced | Active task scratchpad |
+| scripts/test-workflows.sh | scripts/ | 2026-04-19 | ✅ Synced | Live smoke-test for 3 primary workflows |
+| scripts/get-test-token.js | scripts/ | 2026-04-19 | ✅ Synced | Firebase ID token helper for manual testing |
 | Docs/OWASP_AST10_COMPLIANCE.md | Docs/ | 2026-04-10 | ✅ Synced | Internal AST10 compliance doc |
 | Docs/LAYER3_DESIGN_AND_BACKLOG.md | Docs/ | 2026-04-10 | ✅ Synced | Layer 3 design |
 | Docs/LUMARA_Overview.md | Docs/ | 2026-04-10 | ✅ Synced | LUMARA overview |
@@ -91,6 +94,24 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-04-19 — Community launch gate cleared + workflow fixes (v1.5.0)
+
+**Action:** Doc sync after 3-workflow verification and associated fixes that cleared the community launch gate.
+
+**Changes:**
+- Fixed: `workers/orchestrator/src/index.js` — `_prism_consent: true` added to all `callPlugin()` calls
+- Fixed: `functions/src/functions/swarmspaceRouter.ts` — `"prompt"` added to gemini-flash `privacy_data_required` + `dataTypes`
+- Fixed: Lazy-load `admin.firestore()` pattern propagated to 13 LUMARA-owned functions (authGuard, stripeWebhook, analyzeJournalEntry, createCheckoutSession, generateJournalPrompts, getUserSubscription, sendChatMessage, unlockThrottle, quotaGuards, rateLimiter, saveUserModelConfig, crisisIntervention, prism/rivet/resolve)
+- Changed: `functions/package.json` — firebase-functions ^7.2.3 → ^7.2.5
+- Added: `SWARMSPACE_API_CONTEXT.md` Workflow/Work Chain API section (12 orchestrator routes)
+- Added: `scripts/test-workflows.sh`, `scripts/get-test-token.js`
+- Added: `Docs/CHRONICLE.md`, `Docs/Agents.md`
+- Deleted: `Docs/RULE.md` (rules consolidated into `Docs/claude.md` SOPs)
+- Updated: `backlog.md` (§3.3 Stripe Connect partial build, §5.3 agent-worker prototype, §5.5 plugin-registry orphan, §7.1/§8 LUMARA useOrchestrator flag)
+- Updated: `Docs/claude.md` v1.4.0, `Docs/CHANGELOG.md` v1.5.0, `Docs/CONFIGURATION_MANAGEMENT.md`
+
+---
 
 ### 2026-04-14 — Terminology update: Outcome Packages → Work Chains / Roles
 

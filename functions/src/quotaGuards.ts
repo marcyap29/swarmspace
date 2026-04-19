@@ -12,7 +12,7 @@ import {
   FREE_MAX_CHAT_TURNS_PER_THREAD 
 } from "./config";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /**
  * Check if user can perform a deep analysis on a conversation
@@ -27,7 +27,7 @@ export async function checkCanAnalyzeEntry(
 ): Promise<QuotaCheckResult> {
   try {
     // Load user document
-    const userDoc = await db.collection("users").doc(userId).get();
+    const userDoc = await getDb().collection("users").doc(userId).get();
     if (!userDoc.exists) {
       return {
         allowed: false,
@@ -51,7 +51,7 @@ export async function checkCanAnalyzeEntry(
     }
 
     // Free tier: Check limit
-    const entryDoc = await db.collection("journalEntries").doc(entryId).get();
+    const entryDoc = await getDb().collection("journalEntries").doc(entryId).get();
     if (!entryDoc.exists) {
       return {
         allowed: false,
@@ -114,7 +114,7 @@ export async function checkCanSendMessage(
 ): Promise<QuotaCheckResult> {
   try {
     // Load or create user document
-    const userRef = db.collection("users").doc(userId);
+    const userRef = getDb().collection("users").doc(userId);
     const userDoc = await userRef.get();
     
     let user: UserDocument;
@@ -139,7 +139,7 @@ export async function checkCanSendMessage(
     }
 
     // Free tier: Check limit
-    const threadDoc = await db.collection("chatThreads").doc(threadId).get();
+    const threadDoc = await getDb().collection("chatThreads").doc(threadId).get();
     if (!threadDoc.exists) {
       // New thread, allowed
       return { allowed: true };
@@ -186,7 +186,7 @@ export async function checkCanSendMessage(
 export async function incrementAnalysisCount(
   entryId: string
 ): Promise<void> {
-  const entryRef = db.collection("journalEntries").doc(entryId);
+  const entryRef = getDb().collection("journalEntries").doc(entryId);
   await entryRef.update({
     analysisCount: admin.firestore.FieldValue.increment(1),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -199,7 +199,7 @@ export async function incrementAnalysisCount(
 export async function incrementMessageCount(
   threadId: string
 ): Promise<void> {
-  const threadRef = db.collection("chatThreads").doc(threadId);
+  const threadRef = getDb().collection("chatThreads").doc(threadId);
   await threadRef.update({
     messageCount: admin.firestore.FieldValue.increment(1),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),

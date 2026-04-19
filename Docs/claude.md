@@ -1,7 +1,7 @@
 # SwarmSpace Documentation Context Guide
 
-**Version:** 1.3.0
-**Last Updated:** April 11, 2026
+**Version:** 1.4.0
+**Last Updated:** April 17, 2026
 **Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
@@ -225,11 +225,30 @@ For structural changes (new functions, ownership changes), update `LUMARA_SWARMS
 | **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
 | **PROMPT_TRACKER.md** | Prompt change log | `PROMPT_TRACKER.md` |
 | **PROMPT_REFERENCES.md** | Prompt catalog | `PROMPT_REFERENCES.md` |
-| **Planner.md** | Active task scratchpad (short-term) | `Planner.md` |
-| **backlog.md** | Long-term feature backlog | `backlog.md` |
 | **LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md** | Cross-repo function ownership & sync | `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` |
 | **founding-developers.html** | Founding Developer Programme landing page | `founding-developers.html` |
 | **developer-guide.html** | HTML developer guide (styled) | `developer-guide.html` |
+| **earnings.html** | Developer earnings page shell (backend not built) | `earnings.html` |
+
+### Backlog Sections Reference
+
+Key backlog sections for orientation when picking up work:
+
+| Section | Topic | Status |
+|---|---|---|
+| §2.3 | Credential Isolation — boundary injection for plugin Workers | Open |
+| §3.3 | Stripe Connect — developer payouts (80/20 split) | Open |
+| §3.4 | Developer Earnings Dashboard | Page shell only — backend open |
+| §4.4 | Catalogue Updates Endpoint (`/catalogue/updates`) | Open |
+| §4.5 | Credit visibility in UI | HTML exists — JS binding unverified |
+| §5.1 | Dynamic Worker Loader (V8 isolate sandbox) | Open |
+| §5.2 | Durable Objects — Recurring Agent Runtime | Open (blocked on §5.3) |
+| §5.3 | Orchestrator Execution Modes (plan/auto/bubble/interactive) | Open — blocks §5.2 and Work Chain chaining |
+| §10 | Agent Wallet System — per-agent credit delegation + policy engine | Open (Phase 0–4 designed) |
+| §11 | Session Broker — A2A gateway between external agents and plugins | Open (future, after orchestrator modes) |
+| §12 | Front-Page Discovery Agent | Phase 1 ✅ done; Phase 2 partial (JS wiring remaining); Phase 3 open |
+| §15 | Work Chains Catalogue — 6 live, 2 near-complete (need CRM/email plugin) | Partial |
+| §16 | Roles Browsing Page — end-user surface for Work Chains | Open |
 
 ---
 

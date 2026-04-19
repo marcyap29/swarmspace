@@ -6,7 +6,7 @@ import { admin } from "../admin";
 import { THROTTLE_UNLOCK_PASSWORD } from "../config";
 import * as crypto from "crypto";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /**
  * Unlock throttle with password verification
@@ -67,7 +67,7 @@ export const unlockThrottle = onCall(
       }
 
       // Password is correct - unlock throttle for this user
-      await db.collection("users").doc(userId).update({
+      await getDb().collection("users").doc(userId).update({
         throttleUnlocked: true,
         throttleUnlockedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -110,7 +110,7 @@ export const lockThrottle = onCall(
 
     try {
       // Remove throttle unlock
-      await db.collection("users").doc(userId).update({
+      await getDb().collection("users").doc(userId).update({
         throttleUnlocked: admin.firestore.FieldValue.delete(),
         throttleUnlockedAt: admin.firestore.FieldValue.delete(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -150,7 +150,7 @@ export const checkThrottleStatus = onCall(
     }
 
     try {
-      const userDoc = await db.collection("users").doc(userId).get();
+      const userDoc = await getDb().collection("users").doc(userId).get();
       if (!userDoc.exists) {
         return { unlocked: false };
       }

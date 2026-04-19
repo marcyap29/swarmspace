@@ -245,6 +245,177 @@ Claims a Founding Developer Programme slot. Uses a Firestore transaction against
 
 ---
 
+## Workflow / Work Chain API — LUMARA Integration Contract
+
+The orchestrator worker exposes 12 workflow routes. LUMARA calls these directly (bypassing `swarmspaceRouter`) to run multi-plugin Work Chains. The three primary workflows are documented in detail below; the remaining nine follow the same request/response conventions.
+
+### Base URL
+
+```
+https://swarmspace-orchestrator.orbitalai.workers.dev
+```
+
+### Authentication
+
+All routes require a Firebase ID token in the `Authorization` header. The orchestrator forwards this token to `swarmspaceRouter` when calling individual plugins.
+
+### Common Request Format
+
+```http
+POST https://swarmspace-orchestrator.orbitalai.workers.dev/{route}
+Authorization: Bearer <firebase-id-token>
+Content-Type: application/json
+
+{
+  "query": "search terms"
+}
+```
+
+The `query` field is required. Some routes accept additional `params` fields (e.g., `/market-scan` accepts `currency`, `/content-brief` accepts `format`).
+
+### Common Response Envelope
+
+Every successful response uses the same envelope:
+
+```json
+{
+  "workflow": "/{route}",
+  "result": { ... }
+}
+```
+
+The shape of `result` varies per workflow (documented below).
+
+### Timeout
+
+30 seconds (Cloudflare Worker limit). Individual plugin calls within a workflow run in parallel where possible to stay within this budget.
+
+---
+
+### Primary Workflow: `/research` — Deep Research
+
+**Plugins chained:** `brave-search`, `wikipedia`, `semantic-scholar`, `gemini-flash`
+
+**Request:**
+```http
+POST https://swarmspace-orchestrator.orbitalai.workers.dev/research
+Authorization: Bearer <firebase-id-token>
+Content-Type: application/json
+
+{ "query": "search terms" }
+```
+
+**Response:**
+```json
+{
+  "workflow": "/research",
+  "result": {
+    "sources": {
+      "brave-search": { ... },
+      "wikipedia": { ... },
+      "semantic-scholar": { ... }
+    },
+    "synthesis": { ... }
+  }
+}
+```
+
+`sources` contains the raw output from each plugin (keyed by plugin ID). `synthesis` contains the Gemini-generated structured summary with key findings, sources cited, and gaps.
+
+---
+
+### Primary Workflow: `/news-brief` — News Intelligence Brief
+
+**Plugins chained:** `news`, `hackernews`, `brave-search`, `gemini-flash`
+
+**Request:**
+```http
+POST https://swarmspace-orchestrator.orbitalai.workers.dev/news-brief
+Authorization: Bearer <firebase-id-token>
+Content-Type: application/json
+
+{ "query": "search terms" }
+```
+
+**Response:**
+```json
+{
+  "workflow": "/news-brief",
+  "result": {
+    "sources": {
+      "news": { ... },
+      "hackernews": { ... },
+      "brave-search": { ... }
+    },
+    "brief": { ... }
+  }
+}
+```
+
+`sources` contains raw plugin outputs. `brief` contains the Gemini-generated intelligence brief structured as: Headlines Summary, Detailed Analysis, Community Reaction, What To Watch.
+
+---
+
+### Primary Workflow: `/competitor` — Competitive Analysis
+
+**Plugins chained:** `brave-search`, `news`, `hackernews`, `gemini-flash`
+
+**Request:**
+```http
+POST https://swarmspace-orchestrator.orbitalai.workers.dev/competitor
+Authorization: Bearer <firebase-id-token>
+Content-Type: application/json
+
+{ "query": "search terms" }
+```
+
+**Response:**
+```json
+{
+  "workflow": "/competitor",
+  "result": {
+    "sources": {
+      "brave-search": { ... },
+      "news": { ... },
+      "hackernews": { ... }
+    },
+    "analysis": { ... }
+  }
+}
+```
+
+`sources` contains raw plugin outputs. `analysis` contains the Gemini-generated competitive intelligence brief structured as: Overview, Key Players, Recent Moves, Community Sentiment, Strategic Implications.
+
+---
+
+### Error Responses
+
+All error responses use the same JSON envelope:
+
+```json
+{ "error": "<message>" }
+```
+
+| HTTP Status | Condition | Example `error` value |
+|-------------|-----------|----------------------|
+| 401 | Missing or malformed `Authorization` header | `"Missing Authorization header"` |
+| 400 | Request body is not valid JSON | `"Invalid JSON body"` |
+| 404 | Route does not exist | `"Unknown route"` (includes `available` array of valid routes) |
+| 405 | HTTP method is not POST (or OPTIONS) | `"POST required"` |
+| 500 | Workflow execution error (plugin failure, timeout, etc.) | `"Plugin brave-search failed (502): ..."` |
+
+### CORS
+
+All responses include permissive CORS headers. `OPTIONS` preflight is handled automatically (returns 204).
+
+```
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: POST, OPTIONS
+Access-Control-Allow-Headers: Content-Type, Authorization
+```
+
+---
+
 ## Firestore: `swarmspace_capabilities` Collection
 
 Single-document collection (`swarmspace_capabilities/current`) used by LUMARA as a real-time Firestore listener for capability discovery.

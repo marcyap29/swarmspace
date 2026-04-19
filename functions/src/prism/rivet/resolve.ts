@@ -8,7 +8,7 @@
 import { admin } from "../../admin";
 import { logger } from "firebase-functions";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 export interface RESOLVEResult {
   resolve_score: number;        // 0-100: Recovery momentum
@@ -192,7 +192,7 @@ async function getLast7DaysSentinel(userId: string): Promise<SentinelResult[]> {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   
   try {
-    const entries = await db
+    const entries = await getDb()
       .collection('users')
       .doc(userId)
       .collection('journal_entries')

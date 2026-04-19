@@ -4,7 +4,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { admin } from "../admin";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /**
  * Stripe Webhook Handler
@@ -49,7 +49,7 @@ export const stripeWebhook = onRequest(
           const customerId = session.customer as string;
           const subscriptionId = session.subscription as string;
 
-          const usersSnapshot = await db
+          const usersSnapshot = await getDb()
             .collection("users")
             .where("stripeCustomerId", "==", customerId)
             .limit(1)
@@ -64,7 +64,7 @@ export const stripeWebhook = onRequest(
           const userId = usersSnapshot.docs[0].id;
 
           // Upgrade to pro
-          await db.collection("users").doc(userId).update({
+          await getDb().collection("users").doc(userId).update({
             plan: "pro",
             subscriptionTier: "PAID", // Legacy field
             subscriptionStatus: "active",
@@ -82,7 +82,7 @@ export const stripeWebhook = onRequest(
           const customerId = invoice.customer as string;
           const subscriptionId = invoice.subscription as string;
 
-          const usersSnapshot = await db
+          const usersSnapshot = await getDb()
             .collection("users")
             .where("stripeCustomerId", "==", customerId)
             .limit(1)
@@ -90,7 +90,7 @@ export const stripeWebhook = onRequest(
 
           if (!usersSnapshot.empty) {
             const userId = usersSnapshot.docs[0].id;
-            await db.collection("users").doc(userId).update({
+            await getDb().collection("users").doc(userId).update({
               plan: "pro",
               subscriptionTier: "PAID", // Legacy field
               subscriptionStatus: "active",
@@ -107,7 +107,7 @@ export const stripeWebhook = onRequest(
           const invoice = event.data.object;
           const customerId = invoice.customer as string;
 
-          const usersSnapshot = await db
+          const usersSnapshot = await getDb()
             .collection("users")
             .where("stripeCustomerId", "==", customerId)
             .limit(1)
@@ -115,7 +115,7 @@ export const stripeWebhook = onRequest(
 
           if (!usersSnapshot.empty) {
             const userId = usersSnapshot.docs[0].id;
-            await db.collection("users").doc(userId).update({
+            await getDb().collection("users").doc(userId).update({
               plan: "free",
               subscriptionTier: "FREE", // Legacy field
               subscriptionStatus: "canceled",
@@ -131,7 +131,7 @@ export const stripeWebhook = onRequest(
           const subscription = event.data.object;
           const customerId = subscription.customer;
 
-          const usersSnapshot = await db
+          const usersSnapshot = await getDb()
             .collection("users")
             .where("stripeCustomerId", "==", customerId)
             .limit(1)
@@ -146,7 +146,7 @@ export const stripeWebhook = onRequest(
           const userId = usersSnapshot.docs[0].id;
 
           // Downgrade to free
-          await db.collection("users").doc(userId).update({
+          await getDb().collection("users").doc(userId).update({
             plan: "free",
             subscriptionTier: "FREE", // Legacy field
             subscriptionStatus: "canceled",
@@ -164,7 +164,7 @@ export const stripeWebhook = onRequest(
           const customerId = subscription.customer;
           const status = subscription.status;
 
-          const usersSnapshot = await db
+          const usersSnapshot = await getDb()
             .collection("users")
             .where("stripeCustomerId", "==", customerId)
             .limit(1)
@@ -179,7 +179,7 @@ export const stripeWebhook = onRequest(
           const userId = usersSnapshot.docs[0].id;
           const isActive = status === "active";
 
-          await db.collection("users").doc(userId).update({
+          await getDb().collection("users").doc(userId).update({
             plan: isActive ? "pro" : "free",
             subscriptionTier: isActive ? "PAID" : "FREE", // Legacy field
             subscriptionStatus: status === "active" ? "active" : status === "canceled" ? "canceled" : "trial",

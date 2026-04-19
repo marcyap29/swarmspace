@@ -9,7 +9,7 @@ import { UserDocument } from "../types";
 import { GROQ_API_KEY } from "../config";
 import { groqChatCompletion } from "../groqClient";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /**
  * Generate journaling prompts
@@ -44,7 +44,7 @@ export const generateJournalPrompts = onCall(
 
     try {
       // Load user document
-      const userDoc = await db.collection("users").doc(userId).get();
+      const userDoc = await getDb().collection("users").doc(userId).get();
       if (!userDoc.exists) {
         throw new HttpsError("not-found", "User not found");
       }

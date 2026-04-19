@@ -24,7 +24,7 @@ import {
   InterventionLevel
 } from "../services/crisisIntervention";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /**
  * Analyze a journal entry
@@ -69,7 +69,7 @@ export const analyzeJournalEntry = onCall(
 
     try {
       // Load user document
-      const userDoc = await db.collection("users").doc(userId).get();
+      const userDoc = await getDb().collection("users").doc(userId).get();
       if (!userDoc.exists) {
         throw new HttpsError("not-found", "User not found");
       }
@@ -117,7 +117,7 @@ export const analyzeJournalEntry = onCall(
         });
         
         // Save crisis state to entry document
-        await db.collection('users').doc(userId)
+        await getDb().collection('users').doc(userId)
           .collection('journal_entries').doc(entryId)
           .set({
             sentinel_result: {

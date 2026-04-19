@@ -6,7 +6,7 @@ import { encrypt } from "./crypto";
 import { validateApiKey } from "./llmRouter";
 import { canUseProjectKey, type ProviderId } from "./config/providers";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /**
  * Save config using project's API key (no user key stored).
@@ -20,7 +20,7 @@ export async function saveUserModelConfigWithProjectKey(
   if (!canUseProjectKey(provider)) {
     throw new Error(`Provider ${provider} does not support project default`);
   }
-  const settingsRef = db.collection("users").doc(userId).collection("settings").doc("llm");
+  const settingsRef = getDb().collection("users").doc(userId).collection("settings").doc("llm");
   await settingsRef.set({
     provider,
     modelId: modelId.trim(),
@@ -43,7 +43,7 @@ export async function saveUserModelConfig(
 ): Promise<void> {
   await validateApiKey(provider, modelId, apiKey, accountId);
   const apiKeyEncrypted = encrypt(apiKey, encryptionKey);
-  const settingsRef = db.collection("users").doc(userId).collection("settings").doc("llm");
+  const settingsRef = getDb().collection("users").doc(userId).collection("settings").doc("llm");
   const data: Record<string, unknown> = {
     provider,
     modelId: modelId.trim(),

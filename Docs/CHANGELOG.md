@@ -1,7 +1,36 @@
 # SwarmSpace Changelog
 
-**Version:** 1.4.1
-**Last Updated:** 2026-04-13
+**Version:** 1.5.0
+**Last Updated:** 2026-04-19
+
+---
+
+## [1.5.0] - 2026-04-19
+
+### Fixed
+
+- **Orchestrator `_prism_consent: true`** — Added implicit PRISM consent flag to all `callPlugin()` calls in `workers/orchestrator/src/index.js`. Orchestrator-initiated workflow calls were being blocked by PRISM consent gating; consent is now implicitly granted for first-party orchestrator workflows.
+- **`swarmspaceRouter` gemini-flash PRISM fields** — Added `"prompt"` to `privacy_data_required` and `dataTypes` for the gemini-flash plugin. PRISM was stripping the prompt field before gemini-flash received it, breaking synthesis.
+- **Lazy-load `admin.firestore()` propagated to LUMARA functions** — Applied `getDb()` pattern to `authGuard.ts`, `stripeWebhook.ts`, `analyzeJournalEntry.ts`, `createCheckoutSession.ts`, `generateJournalPrompts.ts`, `getUserSubscription.ts`, `sendChatMessage.ts`, `unlockThrottle.ts`, `quotaGuards.ts`, `rateLimiter.ts`, `saveUserModelConfig.ts`, `crisisIntervention.ts`, `prism/rivet/resolve.ts`. Fixes Firebase 10s deployment timeout across all shared functions.
+
+### Changed
+
+- **`firebase-functions` bumped `^7.2.3` → `^7.2.5`** in `functions/package.json`.
+- **`SWARMSPACE_API_CONTEXT.md`** — Added full Workflow / Work Chain API documentation: 12 orchestrator routes, authentication, common request/response envelope, timeout contract, and detailed contracts for `/research`, `/news-brief`, and `/competitor` (remaining 9 follow same pattern).
+- **`Docs/claude.md` → v1.4.0** — Added `earnings.html` to Quick Reference; added Backlog Sections Reference table.
+- **`backlog.md`** — Recorded discoveries: Stripe Connect partial build in Vercel API layer (§3.3), `agent-worker` plan/execute prototype (§5.3), orphaned plugin-registry worker (§5.5). Updated §7.1 / §8 with `useOrchestrator` flag location in LUMARA.
+- **`Docs/RULE.md` deleted** — Removed; rules consolidated into `Docs/claude.md` SOPs.
+
+### Added
+
+- **`scripts/test-workflows.sh`** — Live smoke-test script for 3 primary workflows (research, competitor, news-brief).
+- **`scripts/get-test-token.js`** — Helper to retrieve a Firebase ID token for manual API testing.
+- **`Docs/CHRONICLE.md`** — CHRONICLE summary generation and layered compression reference.
+- **`Docs/Agents.md`** — Agent prompt rules reference.
+
+### Verified
+
+- **Community launch gate CLEARED** — All 3 required workflows pass live smoke tests: `/research` (brave-search + wikipedia + semantic-scholar + gemini-flash), `/competitor` (brave-search + news + hackernews + gemini-flash), `/news-brief` (news + hackernews + brave-search + gemini-flash). 3/3, 0 failures.
 
 ---
 

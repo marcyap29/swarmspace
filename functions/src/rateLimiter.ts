@@ -4,7 +4,7 @@ import { admin } from "./admin";
 import { QuotaCheckResult, UserDocument, RateLimitDocument } from "./types";
 import { FREE_MAX_REQUESTS_PER_MINUTE } from "./config";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /** Unified daily request limit for free tier (all LUMARA modes: chat, reflection, voice, agents, etc.) */
 export const FREE_TIER_DAILY_LUMARA_LIMIT = 20;
@@ -82,7 +82,7 @@ export async function checkUnifiedDailyLimit(
       return { allowed: true };
     }
 
-    const userRef = db.collection("users").doc(userId);
+    const userRef = getDb().collection("users").doc(userId);
     const userDoc = await userRef.get();
 
     let userData: Record<string, any> = {};
@@ -151,7 +151,7 @@ export async function checkRateLimit(
       return { allowed: true };
     }
 
-    const userRef = db.collection("users").doc(userId);
+    const userRef = getDb().collection("users").doc(userId);
     const userDoc = await userRef.get();
 
     let user: UserDocument;
@@ -173,7 +173,7 @@ export async function checkRateLimit(
     }
 
     const now = admin.firestore.Timestamp.now();
-    const rateLimitRef = db.collection("rateLimits").doc(`${userId}_global`);
+    const rateLimitRef = getDb().collection("rateLimits").doc(`${userId}_global`);
     const rateLimitDoc = await rateLimitRef.get();
 
     let rateLimit: RateLimitDocument;

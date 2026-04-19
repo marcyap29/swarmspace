@@ -4,7 +4,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { admin } from "../admin";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 // Note: In production, you would initialize Stripe here:
 // import Stripe from 'stripe';
@@ -55,7 +55,7 @@ export const createCheckoutSession = onCall(async (request) => {
     const mockCheckoutUrl = `https://checkout.stripe.com/pay/premium-subscription?customer=${userId}&email=${userEmail}`;
 
     // Store checkout session attempt in Firestore for tracking
-    await db.collection('users').doc(userId).set({
+    await getDb().collection('users').doc(userId).set({
       lastCheckoutAttempt: admin.firestore.FieldValue.serverTimestamp(),
       email: userEmail,
     }, { merge: true });
@@ -82,7 +82,7 @@ export const createCheckoutSession = onCall(async (request) => {
       customerId = customer.id;
 
       // Store customer ID in Firestore
-      await db.collection('users').doc(userId).set({
+      await getDb().collection('users').doc(userId).set({
         customerId: customerId,
       }, { merge: true });
     }
@@ -122,7 +122,7 @@ export const createCheckoutSession = onCall(async (request) => {
 // @ts-ignore - unused for now
 async function getStripeCustomerId(userId: string): Promise<string | null> {
   try {
-    const userDoc = await db.collection('users').doc(userId).get();
+    const userDoc = await getDb().collection('users').doc(userId).get();
     const userData = userDoc.data();
     return userData?.customerId || null;
   } catch (error) {

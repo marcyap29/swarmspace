@@ -1,19 +1,18 @@
 # SwarmSpace — Complete Backlog for Claude Code
 
-*Compiled April 9, 2026 — updated April 12, 2026*
+*Compiled April 9, 2026 — updated April 14, 2026*
 
 ---
 
 ## Critical Path
 
-The dependency chain that gates everything:
+Previous blockers (404/405 fixes, submission portal, DEVELOPER_GUIDE.md, AST10 page, founding dev programme code) are all complete. The remaining dependency chain:
 
 ```
-Fix plugin Workers (404) → Fix orchestrator (405) → LUMARA calling SwarmSpace at runtime
-                                                   → Developer submission portal
-                                                   → DEVELOPER_GUIDE.md fixes
-                                                   → AST10 compliance page
-                                                   → Founding Developer outreach
+3 LUMARA workflows live → Community launch outreach (Section 8)
+Credential isolation (2.3) → Developer outreach at scale
+Stripe Connect (3.3) + Earnings Dashboard (3.4) → Verified tier launch
+Orchestrator execution modes (5.3) → Work Chain chaining → Durable Objects (5.2)
 ```
 
 Orchestrator execution modes (plan/auto/bubble/interactive) must land before Work Chain chaining and before Durable Objects dispatch.
@@ -22,47 +21,14 @@ Orchestrator execution modes (plan/auto/bubble/interactive) must land before Wor
 
 ## 1. IMMEDIATE BLOCKERS — Priority: CRITICAL
 
-### 1.1 Deploy 7 Remaining Plugin Workers (404 fixes) ⬅ HIGHEST PRIORITY
+### 1.1 Deploy 7 Remaining Plugin Workers (404 fixes) ✅ DONE (2026-04-12)
 
-Code exists in repo, not deployed. These are the 7 undeployed Workers:
+All 7 Workers deployed (commit d638b60). All 15 plugin Workers now live:
+gemini-flash, brave-search, semantic-scholar, weather, wikipedia, currency, news, arxiv, nominatim, rest-countries, github-public, hackernews, dictionary-api, jina-reader, pubmed.
 
-- `swarmspace-plugin-pubce-plugin-nominatim`
-- `swarmspace-plugin-rest-countries`
-- `swarmspace-plugin-github-public`
-- `swarmspace-plugin-hackernews`
-- `swarmspace-plugin-dictionary-api`
-- `swarmspace-plugin-jina-reader`
+### 1.2 Fix Orchestrator Route Handlers (405 fixes) ✅ DONE (2026-04-12)
 
-Deploy each with `wrangler deploy` from the respective `workers/plugins/[name]` directory. Test each with POST to `https://swarmspace-plugin-[name].orbitalai.workers.dev/invoke`.
-
-The 8 already-live Workers: gemini-flash, brave-search, semantic-scholar, weather, wikipedia, currency, news, arxiv.
-
-### 1.2 Fix Orchestrator Route Handlers (405 fixes) ⬅ HIGHEST PRIORITY
-
-`swarmspace-orchestrator.orbitalai.workers.dev` is live but returning 405 on all 12 routes. Likely missing POST handler or route dispatch logic.
-
-Routes and their plugin chains:
-
-| Route | Chain |
-|-------|-------|
-| POST /research | brave-search + wikipedia + semantic-scholar > gemini-flash |
-| POST /competitor | brave-search + newsapi + hackernews > gemini-flash |
-| POST /marketing | brave-search + newsapi > gemini-flash |
-| POST /plugins | brave-search + github-public > gemini-flash |
-| POST /academic | semantic-scholar + arxiv + pubmed > gemini-flash |
-| POST /news-brief | newsapi + hackernews + brave-search > gemini-flash |
-| POST /market-scan | brave-search + newsapi + exchange-rates > gemini-flash |
-| POST /location-brief | nominatim + open-meteo + rest-countries + wikipedia > gemini-flash |
-| POST /health-research | pubmed + semantic-scholar + wikipedia > gemini-flash |
-| POST /tech-scout | github-public + hackernews + brave-search + arxiv > gemini-flash |
-| POST /fact-check | brave-search + wikipedia + semantic-scholar > gemini-flash |
-| POST /content-brief | brave-search + wikipedia + newsapi > gemini-flash |
-
-Key constraints:
-- newsapi is a Firebase function (`https://us-central1-arc-epi.cloudfunctions.net/newsDataInvoke`), not a Cloudflare Worker
-- open-meteo = `swarmspace-plugin-weather.orbitalai.workers.dev`
-- exchange-rates = `swarmspace-plugin-currency.orbitalai.workers.dev`
-- Gemini Flash synthesis Worker is live at `swarmspace-plugin-gemini-flash.orbitalai.workers.dev`
+Deployed in commit d638b60. The 405 was the expected response for non-POST requests — the POST handler was always present. All 12 routes accept POST with Authorization header and JSON body. Verified live: POST returns 500 with invalid token (expected), not 405.
 
 ### 1.3 Firestore Security Rules ✅ DONE
 
@@ -115,19 +81,26 @@ In progress with Prinz Law Office, La Jolla. Covers: indemnification, data handl
 
 ### 3.3 Stripe Connect for Developer Payouts
 
-Not provisioned. 80% to dev, 20% platform on Verified transactions. 85% for Founding Developers.
+Partially built (discovered April 18, 2026). `api/create-connect-account.js` and `api/get-connect-balance.js` exist in the Vercel API layer — Connect account creation and balance retrieval are implemented. `api/create-credit-checkout.js` also exists for credit top-up purchases. None are wired to the dashboard UI or called from Firebase functions yet.
+
+Revenue split: 80% to dev, 20% platform on Verified transactions. 85% for Founding Developers.
+
+- [ ] Audit existing `create-connect-account.js` and `get-connect-balance.js` — confirm they are production-ready or identify gaps
+- [ ] Wire `get-connect-balance.js` to `earnings.html` balance display
+- [ ] Wire `create-connect-account.js` to developer onboarding flow
+- [ ] Define `create-credit-checkout.js` pricing tiers (see §4.5 Credit System)
 
 ### 3.4 Developer Earnings Dashboard
 
-Not built. Required before Verified tier launches. Show calls, revenue, merit score trajectory.
+Page shell exists (`earnings.html`, linked from dashboard sidebar). Backend not built — no per-plugin call volume tracking, revenue share calculation, merit score trajectory, or payout logic in Firebase functions. Required before Verified tier launches.
 
 ### 3.5 AST10 Compliance Posture Page ✅ DONE (2026-04-13)
 
 Completed: ast10.html published. 4 renamed categories use official OWASP AST10 names with (formerly: X) annotations. Trust tier claim corrected. PRISM acronym expansion removed per policy.
 
-### 3.6 Founding Developer Programme
+### 3.6 Founding Developer Programme ✅ CODE DONE (2026-04-12)
 
-100 spots. First-come permanent 85% revenue share + badge. Blocked on: developer submission portal, DEVELOPER_GUIDE.md, documentation honesty pass.
+Code complete: `founding-developers.html` (landing page with counter badge) and `swarmspaceClaimFoundingSpot` Cloud Function (atomic Firestore transaction, 100 slots, 85% revenue share) both deployed. Seed script at `scripts/seed-founding-programme.js`. Outreach not yet started — see Section 8.
 
 ### 3.7 Twitter/Bluesky + Dev.to Accounts
 
@@ -158,7 +131,7 @@ Not built. `/catalogue/updates` on swarmspaceRouter. Builds on live `swarmspaceP
 - Credit enforcement: LIVE. Free: 20/day. Standard: 500/day. Premium: 500/day. Admin: unlimited. Hard block at ceiling, 80% warning in logs.
 - Credit top-up purchase flow: NOT BUILT. Pricing not yet defined.
 - Credit rollover policy: No rollover at launch. Partial carry-forward (20% cap) under review.
-- Per-user credit visibility in UI: Defined, not implemented.
+- Per-user credit visibility in UI: HTML elements exist in `dashboard.html` (`#credits-card`, balance display, buy buttons). JS binding to Firestore balance not confirmed — verify hydration logic is wired.
 
 ### 4.6 Work Chain Manifest Spec
 
@@ -204,11 +177,15 @@ Cost model: Workers Paid $5/mo base. 1M requests + 400K GB-seconds included. Est
 
 Must land before Work Chain chaining and before DO dispatch.
 
+**Prototype exists (discovered April 18, 2026):** `workers/agent-worker/` has live `POST /agent/plan` and `POST /agent/execute` routes with tier-aware execution (`workers/agent-worker/src/tiers.ts`). Start here — do not rebuild from scratch.
+
+- [ ] Review `agent-worker` plan/execute implementation — map what's already built against the mode spec below
 - [ ] Implement `plan` mode — full chain proposal, no execution until confirmation (the Run Screen confirmation tap)
 - [ ] Implement `auto` mode — headless dispatch for DO/scheduler runs, check `is_destructive` and `is_read_only` manifest fields before plugin execution. `headless: true` prerequisite for DO dispatch. Destructive plugins auto-deny.
 - [ ] Implement `bubble` mode — child plugins inherit parent chain authorization. A workflow confirmed in `plan` runs constituent plugins in `bubble`.
 - [ ] Implement `interactive` mode — per-plugin approval for gap discovery (user present, unplanned plugin needed)
 - [ ] Mode assignment logic: on-demand enters `plan`, DO scheduled enters `auto`, confirmed chains run constituents in `bubble`
+- [ ] Decide: extend `agent-worker` or merge into orchestrator `index.js`
 
 ### 5.4 Workers AI / Synthesis Stack
 
@@ -221,6 +198,14 @@ Current stack (unchanged until benchmarking):
 - Fallback synthesizer: gpt-oss-120b on Groq ($0.15/$0.60 per M tokens)
 - Fast extraction: Llama 3.1 8B Instant on Groq
 - Structured extraction: Llama 3.3 70B Versatile on Groq
+
+### 5.5 Plugin Registry Worker — Orphaned (needs decision)
+
+`workers/plugin-registry/` exposes a full plugin metadata REST API (`GET /plugins`, `/plugins/{id}`, `/plugins/tier/{tier}`, `/plugins/privacy/{tier}`, `/plugins/capabilities`). Discovered April 18, 2026. Not wired to any frontend or Firebase function. Not documented in architecture.md.
+
+- [ ] Decide: integrate into `marketplace.html` as a data source, feed into §4.4 Catalogue Updates Endpoint, or remove
+- [ ] If keeping: document in architecture.md Section 2 and add to wrangler deployment pipeline
+- [ ] If removing: delete `workers/plugin-registry/` to avoid confusion
 
 ---
 
@@ -244,7 +229,7 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 
 ### 7.1 NOW (unblocked or close to unblocked)
 
-- **LUMARA visibly SwarmSpace at runtime** — blocked on 404/405 fixes only. Once those land, wire LUMARA iOS to hit the orchestrator for real workflow execution. Community launch prerequisite.
+- **LUMARA visibly SwarmSpace at runtime** — 404/405 blocker cleared. Remaining task: `useOrchestrator` is hardcoded `false` in `_LUMARA/lib/shared/state/feature_flags.dart:22`. Flip flag and verify real orchestrator calls flow end-to-end. Community launch prerequisite — active open task.
 - **Reference Documentation Ingestion** — highest-value unblocked LUMARA item. No SwarmSpace dependency.
 - **Behavioral Pattern Layer (CHRONICLE extension)** — prompt design work, raw data exists. Low lift.
 
@@ -267,39 +252,52 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 
 ## 8. COMMUNITY LAUNCH SEQUENCE — Priority: HIGH (after Section 1-2)
 
-Do not start outreach until prerequisites are met.
+> **Decision recorded April 4, 2026:** Swarms are not a pre-launch activity. Seeding empty Swarms is worse than not having them. Swarms open *after* Founding Developers have submitted plugins, when there is real content to discuss. The Swarms UI being unbuilt is not a blocker for outreach.
 
-### Prerequisites (all must be done)
-- [x] 404/405 Worker fixes complete (2026-04-12)
-- [x] DEVELOPER_GUIDE.md fixes complete (Section 2.4) (2026-04-13)
-- [x] Documentation honesty pass complete (Section 2.1) (2026-04-13)
-- [x] Developer submission portal functional (Section 3.1) (2026-04-13)
-- [ ] At least 3 of 12 free workflows demonstrably working in LUMARA (Research & Summarise, News Briefing, Competitor Research)
-- [x] AST10 compliance posture page published (Section 3.5) (2026-04-13)
+### Prerequisites (all must be done before outreach)
+- [x] 404/405 Worker fixes complete (2026-04-12) ✅
+- [x] DEVELOPER_GUIDE.md fixes complete (Section 2.4) (2026-04-13) ✅
+- [x] Documentation honesty pass complete (Section 2.1) (2026-04-13) ✅
+- [x] Developer submission portal functional (Section 3.1) (2026-04-13) ✅
+- [x] At least 3 of 12 free workflows demonstrably working in LUMARA (Research & Summarise, News Briefing, Competitor Research) ✅ (2026-04-18)
+- [x] AST10 compliance posture page published (Section 3.5) (2026-04-13) ✅
+- [ ] LUMARA visibly calling SwarmSpace at runtime — flip `useOrchestrator` flag in `_LUMARA/lib/shared/state/feature_flags.dart:22`, verify end-to-end
 
 ### Launch Sequence
 1. Identify 20-30 target developers from LinkedIn/Substack audience
-2. Write personal outreach to each (not a blast, individual messages)
+2. Write personal outreach to each — individual messages, not a blast
 3. Pitch: Founding Developer badge, permanent 85% revenue share, 100 spots
-4. Seed at least one real post in every Swarm before opening
-5. Open Founding Developer programme
-6. Do not inflate numbers. Tight active community beats inflated signups
+4. Open Founding Developer programme registration
+5. Review incoming plugin submissions (manual merit review — no tooling yet)
+
+### Post-Submission (once plugins exist)
+6. Build Swarms UI
+7. Seed genuine use-case posts in each plugin's Swarm
+8. Open Swarms to the broader community
+
+### Operating Rules
+- Do not inflate user or developer numbers. Tight active community beats inflated signups.
+- Prioritise engagement depth over registration count in early metrics.
+- One message, one follow-up. No chasing.
+- Every outreach message is personal — reference something specific they built.
 
 ### Success Metrics
-- Messages sent: 20-30
-- Response rate: 30-40% (6-12 responses)
-- Plugins submitted: 5-10 in first 60 days
-- Plugins approved: 3-7 in first 60 days
-- Developers actively engaging in Swarms: 3-5
+
+| Metric | Target | Why it matters |
+|--------|--------|----------------|
+| Messages sent | 20-30 | Enough to fill the pipeline without spamming |
+| Response rate | 30-40% (6-12 responses) | Realistic for cold-to-warm outreach |
+| Plugins submitted | 5-10 in first 60 days | The only metric that matters |
+| Plugins approved | 3-7 in first 60 days | Quality filter |
+| Developers active in Swarms | 3-5 | Early community signal (post-launch) |
 
 ---
 
 ## 9. WEBSITE FIXES — Priority: MEDIUM
 
-- [ ] Fix footer link in `index.html` — PRISM link `href` contains entire raw HTML of `prism.html` instead of `/prism.html`
-- [ ] Verify Docs and Privacy footer links are not dead (`#`) before outreach
-- [ ] Backlog footer says "v3" — should be "v4"
-- [ ] Product Backlog Section 3 references Architecture v6 — should be v7
+- [x] Fix footer link in `index.html` — PRISM link now correctly points to `/prism.html` ✅ (verified 2026-04-14)
+- [x] Verify Docs and Privacy footer links — Docs → `/developer-guide.html`, Privacy → `/privacy.html`, both valid ✅ (verified 2026-04-14)
+- [x] Version reference issues — no "v3" or "Architecture v6" references found; either already fixed or misdescribed ✅ (verified 2026-04-14)
 
 ---
 
@@ -745,103 +743,38 @@ A chat-style discovery agent embedded on the SwarmSpace homepage (`index.html`) 
 
 **Example:** User types "I want to monitor my competitors weekly." The agent responds with a visual chain: Brave Search > NewsAPI > HackerNews > Gemini Flash synthesis, labels it "Competitor Research," shows the recurring variant exists, and says "Sign up to run this."
 
-### Existing Packages to Leverage
-
-Do NOT build the chat widget from scratch.
-
-| Package | License | Why Use It | Adaptation Needed |
-|---|---|---|---|
-| @buildshipapp/chat-widget (npm) | MIT | Lightweight script-tag embed. Connects to any POST endpoint. Streaming. CSS customizable. | Restyle to dark terminal (#0A0A0F, IBM Plex Mono). Replace chat bubble with chain-card renderer. Point at new Cloud Function. |
-| openchatwidget (GitHub) | MIT | MCP-compatible. Supports OpenAI, Anthropic, Gemini, Ollama. | Heavier. Only if MCP client needed in widget. Overkill for v1. |
-| Custom inline (no widget) | N/A | Build directly into index.html hero section as inline chat panel, not floating bubble. | More custom work but better UX integration. The agent IS the hero. |
-
-**Recommendation:** Option 3 (custom inline) for best conversion UX. Use BuildShip widget as reference for message handling, streaming, and error states. Copy their POST request/response pattern. Build visual rendering custom.
-
 ### Prerequisites (Do Not Start Without These)
 
 | Prerequisite | Status | Why It Blocks |
 |---|---|---|
-| 404 fixes on plugin Workers | IMMEDIATE BLOCKER | Agent needs real plugins from catalogue. Incomplete if Workers return 404. |
-| 405 fixes on orchestrator | IMMEDIATE BLOCKER | Chain assembly references orchestrator routes. Agent needs to know which routes exist and what they chain. |
-| swarmspacePluginCatalog function | LIVE | Already deployed. Agent queries this for full catalogue with tier info. |
-| At least 3 workflows working | BLOCKED on 404/405 | Agent credibility depends on showing chains that actually work. Research, News Briefing, Competitor Research minimum. |
-| Gemini Flash API key | LIVE | Agent uses Gemini Flash for intent parsing and chain assembly reasoning. Already in free tier. |
+| 404 fixes on plugin Workers | ✅ DONE (2026-04-12) | Agent needs real plugins from catalogue. |
+| 405 fixes on orchestrator | ✅ DONE (2026-04-12) | Chain assembly references orchestrator routes. |
+| swarmspacePluginCatalog function | ✅ LIVE | Already deployed. Agent queries this for full catalogue with tier info. |
+| At least 3 workflows working | In progress (planner) | Agent credibility depends on showing chains that actually work. |
+| Gemini Flash API key | ✅ LIVE | Agent uses Gemini Flash for intent parsing and chain assembly reasoning. |
 
-### Phase 1: Intent Parser Cloud Function
+### Phase 1: Intent Parser Cloud Function ✅ DONE (2026-04-14)
 
-A new Firebase Cloud Function (or Cloudflare Worker) that receives a natural language user message, queries the plugin catalogue, and returns a proposed chain.
+`swarmspaceDiscoveryAgent` is deployed and live in the arc-epi Firebase project. Accepts POST with `{ message, session_id? }`, rate-limits by IP (10/hour), maintains session state in Firestore (`discovery_sessions` collection), calls Gemini Flash to map user intent to plugin chains, returns structured JSON with `intent`, `suggested_chain`, `alternatives`, `cta`. Enforces max 3 turns before signup gate.
 
-**Tasks:**
+### Phase 2: Homepage Chat UI — PARTIALLY DONE
 
-1. Create `swarmspaceDiscoveryAgent` Cloud Function in the arc-epi project
-2. Accept POST with `{ message: string, sessionId?: string }`
-3. Call `swarmspacePluginCatalog` internally to get full plugin list with descriptions and semantic tags
-4. Send user message + plugin catalogue to Gemini Flash with system prompt: "You are the SwarmSpace discovery agent. Given the user intent and the available plugin catalogue, propose a workflow chain. Return JSON with: chainName, chainDescription, steps (array of { pluginSlug, pluginName, role }), recurringVariant (boolean), upgradeRequired (boolean), upgradeReason (string if applicable)."
-5. Return structured chain proposal to frontend
-6. No auth required. Rate limit: 10 requests per IP per hour
-7. Session ID enables multi-turn refinement: "Actually, add academic papers too" appends to chain
+HTML and CSS for the inline chat panel are present in `index.html` (`.discovery-chat` component: header, message list, input row, welcome message). Dark terminal styling is applied.
 
-**Constraints:**
-- Zero execution. This function ONLY proposes chains. Never calls any plugin endpoint
-- Free tier Gemini Flash only. No premium model spend on unauthenticated visitors
-- Response includes whether proposed chain requires paid tier (any Standard/Premium plugin triggers this)
-- Plugin catalogue cached in-memory for 5 minutes
-
-**Expected Response:**
-
-```json
-{
-  "chainName": "Competitor Research",
-  "chainDescription": "Weekly competitive intelligence with change tracking",
-  "steps": [
-    { "pluginSlug": "brave-search", "pluginName": "Brave Search", "role": "Find competitor mentions and news", "tier": "free" },
-    { "pluginSlug": "newsapi", "pluginName": "NewsAPI", "role": "Pull latest headlines", "tier": "free" },
-    { "pluginSlug": "hackernews", "pluginName": "HackerNews", "role": "Tech community sentiment", "tier": "free" },
-    { "pluginSlug": "gemini-flash", "pluginName": "Gemini Flash", "role": "Synthesize competitive brief", "tier": "free" }
-  ],
-  "matchesExistingWorkflow": "/competitor",
-  "recurringVariant": true,
-  "recurringNote": "Can run weekly with change tracking. Requires paid tier on mobile.",
-  "upgradeRequired": false,
-  "estimatedCredits": 0
-}
-```
-
-**Verification:**
-- curl endpoint with 5 different intents. Confirm structured JSON each time
-- Confirm rate limiting (11th request from same IP returns 429)
-- Confirm no plugin endpoint is ever called during chain proposal
-
-### Phase 2: Homepage Chat UI
-
-Inline chat panel in the hero section of `index.html` that replaces or sits alongside current hero content.
-
-**Tasks:**
-
-1. Add chat input to hero section. Full-width input bar with placeholder: "Tell me what you need done..."
-2. On submit, POST to `swarmspaceDiscoveryAgent`. Show loading state (pulsing dots, terminal cursor style)
-3. Render chain as horizontal card sequence. Each card: plugin icon placeholder, plugin name, role description, tier badge (Free/Standard/Premium)
-4. Cards connected by arrow indicators showing data flow direction
-5. Summary line below chain ("This chain is entirely free" or "Requires SwarmSpace Pro for [plugin name]")
-6. CTA button: "Sign up to run this" (links to `/signup.html`). If chain matches existing workflow route, also: "This is a ready-made workflow. Sign up and run it now."
-7. If `recurringVariant` is true, secondary note: "This can also run on a schedule. Keep watching automatically."
-8. Multi-turn support: after first chain renders, input stays active with "Refine this, or ask for something else..."
-9. Style: dark terminal aesthetic. IBM Plex Mono for input. Cards match existing site card styling
-10. Mobile responsive: cards stack vertically on small screens. Input full-width
+**Remaining task:**
+- [ ] Wire `#chat-input` / `#chat-send` JavaScript event handlers to POST to `swarmspaceDiscoveryAgent` endpoint
+- [ ] Render returned chain as horizontal card sequence (plugin name, role, tier badge, arrow connectors)
+- [ ] Add summary line ("This chain is entirely free" / "Requires SwarmSpace Pro for [x]")
+- [ ] Add CTA: "Sign up to run this" → `/signup.html`. If `matchesExistingWorkflow` set, show "ready-made workflow" variant
+- [ ] Add `recurringVariant` note if true
+- [ ] Multi-turn: keep input active after first chain renders
+- [ ] Mobile: cards stack vertically at 375px
 
 **Constraints:**
 - No Firebase Auth required. Public-facing conversion tool
 - No localStorage/sessionStorage. In-memory JS only
 - Chat panel is part of page layout (NOT floating overlay)
 - Maximum 3 turns before: "Sign up to keep exploring."
-- Use streaming if backend supports it, otherwise full response with brief entrance animation
-
-**BuildShip Widget Patterns to Reuse:**
-- POST request structure with message + threadId (map to sessionId)
-- Error state handling (network failure, timeout)
-- Message history in-memory array
-- CSS variable system for theming (adapt to SwarmSpace palette)
-- Do NOT use their floating bubble UI. Build inline.
 
 **Verification:**
 - Load index.html. Type query. Chain renders within 3 seconds
@@ -861,7 +794,7 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 4. "Run this now" routes to Agents screen (or for v1, directly calls matching orchestrator route if `matchesExistingWorkflow` is set)
 
 **Constraints:**
-- Chain parameter is base64-encoded JSON, not raw JSON in URL
+- Chain parameter is base64-encoded JSON, not raw URL
 - Enforce auth before execution if workflow requires it
 - Show upgrade prompt instead of run button if chain requires paid tier
 - Chain parameter expires after first use (remove from URL after rendering)
@@ -872,13 +805,11 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 
 ### Phase Summary
 
-| Phase | Deliverable | Dependency | Est. Effort |
-|---|---|---|---|
-| Phase 1 | swarmspaceDiscoveryAgent Cloud Function | Plugin catalogue live, Gemini Flash key | 1-2 days |
-| Phase 2 | Inline chat UI on index.html | Phase 1 endpoint live | 2-3 days |
-| Phase 3 | Chain-to-signup handoff | Phase 2 + signup.html working | 1 day |
-
-**Total estimated: 4-6 days.** Hard blocker: 404/405 Worker fixes must land first. Without working plugins and orchestrator routes, the discovery agent has nothing real to propose.
+| Phase | Deliverable | Status |
+|---|---|---|
+| Phase 1 | swarmspaceDiscoveryAgent Cloud Function | ✅ DONE (2026-04-14) |
+| Phase 2 | Inline chat UI on index.html | Partially done — HTML/CSS present, JS wiring remaining |
+| Phase 3 | Chain-to-signup handoff | Not started — depends on Phase 2 JS complete |
 
 ---
 
@@ -1181,4 +1112,4 @@ A Roles page (or dedicate the homepage) should list each Role with:
 
 ---
 
-*SwarmSpace Full Backlog — Orbital AI — April 14, 2026*
+*SwarmSpace Full Backlog — Orbital AI — April 17, 2026*

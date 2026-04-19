@@ -27,7 +27,7 @@ import {
   detectEnergyLevel,
 } from "../closingTracker.js";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /** Keywords that trigger model-change flow */
 const MODEL_CHANGE_INTENT = /change\s*(my\s*)?model|switch\s*model|use\s*(a\s*)?different\s*model|set\s*(my\s*)?model/i;
@@ -96,7 +96,7 @@ export const sendChatMessage = onCall(
       }
 
       // Load or create thread
-      const threadRef = db.collection("chatThreads").doc(threadId);
+      const threadRef = getDb().collection("chatThreads").doc(threadId);
       const threadDoc = await threadRef.get();
 
       let thread: ChatThreadDocument;
@@ -146,7 +146,7 @@ export const sendChatMessage = onCall(
       // Fetch recent journal entries for context
       let journalContext = "";
       try {
-        const journalEntriesSnapshot = await db
+        const journalEntriesSnapshot = await getDb()
           .collection("users")
           .doc(userId)
           .collection("journal")

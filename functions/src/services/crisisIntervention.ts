@@ -9,7 +9,7 @@ import { admin } from "../admin";
 import { logger } from "firebase-functions";
 import { CrisisDetectionResult } from "../sentinel/crisis_detector";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 export interface InterventionLevel {
   level: 0 | 1 | 2 | 3;
@@ -104,7 +104,7 @@ async function getCriticalCrisesInWindow(
   const windowStart = new Date(Date.now() - hours * 60 * 60 * 1000);
   
   try {
-    const entries = await db
+    const entries = await getDb()
       .collection('users')
       .doc(userId)
       .collection('journal_entries')
@@ -155,7 +155,7 @@ function ordinalSuffix(num: number): string {
 // Check if user is currently in limited mode
 export async function isInLimitedMode(userId: string): Promise<boolean> {
   try {
-    const userDoc = await db.collection('users').doc(userId).get();
+    const userDoc = await getDb().collection('users').doc(userId).get();
     
     if (!userDoc.exists) {
       return false;
@@ -173,7 +173,7 @@ export async function isInLimitedMode(userId: string): Promise<boolean> {
     
     if (!expiresAt || now > expiresAt) {
       // Expired - clear it
-      await db.collection('users').doc(userId).update({
+      await getDb().collection('users').doc(userId).update({
         'limited_mode.active': false
       });
       return false;
@@ -195,7 +195,7 @@ export async function activateLimitedMode(
   const expiresAt = new Date(Date.now() + durationHours * 60 * 60 * 1000);
   
   try {
-    await db.collection('users').doc(userId).update({
+    await getDb().collection('users').doc(userId).update({
       'limited_mode': {
         active: true,
         activated_at: admin.firestore.FieldValue.serverTimestamp(),

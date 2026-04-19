@@ -4,7 +4,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { admin } from "../admin";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 export interface UserSubscription {
   tier: 'free' | 'premium';
@@ -39,7 +39,7 @@ export const getUserSubscription = onCall(async (request) => {
     logger.info(`getUserSubscription: Checking subscription for user ${userId}`);
 
     // Get user document from Firestore
-    const userDoc = await db.collection('users').doc(userId).get();
+    const userDoc = await getDb().collection('users').doc(userId).get();
 
     if (!userDoc.exists) {
       logger.info(`getUserSubscription: User ${userId} not found, creating with free tier`);
@@ -50,7 +50,7 @@ export const getUserSubscription = onCall(async (request) => {
         status: 'active'
       };
 
-      await db.collection('users').doc(userId).set({
+      await getDb().collection('users').doc(userId).set({
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         subscriptionTier: defaultSubscription.tier,
         subscriptionStatus: defaultSubscription.status,

@@ -5,7 +5,7 @@ import { logger } from "firebase-functions";
 import { admin } from "./admin";
 import { UserDocument } from "./types";
 
-const db = admin.firestore();
+function getDb() { return admin.firestore(); }
 
 /**
  * Admin emails with full privileges (unlimited access, bypasses all limits)
@@ -94,7 +94,7 @@ export async function enforceAuth(
   logger.info(`Auth enforced for user ${userId} (anonymous: ${isAnonymous}, provider: ${signInProvider}, email: ${userEmail || 'none'})`);
 
   // Step 2: Load or create developer document (SwarmSpace / plan source of truth)
-  const userRef = db.collection("developers").doc(userId);
+  const userRef = getDb().collection("developers").doc(userId);
   const userDoc = await userRef.get();
 
   let user: UserDocument;
@@ -177,7 +177,7 @@ export async function checkJournalEntryLimit(
   }
 
   // Get or create conversation usage document
-  const usageRef = db.collection("usageLimits").doc(`${userId}_entry_${entryId}`);
+  const usageRef = getDb().collection("usageLimits").doc(`${userId}_entry_${entryId}`);
   const usageDoc = await usageRef.get();
 
   let currentCount = 0;
@@ -238,7 +238,7 @@ export async function checkChatLimit(
   // Get or create daily usage document (track per day, not per chat)
   const now = admin.firestore.Timestamp.now();
   const oneDayAgo = new Date(now.toMillis() - 24 * 60 * 60 * 1000);
-  const usageRef = db.collection("usageLimits").doc(`${userId}_chat_daily`);
+  const usageRef = getDb().collection("usageLimits").doc(`${userId}_chat_daily`);
   const usageDoc = await usageRef.get();
 
   let currentCount = 0;
@@ -290,7 +290,7 @@ export async function checkChatLimit(
  * Check if a user can link their anonymous account to a real account
  */
 export async function canLinkAccount(userId: string): Promise<boolean> {
-  const userDoc = await db.collection("developers").doc(userId).get();
+  const userDoc = await getDb().collection("developers").doc(userId).get();
   
   if (!userDoc.exists) {
     return false;
@@ -307,17 +307,17 @@ export async function linkAccountData(
   oldAnonymousUid: string,
   newRealUid: string
 ): Promise<void> {
-  const batch = db.batch();
+  const batch = getDb().batch();
 
   // Get old user document
-  const oldUserRef = db.collection("developers").doc(oldAnonymousUid);
+  const oldUserRef = getDb().collection("developers").doc(oldAnonymousUid);
   const oldUserDoc = await oldUserRef.get();
 
   if (oldUserDoc.exists) {
     const oldUser = oldUserDoc.data() as UserDocument;
 
     // Create/update new user document with transferred data
-    const newUserRef = db.collection("developers").doc(newRealUid);
+    const newUserRef = getDb().collection("developers").doc(newRealUid);
     batch.set(newUserRef, {
       ...oldUser,
       userId: newRealUid,
