@@ -101,6 +101,12 @@ h3 { font-size:20px; font-weight:700; margin-bottom:10px; }
 .chain-match { font-size:12px; color:var(--green); margin:4px 0; }
 .chain-cta { display:inline-block; margin-top:8px; padding:8px 16px; background:var(--accent); border-radius:8px; font-size:12px; font-weight:700; color:#fff; text-decoration:none; }
 .chain-cta:hover { opacity:.9; text-decoration:none; }
+.chain-paid { font-size:12px; color:var(--accent2); margin:4px 0; }
+@media(max-width:480px){
+  .chain-card-row { flex-direction:column; align-items:flex-start; gap:2px; }
+  .chain-arrow { transform:rotate(90deg); display:block; padding-left:4px; }
+  .chain-card { width:100%; box-sizing:border-box; text-align:left; }
+}
 
 .lumara-banner { max-width:1100px; margin:0 auto; padding:0 40px 0; }
 .lumara-inner {
@@ -749,6 +755,14 @@ footer p { font-size:13px; color:var(--dim); }
         note.className = "chain-match";
         note.textContent = "🆓 Entirely free tier";
         frag.appendChild(note);
+      } else {
+        const paidNote = document.createElement("div");
+        paidNote.className = "chain-paid";
+        var paidList = (data.suggested_chain.paid_plugins && data.suggested_chain.paid_plugins.length)
+          ? data.suggested_chain.paid_plugins.join(", ")
+          : "some plugins";
+        paidNote.textContent = "⚡ Requires SwarmSpace Standard or Pro for: " + paidList;
+        frag.appendChild(paidNote);
       }
     }
 
@@ -769,7 +783,11 @@ footer p { font-size:13px; color:var(--dim); }
     if (!msg) return;
 
     if (turnCount >= MAX_TURNS) {
-      addMessage("Sign up for unlimited discovery and to run your chains.", "agent");
+      var gateEl = document.createElement("div");
+      gateEl.innerHTML = 'Sign up to keep exploring — and to run the chains you\'ve built. <a href="/signup.html" style="color:var(--accent2);font-weight:700;">Create your account →</a>';
+      addMessage(gateEl, "agent");
+      sendBtn.disabled = true;
+      inputEl.disabled = true;
       return;
     }
 
@@ -789,8 +807,11 @@ footer p { font-size:13px; color:var(--dim); }
       hideLoading();
 
       if (res.status === 429) {
-        addMessage("You've used your free discovery queries. Sign up for unlimited access.", "agent");
-        sendBtn.disabled = false;
+        var rateEl = document.createElement("div");
+        rateEl.innerHTML = "You've used your free discovery queries. <a href=\"/signup.html\" style=\"color:var(--accent2);font-weight:700;\">Sign up for unlimited access →</a>";
+        addMessage(rateEl, "agent");
+        sendBtn.disabled = true;
+        inputEl.disabled = true;
         return;
       }
 

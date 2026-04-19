@@ -819,30 +819,19 @@ A chat-style discovery agent embedded on the SwarmSpace homepage (`index.html`) 
 
 `swarmspaceDiscoveryAgent` is deployed and live in the arc-epi Firebase project. Accepts POST with `{ message, session_id? }`, rate-limits by IP (10/hour), maintains session state in Firestore (`discovery_sessions` collection), calls Gemini Flash to map user intent to plugin chains, returns structured JSON with `intent`, `suggested_chain`, `alternatives`, `cta`. Enforces max 3 turns before signup gate.
 
-### Phase 2: Homepage Chat UI — PARTIALLY DONE
+### Phase 2: Homepage Chat UI ✅ DONE (2026-04-19)
 
-HTML and CSS for the inline chat panel are present in `index.html` (`.discovery-chat` component: header, message list, input row, welcome message). Dark terminal styling is applied.
-
-**Remaining task:**
-- [ ] Wire `#chat-input` / `#chat-send` JavaScript event handlers to POST to `swarmspaceDiscoveryAgent` endpoint
-- [ ] Render returned chain as horizontal card sequence (plugin name, role, tier badge, arrow connectors)
-- [ ] Add summary line ("This chain is entirely free" / "Requires SwarmSpace Pro for [x]")
-- [ ] Add CTA: "Sign up to run this" → `/signup.html`. If `matchesExistingWorkflow` set, show "ready-made workflow" variant
-- [ ] Add `recurringVariant` note if true
-- [ ] Multi-turn: keep input active after first chain renders
-- [ ] Mobile: cards stack vertically at 375px
-
-**Constraints:**
-- No Firebase Auth required. Public-facing conversion tool
-- No localStorage/sessionStorage. In-memory JS only
-- Chat panel is part of page layout (NOT floating overlay)
-- Maximum 3 turns before: "Sign up to keep exploring."
-
-**Verification:**
-- Load index.html. Type query. Chain renders within 3 seconds
-- Mobile viewport (375px). Cards stack, input usable
-- "Sign up to run this" links to `/signup.html`
-- 4th message shows signup gate
+All JS wiring complete. Full feature set shipped:
+- `#chat-input` / `#chat-send` wired to `swarmspaceDiscoveryAgent`
+- Chain rendered as horizontal card sequence (plugin name, tier badge, arrows)
+- Free tier note ("🆓 Entirely free tier") and paid tier note ("⚡ Requires Standard or Pro for: [plugins]") using `paid_plugins[]` from API
+- Ready-made workflow variant when `matches_workflow` is set
+- CTA "Sign up to run this" → `/signup.html?chain=base64(JSON)`
+- Multi-turn, input stays active
+- 3-turn limit → signup gate with link, input disabled
+- 429 rate-limit → signup link, input disabled
+- Mobile: explicit `flex-direction:column` on `.chain-card-row` at 480px
+- Note: `recurringVariant` not in API response schema — backend would need to add this field before it can be rendered
 
 ### Phase 3: Chain-to-Signup Handoff
 
@@ -870,7 +859,7 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 | Phase | Deliverable | Status |
 |---|---|---|
 | Phase 1 | swarmspaceDiscoveryAgent Cloud Function | ✅ DONE (2026-04-14) |
-| Phase 2 | Inline chat UI on index.html | Partially done — HTML/CSS present, JS wiring remaining |
+| Phase 2 | Inline chat UI on index.html | ✅ DONE (2026-04-19) |
 | Phase 3 | Chain-to-signup handoff | Not started — depends on Phase 2 JS complete |
 
 ---

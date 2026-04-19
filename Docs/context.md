@@ -40,6 +40,25 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 
 ## SESSION — 2026-04-19 — Claude Sonnet 4.6 (Claude Code) — Backlog review, launch gate verification, SOP-DOC run
 
+### 2026-04-19 — §12 Phase 2 Discovery Agent JS — COMPLETED
+- **Files touched:** `index.html`, `backlog.md`
+- **What was already done (found on inspection):** Event handlers wired, fetch to `swarmspaceDiscoveryAgent`, chain card rendering, free tier note, CTA with base64 chain param, ready-made workflow variant, multi-turn, 3-turn limit, loading indicator, 429 handling. All in working tree from a prior session.
+- **What was missing and is now fixed:**
+  1. `requires_paid` case — added "⚡ Requires SwarmSpace Standard or Pro for: [paid_plugins]" using `paid_plugins[]` array from API response
+  2. Mobile 375px — added `@media(max-width:480px)` rule: `flex-direction:column` on `.chain-card-row`, cards full-width, arrows rotated 90°
+  3. 3-turn gate message — upgraded from plain text to inline HTML with signup link; input + button disabled after gate fires
+  4. 429 rate-limit message — upgraded to signup link; input + button disabled
+  5. Added `.chain-paid` CSS class (orange/accent2 color)
+- **Decisions:** `recurringVariant` not in API response schema — skipping until backend adds the field. Breakpoint set at 480px not 375px to catch slightly larger phones too.
+- **Outcome:** §12 Phase 2 fully complete. `backlog.md` updated. Not yet committed.
+
+### 2026-04-19 — Committed, merged, and pushed to origin main (commit 1f6a7a3)
+- **Files touched:** `backlog.md` (conflict resolved), `planner.md`
+- **Commands run:** `git add`, `git commit`, `git push origin main`
+- **Decisions:** Remote had added §17 Research Writing Assistant and §18 Safe Room (see below) while we were working. Merge conflict in `backlog.md` was just the footer line. Kept all remote new sections, updated footer date to April 19, 2026. Also deleted `Docs/claude copy.md` — it was a duplicate of `Docs/Agents.md` (LUMARA repo content, 85KB, copied here accidentally).
+- **Outcome:** `main` is clean and up to date. Both commits pushed: `a9d2ae2` (v1.5.0 launch gate) and `1f6a7a3` (merge + cleanup).
+- **New backlog sections from remote (added by another session):** §17 Research Writing Assistant (6-step chain, premium workflow, Semantic Scholar/arXiv/PubMed foundation) and §18 Safe Room (structural prompt injection defense primitive for plugins with `fetches_external_content: true`). Both need to be reviewed and understood before work starts on them.
+
 ### 2026-04-19 — Reviewed backlog.md and identified next priorities
 - **Files touched:** none (read-only)
 - **Decisions:** Produced a prioritised status summary. One community launch prerequisite remained: LUMARA iOS not wired to orchestrator.
