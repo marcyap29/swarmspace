@@ -4,3 +4,6 @@ build
 
 # Wrangler local dev state
 .wrangler/
+
+# Local test scripts (may contain credentials)
+scripts/get-test-token.js

@@ -11,7 +11,7 @@ firebase functions:secrets:set GEMINI_API_KEY
 ### Step 2: When prompted, paste your API key value
 
 ```
-Enter a value for GEMINI_API_KEY: [paste: REDACTED_GEMINI_KEY]
+Enter a value for GEMINI_API_KEY: [paste your key from https://aistudio.google.com/app/apikey]
 ```
 
 ### Step 3: Verify it was set correctly
@@ -36,7 +36,7 @@ firebase functions:secrets:access GEMINI_API_KEY
 ```bash
 # 1. Set Gemini API key
 firebase functions:secrets:set GEMINI_API_KEY
-# [Enter: REDACTED_GEMINI_KEY when prompted]
+# [Enter your Gemini API key when prompted]
 
 # 2. (Optional) Set Claude API key for failover
 firebase functions:secrets:set ANTHROPIC_API_KEY
