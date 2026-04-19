@@ -40,6 +40,13 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 
 ## SESSION — 2026-04-19 — Claude Sonnet 4.6 (Claude Code) — Backlog review, launch gate verification, SOP-DOC run
 
+### 2026-04-19 — Security: Gemini API key removed from repo + history (FORCE PUSH)
+- **Files touched:** `functions/SETUP_API_KEYS.md`, `.gitignore`, `scripts/get-test-token.js` (deleted from tracking)
+- **Commands run:** `git filter-repo` (rewrote all 137 commits), `git push --force origin main`
+- **Decisions:** Firebase web API key (`AIzaSyDL9V3...`) is intentionally public — left in HTML files, no action needed. Gemini API key (`AIzaSyD0EqMv...`) is a server-side secret — removed from `SETUP_API_KEYS.md`, replaced in all history with `REDACTED_GEMINI_KEY`. `scripts/get-test-token.js` removed from git tracking and added to `.gitignore`. Force push rewrote origin/main history — any other clones (including LUMARA Claude's worktrees) must do `git fetch --force && git reset --hard origin/main` to re-sync.
+- **Outstanding action for user:** Revoke the Gemini key immediately in Google AI Studio (https://aistudio.google.com/app/apikey) — history rewrite removes it from future clones but the key may have been cached by GitHub or seen by others. Rotating the key is the only guarantee.
+- **Firebase web API key:** Restrict to authorized domains in Firebase Console → Project Settings → API restrictions to prevent quota abuse.
+
 ### 2026-04-19 — §12 Phase 2 Discovery Agent JS — COMPLETED
 - **Files touched:** `index.html`, `backlog.md`
 - **What was already done (found on inspection):** Event handlers wired, fetch to `swarmspaceDiscoveryAgent`, chain card rendering, free tier note, CTA with base64 chain param, ready-made workflow variant, multi-turn, 3-turn limit, loading indicator, 429 handling. All in working tree from a prior session.
