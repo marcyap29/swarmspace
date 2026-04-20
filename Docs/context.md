@@ -38,6 +38,22 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 
 ---
 
+## SESSION — 2026-04-19 (continued) — Claude Sonnet 4.6 (Claude Code) — Firebase deployment timeout investigation + §16 Roles browsing page
+
+### 2026-04-19 — §16 Roles browsing page — DONE
+- **Files touched:** `roles.html` (new), `index.html` (nav link added), `backlog.md` (§16 marked done)
+- **Decisions:** Created `roles.html` with 6 Role cards (5 Free, 1 Standard). Each card has: role name + tagline, description, expandable plugin chain detail, tier badge, deploy CTA. Firebase auth check: signed-in users see "Open Dashboard →", guests see "Sign up free →". "Coming soon" section for Lead Gen and Data Entry Specialists (awaiting write plugins). Linked from index.html nav.
+- **Outcome:** §16 complete. `roles.html` is live in working tree. Not yet committed.
+- **Open items:** Commit this with deployment timeout investigation note.
+
+### 2026-04-19 — Firebase deployment timeout investigation — CLEARED (no code fix needed)
+- **Files touched:** none (read-only investigation)
+- **Decisions:** Reviewed all new LUMARA function files added to `functions/src/index.ts`: `proxyGemini`, `proxyGroq`, `proxyOllama`, `getAssemblyAIToken`, `getWisprApiKey`, `generateJournalReflection`, `groqClient.ts`, `authGuard.ts`, `rateLimiter.ts`, `config.ts`, `crypto.ts`, `saveUserModelConfig.ts`, `crisisIntervention.ts`, `analyzeJournalEntry.ts`, `config/providers.ts`. None have eager top-level initialization. The lazy-load pattern (`getDb()`) is consistently applied. The timeout was likely transient. Working tree is already clean (all prior changes committed through ca18197).
+- **Outcome:** No code change needed. Current codebase should deploy without timeout.
+- **Open items / handoff:** User must set secrets for new LUMARA functions before deploying: `firebase functions:secrets:set GROQ_API_KEY`, `OLLAMA_API_KEY`, `ASSEMBLYAI_API_KEY`, `WISPR_FLOW_API_KEY`. Also set new Gemini key: `firebase functions:secrets:set GEMINI_API_KEY`. Then: `cd functions && npm run build && cd .. && firebase deploy --only functions --project arc-epi`. Verify 3 workflows pass.
+
+---
+
 ## SESSION — 2026-04-19 — Claude Sonnet 4.6 (Claude Code) — Backlog review, launch gate verification, SOP-DOC run
 
 ### 2026-04-19 — Security: Gemini API key removed from repo + history (FORCE PUSH)

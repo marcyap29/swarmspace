@@ -1157,8 +1157,8 @@ A Roles page (or dedicate the homepage) should list each Role with:
 
 | Item | Status | Notes |
 |---|---|---|
-| Roles browsing page | Not built | Lists all deployable Work Chains as Roles. Consumer-facing. Priority surface before developer outreach. |
-| Role cards for 6 live Work Chains | Not built | Name, description, tier, deploy CTA. No new backend required. |
+| Roles browsing page | ✅ DONE (2026-04-19) | `roles.html` published. 6 Role cards, tier badges, plugin chain detail (expandable), Firebase auth-aware CTAs. Nav link added to `index.html`. |
+| Role cards for 6 live Work Chains | ✅ DONE (2026-04-19) | All 6 live Work Chains have cards: Competitive Intelligence Analyst, Research Analyst, Market Intelligence Analyst, Tech Scout, News Desk, Content Brief Writer. |
 | Market Intelligence Analyst — Durable Object variant | Not started | Added to Section 5.2 alongside existing News Briefing, Competitor Research, and Trend Spotter DO variants. Weekly cadence. market-scan route + currency plugin. |
 
 ---

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — Roles</title>
+  <meta name="description" content="Pre-configured AI workflows you can deploy in one click. Free and Standard tier Roles powered by SwarmSpace Work Chains." />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
+      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
+      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
+      --orange:#fb923c; --purple:#9b6dff;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --mono:'SF Mono','JetBrains Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.65; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-links { display:flex; align-items:center; gap:24px; }
+    .nav-links a { font-size:14px; color:var(--muted); }
+    .nav-links a:hover { color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
+
+    .hero {
+      padding:96px 40px 64px; max-width:860px; margin:0 auto; text-align:center;
+    }
+    .hero-eyebrow {
+      display:inline-block; font-size:12px; font-weight:700; letter-spacing:.08em;
+      text-transform:uppercase; color:var(--accent2);
+      background:rgba(124,158,255,.1); border:1px solid rgba(124,158,255,.2);
+      border-radius:20px; padding:4px 14px; margin-bottom:20px;
+    }
+    .hero h1 { font-size:clamp(32px,5vw,52px); font-weight:800; letter-spacing:-1px; line-height:1.1; margin-bottom:20px; }
+    .hero p { font-size:18px; color:var(--muted); line-height:1.7; max-width:640px; margin:0 auto 40px; }
+
+    /* Roles grid */
+    .roles-section { max-width:1060px; margin:0 auto; padding:0 40px 96px; }
+    .roles-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+
+    .role-card {
+      background:var(--surface); border:1px solid var(--border); border-radius:16px;
+      padding:28px; display:flex; flex-direction:column; gap:16px;
+      transition:border-color .15s;
+    }
+    .role-card:hover { border-color:var(--border2); }
+
+    .role-header { display:flex; align-items:flex-start; gap:14px; }
+    .role-icon {
+      width:44px; height:44px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; flex-shrink:0;
+    }
+    .role-name { font-size:16px; font-weight:700; line-height:1.3; }
+    .role-tagline { font-size:12px; color:var(--muted); margin-top:3px; }
+
+    .role-desc { font-size:13px; color:var(--muted); line-height:1.65; flex:1; }
+
+    .role-chain-toggle {
+      font-size:12px; color:var(--accent2); cursor:pointer; user-select:none;
+      display:inline-flex; align-items:center; gap:5px; width:fit-content;
+      background:none; border:none; padding:0;
+    }
+    .role-chain-toggle:hover { opacity:.8; }
+    .chain-arrow { transition:transform .18s; display:inline-block; }
+    .chain-open .chain-arrow { transform:rotate(90deg); }
+
+    .role-chain-detail {
+      display:none; font-size:12px; color:var(--dim);
+      background:rgba(255,255,255,.03); border:1px solid var(--border);
+      border-radius:8px; padding:12px 14px; line-height:1.8;
+    }
+    .role-chain-detail.visible { display:block; }
+    .plugin-chip {
+      display:inline-block; font-family:var(--mono); font-size:11px;
+      background:rgba(91,91,214,.12); border:1px solid rgba(91,91,214,.2);
+      border-radius:5px; padding:1px 7px; margin:1px 2px; color:var(--accent2);
+    }
+    .chain-sep { color:var(--dim); margin:0 2px; font-size:11px; }
+    .chain-final { color:var(--green); font-family:var(--mono); font-size:11px; }
+
+    .role-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .tier-badge {
+      font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+      padding:3px 10px; border-radius:12px;
+    }
+    .tier-free { background:rgba(52,211,153,.1); color:var(--green); border:1px solid rgba(52,211,153,.25); }
+    .tier-standard { background:rgba(124,158,255,.1); color:var(--accent2); border:1px solid rgba(124,158,255,.25); }
+
+    .deploy-btn {
+      padding:7px 16px; border-radius:8px; font-size:12px; font-weight:700;
+      border:none; cursor:pointer; text-decoration:none;
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .deploy-free { background:var(--accent); color:#fff; }
+    .deploy-free:hover { opacity:.88; text-decoration:none; }
+    .deploy-standard { background:rgba(124,158,255,.15); color:var(--accent2); border:1px solid rgba(124,158,255,.3); }
+    .deploy-standard:hover { background:rgba(124,158,255,.25); text-decoration:none; }
+
+    /* Legend */
+    .legend {
+      max-width:1060px; margin:0 auto 64px; padding:0 40px;
+      display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+    }
+    .legend-label { font-size:12px; color:var(--muted); }
+    .legend-item { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
+
+    /* Coming soon */
+    .coming-soon-section { max-width:1060px; margin:0 auto 96px; padding:0 40px; }
+    .coming-soon-section h2 { font-size:20px; font-weight:700; margin-bottom:20px; color:var(--muted); }
+    .coming-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+    .coming-card {
+      background:var(--surface); border:1px dashed var(--border); border-radius:14px;
+      padding:20px; opacity:.6;
+    }
+    .coming-card .role-name { color:var(--muted); }
+    .coming-tag { font-size:11px; color:var(--dim); font-style:italic; margin-top:6px; }
+
+    /* CTA block */
+    .cta-block {
+      max-width:600px; margin:0 auto 96px;
+      background:linear-gradient(135deg,rgba(91,91,214,.1),rgba(52,211,153,.06));
+      border:1px solid rgba(91,91,214,.25); border-radius:16px;
+      padding:40px; text-align:center;
+    }
+    .cta-block h2 { font-size:22px; font-weight:800; margin-bottom:10px; }
+    .cta-block p { font-size:14px; color:var(--muted); margin-bottom:24px; line-height:1.6; }
+    .cta-block-btn {
+      display:inline-block; padding:14px 28px; background:var(--accent);
+      border-radius:10px; font-size:15px; font-weight:700; color:#fff;
+    }
+    .cta-block-btn:hover { opacity:.88; text-decoration:none; }
+
+    footer {
+      border-top:1px solid var(--border); padding:40px;
+      display:flex; flex-direction:column; align-items:center; gap:16px;
+      max-width:1060px; margin:0 auto;
+    }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:14px 24px; justify-content:center; }
+    .footer-links a { font-size:13px; color:var(--dim); }
+    .footer-links a:hover { color:var(--muted); text-decoration:none; }
+
+    @media(max-width:900px) {
+      .roles-grid { grid-template-columns:repeat(2,1fr); }
+      .coming-grid { grid-template-columns:1fr; }
+    }
+    @media(max-width:600px) {
+      nav { padding:14px 20px; }
+      .nav-links { display:none; }
+      .hero { padding:64px 20px 48px; }
+      .roles-section, .coming-soon-section, .legend { padding-left:20px; padding-right:20px; }
+      .roles-grid, .coming-grid { grid-template-columns:1fr; }
+      .cta-block { margin-left:20px; margin-right:20px; }
+      footer { padding:32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">SwarmSpace</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/roles.html" style="color:var(--text)">Roles</a>
+    <a href="/submit-plugin.html">Submit a plugin</a>
+    <a href="/developer-guide.html">Docs</a>
+    <a href="/upgrade.html">Pricing</a>
+  </div>
+  <a href="/signup.html" class="btn-primary" id="nav-cta">Get started →</a>
+</nav>
+
+<div class="hero">
+  <span class="hero-eyebrow">Work Chains</span>
+  <h1>Roles — AI Workflows<br>Ready to Deploy</h1>
+  <p>Pre-configured multi-plugin chains that run with one click. Each Role chains SwarmSpace plugins together to do a full job — research, monitoring, briefing, analysis.</p>
+</div>
+
+<div class="legend">
+  <span class="legend-label">Tier key:</span>
+  <span class="legend-item"><span class="tier-badge tier-free">Free</span> No subscription required</span>
+  <span class="legend-item"><span class="tier-badge tier-standard">Standard</span> SwarmSpace Standard or Pro</span>
+</div>
+
+<div class="roles-section">
+  <div class="roles-grid" id="roles-grid">
+
+    <!-- 1: Competitive Intelligence Analyst -->
+    <div class="role-card" data-route="competitor" data-tier="free">
+      <div class="role-header">
+        <div class="role-icon" style="background:rgba(91,91,214,.15);">🔍</div>
+        <div>
+          <div class="role-name">Competitive Intelligence Analyst</div>
+          <div class="role-tagline">Monitor what your competitors are doing</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Scans the web, news sources, and developer discussions to build a current picture of any company or product. Returns a structured brief: what changed, what people are saying, and what to watch.
+      </div>
+      <button class="role-chain-toggle" onclick="toggleChain(this)">
+        <span class="chain-arrow">▶</span> See plugin chain
+      </button>
+      <div class="role-chain-detail">
+        Route: <code>/competitor</code><br><br>
+        <span class="plugin-chip">brave-search</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">news</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">hackernews</span>
+        <span class="chain-sep">→</span>
+        <span class="chain-final">gemini-flash synthesis</span>
+      </div>
+      <div class="role-footer">
+        <span class="tier-badge tier-free">Free</span>
+        <a href="/signup.html" class="deploy-btn deploy-free" id="deploy-competitor">Deploy →</a>
+      </div>
+    </div>
+
+    <!-- 2: Research Analyst -->
+    <div class="role-card" data-route="research" data-tier="free">
+      <div class="role-header">
+        <div class="role-icon" style="background:rgba(52,211,153,.12);">📚</div>
+        <div>
+          <div class="role-name">Research Analyst</div>
+          <div class="role-tagline">Deep research across web and academic sources</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Combines broad web search with peer-reviewed academic sources to produce a thorough, cited research summary. Covers web results, Wikipedia context, and papers from Semantic Scholar, arXiv, and PubMed.
+      </div>
+      <button class="role-chain-toggle" onclick="toggleChain(this)">
+        <span class="chain-arrow">▶</span> See plugin chain
+      </button>
+      <div class="role-chain-detail">
+        Routes: <code>/research</code> + <code>/academic</code><br><br>
+        <span class="plugin-chip">brave-search</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">wikipedia</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">semantic-scholar</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">arxiv</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">pubmed</span>
+        <span class="chain-sep">→</span>
+        <span class="chain-final">gemini-flash synthesis</span>
+      </div>
+      <div class="role-footer">
+        <span class="tier-badge tier-free">Free</span>
+        <a href="/signup.html" class="deploy-btn deploy-free" id="deploy-research">Deploy →</a>
+      </div>
+    </div>
+
+    <!-- 3: Market Intelligence Analyst -->
+    <div class="role-card" data-route="market-scan" data-tier="free">
+      <div class="role-header">
+        <div class="role-icon" style="background:rgba(251,146,60,.12);">📈</div>
+        <div>
+          <div class="role-name">Market Intelligence Analyst</div>
+          <div class="role-tagline">Market signals, news, and currency data in one brief</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Pulls news, web discussion, and live currency data to produce a market brief. Useful for tracking a sector, a geography, or a macro theme — without stitching together multiple sources manually.
+      </div>
+      <button class="role-chain-toggle" onclick="toggleChain(this)">
+        <span class="chain-arrow">▶</span> See plugin chain
+      </button>
+      <div class="role-chain-detail">
+        Route: <code>/market-scan</code><br><br>
+        <span class="plugin-chip">brave-search</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">news</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">currency</span>
+        <span class="chain-sep">→</span>
+        <span class="chain-final">gemini-flash synthesis</span>
+      </div>
+      <div class="role-footer">
+        <span class="tier-badge tier-free">Free</span>
+        <a href="/signup.html" class="deploy-btn deploy-free" id="deploy-market-scan">Deploy →</a>
+      </div>
+    </div>
+
+    <!-- 4: Tech Scout -->
+    <div class="role-card" data-route="tech-scout" data-tier="free">
+      <div class="role-header">
+        <div class="role-icon" style="background:rgba(155,109,255,.12);">⚡</div>
+        <div>
+          <div class="role-name">Tech Scout</div>
+          <div class="role-tagline">Track what's moving in the technology space</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Combines GitHub trending activity, Hacker News discussion, web search, and academic pre-prints to surface emerging technology signals. Useful for tracking a library, framework, or technical domain.
+      </div>
+      <button class="role-chain-toggle" onclick="toggleChain(this)">
+        <span class="chain-arrow">▶</span> See plugin chain
+      </button>
+      <div class="role-chain-detail">
+        Route: <code>/tech-scout</code><br><br>
+        <span class="plugin-chip">github-public</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">hackernews</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">brave-search</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">arxiv</span>
+        <span class="chain-sep">→</span>
+        <span class="chain-final">gemini-flash synthesis</span>
+      </div>
+      <div class="role-footer">
+        <span class="tier-badge tier-free">Free</span>
+        <a href="/signup.html" class="deploy-btn deploy-free" id="deploy-tech-scout">Deploy →</a>
+      </div>
+    </div>
+
+    <!-- 5: News Desk -->
+    <div class="role-card" data-route="news-brief" data-tier="free">
+      <div class="role-header">
+        <div class="role-icon" style="background:rgba(52,211,153,.1);">📰</div>
+        <div>
+          <div class="role-name">News Desk</div>
+          <div class="role-tagline">A structured news briefing on any topic</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Queries multiple news and discussion sources on any topic or keyword and synthesizes them into a structured briefing: top stories, emerging narratives, and what the community is talking about.
+      </div>
+      <button class="role-chain-toggle" onclick="toggleChain(this)">
+        <span class="chain-arrow">▶</span> See plugin chain
+      </button>
+      <div class="role-chain-detail">
+        Route: <code>/news-brief</code><br><br>
+        <span class="plugin-chip">news</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">hackernews</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">brave-search</span>
+        <span class="chain-sep">→</span>
+        <span class="chain-final">gemini-flash synthesis</span>
+      </div>
+      <div class="role-footer">
+        <span class="tier-badge tier-free">Free</span>
+        <a href="/signup.html" class="deploy-btn deploy-free" id="deploy-news-brief">Deploy →</a>
+      </div>
+    </div>
+
+    <!-- 6: Content Brief Writer -->
+    <div class="role-card" data-route="content-brief" data-tier="standard">
+      <div class="role-header">
+        <div class="role-icon" style="background:rgba(124,158,255,.12);">✍️</div>
+        <div>
+          <div class="role-name">Content Brief Writer</div>
+          <div class="role-tagline">Research-backed content strategy briefs</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Takes a topic and produces a structured content brief: search context, background from Wikipedia, relevant news angle, and a synthesis of angles worth covering. Designed for content teams who want research done before the writing starts.
+      </div>
+      <button class="role-chain-toggle" onclick="toggleChain(this)">
+        <span class="chain-arrow">▶</span> See plugin chain
+      </button>
+      <div class="role-chain-detail">
+        Route: <code>/content-brief</code><br><br>
+        <span class="plugin-chip">brave-search</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">wikipedia</span>
+        <span class="chain-sep">→</span>
+        <span class="plugin-chip">news</span>
+        <span class="chain-sep">→</span>
+        <span class="chain-final">gemini-flash synthesis</span>
+        <span style="display:block;margin-top:8px;color:var(--muted);">+ social-publisher (Standard)</span>
+      </div>
+      <div class="role-footer">
+        <span class="tier-badge tier-standard">Standard</span>
+        <a href="/upgrade.html" class="deploy-btn deploy-standard" id="deploy-content-brief">Upgrade to deploy →</a>
+      </div>
+    </div>
+
+  </div><!-- /roles-grid -->
+</div><!-- /roles-section -->
+
+<!-- Coming soon -->
+<div class="coming-soon-section">
+  <h2>Coming soon</h2>
+  <div class="coming-grid">
+    <div class="coming-card">
+      <div class="role-name">Lead Gen + Outreach Specialist</div>
+      <div class="coming-tag">Awaiting CRM write plugin — research half is built</div>
+    </div>
+    <div class="coming-card">
+      <div class="role-name">Data Entry + Processing Specialist</div>
+      <div class="coming-tag">Awaiting spreadsheet write plugin — extraction half is built</div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-block" id="cta-block">
+  <h2>Start free — no card required</h2>
+  <p>All five free-tier Roles are available on any SwarmSpace account. Sign up to run them, save chains, and track your results.</p>
+  <a href="/signup.html" class="cta-block-btn" id="cta-main">Create your account →</a>
+</div>
+
+<footer>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/roles.html">Roles</a>
+    <a href="/marketplace.html">Marketplace</a>
+    <a href="/submit-plugin.html">Submit a plugin</a>
+    <a href="/developer-guide.html">Docs</a>
+    <a href="/upgrade.html">Pricing</a>
+    <a href="/founding-developers.html">Founding Developer</a>
+    <a href="/prism.html">PRISM</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <p>SwarmSpace &copy; 2026 Orbital AI. The plugin marketplace for AI agents.</p>
+</footer>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const app = initializeApp({
+    apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+    authDomain:        "arc-epi.firebaseapp.com",
+    projectId:         "arc-epi",
+    storageBucket:     "arc-epi.firebasestorage.app",
+    messagingSenderId: "563971839074",
+    appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b",
+    measurementId:     "G-C3Q3LL6JXV"
+  });
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Signed in — update CTAs to go to dashboard
+      const navCta = document.getElementById("nav-cta");
+      if (navCta) { navCta.textContent = "Dashboard →"; navCta.href = "/dashboard.html"; }
+
+      const ctaMain = document.getElementById("cta-main");
+      if (ctaMain) { ctaMain.textContent = "Open Dashboard →"; ctaMain.href = "/dashboard.html"; }
+
+      const ctaBlock = document.getElementById("cta-block");
+      if (ctaBlock) {
+        ctaBlock.querySelector("h2").textContent = "Ready to run";
+        ctaBlock.querySelector("p").textContent = "You're signed in. Open your dashboard to run any free-tier Role.";
+      }
+
+      // Update all free-tier deploy buttons
+      document.querySelectorAll(".role-card[data-tier='free'] .deploy-btn").forEach(btn => {
+        btn.textContent = "Open Dashboard →";
+        btn.href = "/dashboard.html";
+      });
+    }
+  });
+</script>
+
+<script>
+  function toggleChain(btn) {
+    const card = btn.closest(".role-card");
+    const detail = card.querySelector(".role-chain-detail");
+    const isOpen = detail.classList.contains("visible");
+    detail.classList.toggle("visible", !isOpen);
+    btn.classList.toggle("chain-open", !isOpen);
+    btn.querySelector(".chain-arrow").textContent = isOpen ? "▶" : "▼";
+  }
+</script>
+
+</body>
+</html>
