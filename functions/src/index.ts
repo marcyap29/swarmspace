@@ -21,9 +21,6 @@ import { getUserSubscription } from "./functions/getUserSubscription";
 import { createCheckoutSession } from "./functions/createCheckoutSession";
 import { proxyGemini } from "./functions/proxyGemini";
 import { proxyGroq } from "./functions/proxyGroq";
-import { proxyOllama } from "./functions/proxyOllama";
-import { getAssemblyAIToken } from "./functions/getAssemblyAIToken";
-import { getWisprApiKey } from "./functions/getWisprApiKey";
 
 // Export all Cloud Functions
 export { analyzeJournalEntry };
@@ -36,9 +33,6 @@ export { getUserSubscription };
 export { createCheckoutSession };
 export { proxyGemini };
 export { proxyGroq };
-export { proxyOllama };
-export { getAssemblyAIToken };
-export { getWisprApiKey };
 
 /**
  * Architecture Overview (Priority 3: Authentication & Security):
