@@ -10,6 +10,29 @@ For each prompt:
 
 ---
 
+## SwarmSpace — LUMARA Cross-Repo Dependency Check
+
+**This rule applies every time a SwarmSpace feature is added or changed.**
+
+After completing any SwarmSpace feature, ask: *Does the LUMARA iOS app need to add or change anything on its side to call, receive, or surface this?*
+
+Common triggers:
+- New Cloud Function endpoint (LUMARA may need to call it)
+- New orchestrator route (LUMARA may need a UI entry point or flag flip)
+- New response field in an existing API (LUMARA may need to read and display it)
+- New auth or tier requirement (LUMARA may need to enforce it before calling)
+- New page or surface that requires authenticated state from the app (LUMARA may need a deep link or redirect)
+
+**Action:** At the end of every feature, explicitly state one of:
+- "LUMARA dependency: [what LUMARA Claude needs to do and in which file/function]" — and add it to `backlog.md` §7.1 if it's not already tracked.
+- "No LUMARA dependency — this feature is self-contained on the SwarmSpace side."
+
+Do not leave it ambiguous. A feature that silently requires LUMARA changes will break the integration without anyone knowing.
+
+**Reference:** Cross-repo function ownership is tracked in `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md`. The LUMARA orchestrator flag is at `_LUMARA/lib/shared/state/feature_flags.dart:22` (`useOrchestrator`).
+
+---
+
 ## LUMARA documentation context guide
 
 **Purpose:** Orient assistants and contributors to this repo. **Release history and version notes** belong in `DOCS/CHANGELOG.md` — do not duplicate them here.
