@@ -1,6 +1,5 @@
 export interface Env {
   SWARMSPACE_INTERNAL_TOKEN: string;
-  GITHUB_TOKEN?: string;
 }
 
 const CORS_HEADERS: Record<string, string> = {
@@ -30,9 +29,9 @@ export default {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
-      let body: { query?: string; type?: string; limit?: number };
+      let body: { query?: string; type?: string; limit?: number; github_token?: string };
       try {
-        body = (await request.json()) as { query?: string; type?: string; limit?: number };
+        body = (await request.json()) as { query?: string; type?: string; limit?: number; github_token?: string };
       } catch {
         return jsonResponse({ error: "Invalid JSON body" }, 400);
       }
@@ -56,8 +55,8 @@ export default {
         "User-Agent": "SwarmSpace/1.0",
         Accept: "application/vnd.github.v3+json",
       };
-      if (env.GITHUB_TOKEN) {
-        headers["Authorization"] = `token ${env.GITHUB_TOKEN}`;
+      if (body.github_token) {
+        headers["Authorization"] = `token ${body.github_token}`;
       }
 
       const apiResponse = await fetch(apiUrl, {

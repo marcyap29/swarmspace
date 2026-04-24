@@ -1,6 +1,5 @@
 export interface Env {
   SWARMSPACE_INTERNAL_TOKEN: string;
-  JINA_API_KEY?: string;
 }
 
 const CORS_HEADERS: Record<string, string> = {
@@ -30,9 +29,9 @@ export default {
         return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
-      let body: { url?: string };
+      let body: { url?: string; jina_api_key?: string };
       try {
-        body = (await request.json()) as { url?: string };
+        body = (await request.json()) as { url?: string; jina_api_key?: string };
       } catch {
         return jsonResponse({ error: "Invalid JSON body" }, 400);
       }
@@ -48,8 +47,8 @@ export default {
         Accept: "application/json",
         "X-Return-Format": "json",
       };
-      if (env.JINA_API_KEY) {
-        headers["Authorization"] = `Bearer ${env.JINA_API_KEY}`;
+      if (body.jina_api_key) {
+        headers["Authorization"] = `Bearer ${body.jina_api_key}`;
       }
 
       const apiResponse = await fetch(apiUrl, {

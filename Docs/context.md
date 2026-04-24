@@ -1,5 +1,16 @@
 # context.md — Agent Handoff Log
 
+## Current State
+> **Overwrite this section at session start. Ground truth only — no prose. Verify against `git status` before writing.**
+
+- **Branch:** `main`
+- **Working tree:** Clean — verified 2026-04-23
+- **Last commit:** `d293bd5` — chore: remove unused functions (Ollama, AssemblyAI, Wispr)
+- **planner.md:** Empty — no active tasks
+- **Next action:** Pull from `backlog.md`; top open items: §8 flip `useOrchestrator` flag (`_LUMARA/lib/shared/state/feature_flags.dart:22`), §2.3 credential isolation (4 workers), §3.3 Stripe Connect wiring
+
+---
+
 This file is the working memory for any agent (Claude or otherwise) operating in this repo. Every meaningful action goes here so the next agent can resume without re-deriving what already happened.
 
 ## How to Use This File
@@ -35,6 +46,8 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 - Quote user instructions verbatim when a decision hinges on their exact wording.
 - If a previous entry is now wrong (e.g. a fix was reverted), don't delete it. Add a new entry that supersedes it and reference the old one by timestamp.
 - When a session ends, leave a final "Open items / handoff" line on the most recent entry so the next agent knows where to pick up.
+- **At session start:** Run `git status` and update the Current State section at the top before doing anything else. Never trust prior session notes about uncommitted work without verifying.
+- **Close the loop:** When work that was logged as "not yet committed" gets committed, append `→ committed [hash]` inline to the original outcome line. Do not delete it.
 
 ---
 
@@ -43,8 +56,8 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 ### 2026-04-19 — §16 Roles browsing page — DONE
 - **Files touched:** `roles.html` (new), `index.html` (nav link added), `backlog.md` (§16 marked done)
 - **Decisions:** Created `roles.html` with 6 Role cards (5 Free, 1 Standard). Each card has: role name + tagline, description, expandable plugin chain detail, tier badge, deploy CTA. Firebase auth check: signed-in users see "Open Dashboard →", guests see "Sign up free →". "Coming soon" section for Lead Gen and Data Entry Specialists (awaiting write plugins). Linked from index.html nav.
-- **Outcome:** §16 complete. `roles.html` is live in working tree. Not yet committed.
-- **Open items:** Commit this with deployment timeout investigation note.
+- **Outcome:** §16 complete. `roles.html` is live in working tree. → committed `cd71c9c`
+- **Open items:** ~~Commit this with deployment timeout investigation note.~~ Done.
 
 ### 2026-04-19 — Firebase deployment timeout investigation — CLEARED (no code fix needed)
 - **Files touched:** none (read-only investigation)
@@ -73,7 +86,7 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
   4. 429 rate-limit message — upgraded to signup link; input + button disabled
   5. Added `.chain-paid` CSS class (orange/accent2 color)
 - **Decisions:** `recurringVariant` not in API response schema — skipping until backend adds the field. Breakpoint set at 480px not 375px to catch slightly larger phones too.
-- **Outcome:** §12 Phase 2 fully complete. `backlog.md` updated. Not yet committed.
+- **Outcome:** §12 Phase 2 fully complete. `backlog.md` updated. → committed `0e2e85c`
 
 ### 2026-04-19 — Committed, merged, and pushed to origin main (commit 1f6a7a3)
 - **Files touched:** `backlog.md` (conflict resolved), `planner.md`
@@ -95,12 +108,12 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 ### 2026-04-19 — Ran SOP-DOC (docs updated, NOT yet committed)
 - **Files touched:** `Docs/CHANGELOG.md`, `Docs/CONFIGURATION_MANAGEMENT.md`, `planner.md`
 - **Decisions:** Ran full Documentation, Configuration Management and Git Backup procedure per `Docs/claude.md`. Bumped CHANGELOG 1.4.1 → **1.5.0**. Updated CONFIGURATION_MANAGEMENT inventory (removed `Docs/RULE.md`, added `Docs/Agents.md`, `Docs/CHRONICLE.md`, `scripts/test-workflows.sh`, `scripts/get-test-token.js`, refreshed dates). Wiped `planner.md` clean (all tasks complete).
-- **Outcome:** All doc artifacts are updated in the working tree. **Nothing has been committed or pushed yet.** The git stage command was rejected by the user mid-run. The SOP-DOC commit is the first thing the next agent must complete.
-- **Open items / handoff:** See next action below.
+- **Outcome:** All doc artifacts are updated in the working tree. → committed `3147bfa`
+- **Open items / handoff:** ~~See next action below.~~ Resolved.
 
-### 2026-04-19 — COMMIT PENDING — full working tree needs to be staged and pushed
+### 2026-04-19 — ~~COMMIT PENDING~~ → RESOLVED: committed `3147bfa` (feat: clear community launch gate + doc sync v1.5.0)
 
-**This is the open task for the next agent.**
+~~**This is the open task for the next agent.**~~
 
 The following files need to be staged, committed, and pushed to `origin main`:
 

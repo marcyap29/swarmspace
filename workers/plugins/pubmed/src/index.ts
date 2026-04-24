@@ -1,6 +1,5 @@
 interface Env {
   SWARMSPACE_INTERNAL_TOKEN: string;
-  NCBI_API_KEY?: string;
 }
 
 export default {
@@ -17,7 +16,7 @@ export default {
         return corsResponse(JSON.stringify({ error: "Unauthorized" }), 401);
       }
 
-      let body: { query?: string; limit?: number };
+      let body: { query?: string; limit?: number; ncbi_api_key?: string };
       try {
         body = await request.json();
       } catch {
@@ -45,8 +44,8 @@ export default {
       searchUrl.searchParams.set("retmode", "json");
       searchUrl.searchParams.set("term", query);
       searchUrl.searchParams.set("retmax", String(limit));
-      if (env.NCBI_API_KEY) {
-        searchUrl.searchParams.set("api_key", env.NCBI_API_KEY);
+      if (body.ncbi_api_key) {
+        searchUrl.searchParams.set("api_key", body.ncbi_api_key);
       }
 
       const searchRes = await fetch(searchUrl.toString(), {
@@ -76,8 +75,8 @@ export default {
       summaryUrl.searchParams.set("db", "pubmed");
       summaryUrl.searchParams.set("retmode", "json");
       summaryUrl.searchParams.set("id", ids.join(","));
-      if (env.NCBI_API_KEY) {
-        summaryUrl.searchParams.set("api_key", env.NCBI_API_KEY);
+      if (body.ncbi_api_key) {
+        summaryUrl.searchParams.set("api_key", body.ncbi_api_key);
       }
 
       const summaryRes = await fetch(summaryUrl.toString(), {

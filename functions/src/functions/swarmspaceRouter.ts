@@ -42,11 +42,20 @@ const CATALOG_VERSION = "2026-04-10T18:00:00Z";
 // ── Secrets ────────────────────────────────────────────────────────────────────
 // Set these once via Firebase CLI:
 //   firebase functions:secrets:set SWARMSPACE_INTERNAL_TOKEN
+//   firebase functions:secrets:set GITHUB_TOKEN
+//   firebase functions:secrets:set JINA_API_KEY
+//   firebase functions:secrets:set NCBI_API_KEY
 //
-// This is the shared secret between the router and the Cloudflare workers.
-// Workers reject any request that doesn't have it — this prevents people
-// from calling your workers directly and bypassing the auth/quota system.
+// SWARMSPACE_INTERNAL_TOKEN: shared secret between the router and workers.
+// Workers reject requests without it — prevents direct calls that bypass auth/quota.
+//
+// GITHUB_TOKEN, JINA_API_KEY, NCBI_API_KEY: injected per-request into plugin
+// workers so workers never hold secrets in their own env (credential isolation).
+// All three are optional — workers fall back to unauthenticated if empty.
 const SWARMSPACE_INTERNAL_TOKEN = defineSecret("SWARMSPACE_INTERNAL_TOKEN");
+const GITHUB_TOKEN = defineSecret("GITHUB_TOKEN");
+const JINA_API_KEY = defineSecret("JINA_API_KEY");
+const NCBI_API_KEY = defineSecret("NCBI_API_KEY");
 
 // ── Plugin registry ────────────────────────────────────────────────────────────
 // Maps plugin_id → { workerUrl, requiredTier, capabilities, description, exampleQuery }
@@ -426,22 +435,11 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     deployed_at: "2026-03-15T00:00:00Z",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
-  "social-publisher": {
-    workerUrl: "https://swarmspace-social-publisher.orbitalai.workers.dev",
-    requiredTier: "standard",
-    capabilities: ["social_publish", "social_schedule", "social_accounts"],
-    description: "Publish drafts to LinkedIn, Bluesky, Threads, and more via Late.com",
-    exampleQuery: "Publish this draft to my connected accounts",
-    privacy_data_required: ["user.display_name", "user.email"],
-    privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
-    dataTypes: ["social_accounts", "user_profiles"],
-    owner: "swarmspace",
-    author: { name: "Orbital AI", type: "first-party" as const },
-    pricing: { model: "included" as const, cost_per_call: null },
-    version: "1.0.0",
-    deployed_at: "2026-04-01T00:00:00Z",
-    rateLimits: { free: 20, standard: 500, premium: 500 },
-  },
+  // social-publisher removed from plugin registry — social publishing requires
+  // per-user OAuth state (LinkedIn/Bluesky tokens in KV) and explicit per-post
+  // user approval, which doesn't fit the stateless plugin model. The worker
+  // code remains in workers/cloudflare/social-publisher/ for future use as a
+  // direct LUMARA integration with in-app approval UX.
 };
 
 // ── Developer plugin cache (TTL: 5 minutes) ─────────────────────────────────
@@ -701,7 +699,7 @@ const LLM_PLUGINS = new Set(["gemini-flash"]);
 
 export const swarmspaceRouter = onCall(
   {
-    secrets: [SWARMSPACE_INTERNAL_TOKEN, LLM_SETTINGS_ENCRYPTION_KEY],
+    secrets: [SWARMSPACE_INTERNAL_TOKEN, LLM_SETTINGS_ENCRYPTION_KEY, GITHUB_TOKEN, JINA_API_KEY, NCBI_API_KEY],
   },
   async (request) => {
     // Step 1: Verify the user is logged in (Firebase handles token validation automatically).
@@ -854,6 +852,21 @@ export const swarmspaceRouter = onCall(
     const isOurCloudFunction = plugin.workerUrl.includes("cloudfunctions.net");
     const workerUrl = isOurCloudFunction ? plugin.workerUrl : `${plugin.workerUrl}/invoke`;
 
+    // Credential injection — workers never hold API keys in their own env.
+    // The router is the single secret-holder; it injects per-plugin credentials
+    // into the request body at call time. Empty string = secret not set; skip it.
+    const pluginCredentials: Record<string, string> = {};
+    if (plugin_id === "github-public") {
+      const t = GITHUB_TOKEN.value(); if (t) pluginCredentials.github_token = t;
+    } else if (plugin_id === "jina-reader") {
+      const k = JINA_API_KEY.value(); if (k) pluginCredentials.jina_api_key = k;
+    } else if (plugin_id === "pubmed") {
+      const k = NCBI_API_KEY.value(); if (k) pluginCredentials.ncbi_api_key = k;
+    }
+    const bodyPayload = Object.keys(pluginCredentials).length > 0
+      ? { ...paramsForWorker, ...pluginCredentials }
+      : paramsForWorker;
+
     let workerResponse: Response;
     try {
       workerResponse = await fetch(workerUrl, {
@@ -864,7 +877,7 @@ export const swarmspaceRouter = onCall(
           "X-SwarmSpace-User-Id": userId,
           "X-SwarmSpace-User-Tier": userTier,
         },
-        body: JSON.stringify(paramsForWorker),
+        body: JSON.stringify(bodyPayload),
         // 25 second timeout — Firebase functions time out at 60s,
         // this leaves headroom for our own error handling
         signal: AbortSignal.timeout(25_000),
