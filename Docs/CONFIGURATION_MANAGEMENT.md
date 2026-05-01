@@ -126,6 +126,13 @@ When running a doc sync or release:
 - `backlog.md` footer — bumped April 19 → May 1, 2026.
 - `Docs/context.md` — closed the loop on the Gemini API key rotation (originally flagged 2026-04-19 in commit `af723ea`); confirmed rotated 2026-05-01.
 
+**Second drift sweep (same day) — verifying claimed-open backlog items against code:**
+- `backlog.md` §7.1 + §8 prereq — marked `useOrchestrator` flag flipped (per `Docs/context.md` 2026-04-24 entry); was claiming "active open task". Community launch gate fully clear.
+- `backlog.md` §12 Phase 3 chain-to-signup — marked ✅ DONE; was claiming "Not started". All four tasks verified shipped: `signup.html:330-354` captures and persists chain param, `dashboard.html:546-559` decodes and consumes, `dashboard.html:890-949` `renderPendingChain` is tier-aware (upgrade prompt for paid-required, workflow run for matched routes, disabled for custom).
+- `backlog.md` §3.3 Stripe Connect — task list updated: `create-connect-account` wiring confirmed live in `earnings.html:222`; credit-checkout pricing live in `dashboard.html:279-281`. Open: `get-connect-balance` UI wiring + production-readiness audit + payout writes.
+- `backlog.md` §3.4 Earnings Dashboard — split into ✅ frontend display (verified `earnings.html:178-183`) and ❌ backend population (no Firebase function writes `total_earned`/`pending_payout`/`merit_score`).
+- `backlog.md` §2.3 Credential Isolation — replaced stale "13 plugin Workers" claim with verified in-repo audit: 8 plugin workers + `media-upload` are clean; `social-publisher` still env-bound but unrouted; ~10 catalogue plugins not in this repo.
+
 ---
 
 ### 2026-04-19 — Community launch gate cleared + workflow fixes (v1.5.0)

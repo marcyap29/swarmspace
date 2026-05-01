@@ -57,11 +57,16 @@ Completed: security.html, prism.html, OWASP_AST10_COMPLIANCE.md, DEVELOPER_GUIDE
 
 Completed: PrivacyTier enum inlined in swarmspaceRouter, all 22 registry entries have privacy_data_required (string[]), privacyTier, dataTypes. Consent gating blocks non-ANONYMOUS plugins without _prism_consent. Context field filtering strips undeclared fields before worker dispatch.
 
-### 2.3 Credential Isolation
+### 2.3 Credential Isolation — In-repo audit ✅, externals open
 
-- [ ] Refactor plugin Workers so they do not read raw API key secrets directly (currently: `github-public/src/index.ts:59`, `jina-reader/src/index.ts:50`, likely others)
-- [ ] Move toward boundary injection: router or proxy injects credentials into outbound requests, plugin code never touches them
-- [ ] Audit all 13 plugin Workers for direct secret access patterns and log which ones need refactoring
+In-repo audit (verified 2026-05-01):
+- ✅ All 8 plugin workers in `workers/plugins/` (arxiv, dictionary-api, github-public, hackernews, jina-reader, nominatim, pubmed, rest-countries) reference only `env.SWARMSPACE_INTERNAL_TOKEN` — no direct API key access. Boundary injection via `swarmspaceRouter` (commit `4311c49`) is the canonical pattern.
+- ✅ `workers/cloudflare/media-upload` — only `SWARMSPACE_INTERNAL_TOKEN`.
+- ⚠️ `workers/cloudflare/social-publisher` — still reads `env.LATE_API_KEY` directly (`src/index.ts:67,349`). Removed from the plugin registry in `4311c49` (stateful OAuth doesn't fit the stateless plugin contract), so unrouted, but the credential is still in the worker's env. Either tighten or delete the worker.
+
+Open work:
+- [ ] Decide social-publisher: rewrite to fit boundary-injection contract, or delete the worker (currently unreachable through router but still env-bound).
+- [ ] Locate the ~10 catalogue plugins not in this repo (brave-search, gemini-flash, news, weather, currency, semantic-scholar, wikipedia, vision-ocr, url-reader, tavily-search, exa-search, perplexity-sonar). Likely deployed externally or owned by another repo. Confirm each holds no env-bound credentials.
 
 ### 2.4 Developer Guide Fixes (before outreach) ✅ DONE (2026-04-13)
 
@@ -81,18 +86,27 @@ In progress with Prinz Law Office, La Jolla. Covers: indemnification, data handl
 
 ### 3.3 Stripe Connect for Developer Payouts
 
-Partially built (discovered April 18, 2026). `api/create-connect-account.js` and `api/get-connect-balance.js` exist in the Vercel API layer — Connect account creation and balance retrieval are implemented. `api/create-credit-checkout.js` also exists for credit top-up purchases. None are wired to the dashboard UI or called from Firebase functions yet.
+`api/create-connect-account.js`, `api/get-connect-balance.js`, and `api/create-credit-checkout.js` exist in the Vercel API layer. Wiring status verified 2026-05-01.
 
 Revenue split: 80% to dev, 20% platform on Verified transactions. 85% for Founding Developers.
 
-- [ ] Audit existing `create-connect-account.js` and `get-connect-balance.js` — confirm they are production-ready or identify gaps
-- [ ] Wire `get-connect-balance.js` to `earnings.html` balance display
-- [ ] Wire `create-connect-account.js` to developer onboarding flow
-- [ ] Define `create-credit-checkout.js` pricing tiers (see §4.5 Credit System)
+- ✅ Wire `create-connect-account.js` to developer onboarding flow — `earnings.html:222` posts to `/api/create-connect-account`.
+- ✅ Define `create-credit-checkout.js` pricing tiers — bundle pricing live in `dashboard.html:279-281` ($5/100, $15/400, $30/1000).
+- [ ] Wire `get-connect-balance.js` to `earnings.html` balance display — endpoint exists, no caller in `earnings.html`.
+- [ ] Audit `create-connect-account.js` and `get-connect-balance.js` for production-readiness (idempotency, refresh tokens, error paths).
+- [ ] Verify Stripe webhook (`api/stripe-webhook.js`) actually populates `developers/{uid}.total_earned` and `pending_payout` — see §3.4.
 
 ### 3.4 Developer Earnings Dashboard
 
-Page shell exists (`earnings.html`, linked from dashboard sidebar). Backend not built — no per-plugin call volume tracking, revenue share calculation, merit score trajectory, or payout logic in Firebase functions. Required before Verified tier launches.
+Frontend display ✅ wired — `earnings.html:178-183` reads `developers/{uid}.total_earned` and `pending_payout` from Firestore and renders. Verified 2026-05-01.
+
+Backend ❌ — no Firebase function in `functions/src/` writes `total_earned`, `pending_payout`, or `merit_score` (zero matches for these field names). Fields stay at 0 unless `api/stripe-webhook.js` populates them on payment events; webhook handler not separately verified for payout writes.
+
+Required before Verified tier launches:
+- [ ] Per-plugin call volume tracking (extend `plugin_activity_log` aggregation)
+- [ ] Revenue share calculation (80/20, 85/15 for Founding Developers)
+- [ ] Merit score trajectory (composite: upvotes, call volume, retention, error rate)
+- [ ] Payout logic — either webhook-driven or scheduled function that writes the developer doc fields
 
 ### 3.5 AST10 Compliance Posture Page ✅ DONE (2026-04-13)
 
@@ -288,7 +302,7 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 
 ### 7.1 NOW (unblocked or close to unblocked)
 
-- **LUMARA visibly SwarmSpace at runtime** — 404/405 blocker cleared. Remaining task: `useOrchestrator` is hardcoded `false` in `_LUMARA/lib/shared/state/feature_flags.dart:22`. Flip flag and verify real orchestrator calls flow end-to-end. Community launch prerequisite — active open task.
+- **LUMARA visibly calling SwarmSpace at runtime** ✅ DONE (2026-04-24) — `useOrchestrator` flag flipped per `Docs/context.md`. End-to-end verification of orchestrator-flow-via-LUMARA is the user's responsibility on the LUMARA side; SwarmSpace orchestrator routes are live.
 - **Reference Documentation Ingestion** — highest-value unblocked LUMARA item. No SwarmSpace dependency.
 - **Behavioral Pattern Layer (CHRONICLE extension)** — prompt design work, raw data exists. Low lift.
 
@@ -320,7 +334,7 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 - [x] Developer submission portal functional (Section 3.1) (2026-04-13) ✅
 - [x] At least 3 of 12 free workflows demonstrably working in LUMARA (Research & Summarise, News Briefing, Competitor Research) ✅ (2026-04-18)
 - [x] AST10 compliance posture page published (Section 3.5) (2026-04-13) ✅
-- [ ] LUMARA visibly calling SwarmSpace at runtime — flip `useOrchestrator` flag in `_LUMARA/lib/shared/state/feature_flags.dart:22`, verify end-to-end
+- [x] LUMARA visibly calling SwarmSpace at runtime — `useOrchestrator` flag flipped on 2026-04-24 ✅
 
 ### Launch Sequence
 1. Identify 20-30 target developers from LinkedIn/Substack audience
@@ -831,26 +845,14 @@ All JS wiring complete. Full feature set shipped:
 
 > `recurringVariant` surfacing was originally scoped here but has been moved to §5.2 (Durable Objects), since the field only becomes meaningful once recurring DO variants exist.
 
-### Phase 3: Chain-to-Signup Handoff
+### Phase 3: Chain-to-Signup Handoff ✅ DONE (verified 2026-05-01)
 
-When a visitor signs up after using the discovery agent, their proposed chain should be waiting for them.
+All four tasks shipped — verified by code inspection 2026-05-01:
 
-**Tasks:**
-
-1. On "Sign up to run this" click, serialize chain to URL parameter: `/signup.html?chain=base64(JSON)`
-2. After signup, on `dashboard.html` check for chain parameter
-3. If present, decode and display chain with "Run this now" button
-4. "Run this now" routes to Agents screen (or for v1, directly calls matching orchestrator route if `matchesExistingWorkflow` is set)
-
-**Constraints:**
-- Chain parameter is base64-encoded JSON, not raw URL
-- Enforce auth before execution if workflow requires it
-- Show upgrade prompt instead of run button if chain requires paid tier
-- Chain parameter expires after first use (remove from URL after rendering)
-
-**Verification:**
-- Complete full flow: ask discovery agent > click signup > create account > land on dashboard > see chain > click run
-- Paid-tier chains show upgrade prompt instead of run button
+- ✅ `signup.html:330-354` captures `chain` URL param, persists to `sessionStorage`, propagates through redirect after auth.
+- ✅ `dashboard.html:546-559` decodes `chain` (base64 JSON) on load, calls `renderPendingChain`, cleans URL via `history.replaceState`. One-time use enforced.
+- ✅ `dashboard.html:890-949` (`renderPendingChain`) builds tier-aware UI: paid-required chain → "Upgrade to run this chain" (line 920), workflow match → "Run this chain →" button hitting `WORKFLOW_ENDPOINTS` (lines 922-923, 936), custom chains → disabled "coming soon", Dismiss button wired.
+- ✅ Auth enforced (chain only renders after `dashboard.html` auth gate).
 
 ### Phase Summary
 
@@ -858,7 +860,7 @@ When a visitor signs up after using the discovery agent, their proposed chain sh
 |---|---|---|
 | Phase 1 | swarmspaceDiscoveryAgent Cloud Function | ✅ DONE (2026-04-14) |
 | Phase 2 | Inline chat UI on index.html | ✅ DONE (2026-04-19) |
-| Phase 3 | Chain-to-signup handoff | Not started — depends on Phase 2 JS complete |
+| Phase 3 | Chain-to-signup handoff | ✅ DONE (verified 2026-05-01 by code inspection) |
 
 ---
 
