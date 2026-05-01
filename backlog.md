@@ -131,7 +131,7 @@ Not built. `/catalogue/updates` on swarmspaceRouter. Builds on live `swarmspaceP
 - Credit enforcement: LIVE. Free: 20/day. Standard: 500/day. Premium: 500/day. Admin: unlimited. Hard block at ceiling, 80% warning in logs.
 - Credit top-up purchase flow: NOT BUILT. Pricing not yet defined.
 - Credit rollover policy: No rollover at launch. Partial carry-forward (20% cap) under review.
-- Per-user credit visibility in UI: HTML elements exist in `dashboard.html` (`#credits-card`, balance display, buy buttons). JS binding to Firestore balance not confirmed — verify hydration logic is wired.
+- Per-user credit visibility in UI: ✅ Wired — `dashboard.html:573-583` (`loadCredits(user)`) reads `users/{uid}.credits` from Firestore and renders to `#credits-balance`. Buy-credit buttons (lines 279-281) post to `/api/create-credit-checkout` with bundle pricing already defined ($5/100, $15/400, $30/1000). End-to-end Stripe→credit-grant webhook handling not separately verified.
 
 ### 4.6 Work Chain Manifest Spec
 
@@ -232,6 +232,7 @@ Depends on: orchestrator execution modes landing first.
 - [ ] Implement tier gating: reject DO scheduling requests from free-tier mobile users
 - [ ] CHRONICLE context injection at execution time (request fresh context, never persist in DO)
 - [ ] DO catalogue check: on scheduled fire, query `/catalogue/updates` for agent's category, flag new relevant plugins in delta output
+- [ ] Extend `swarmspaceDiscoveryAgent` response with `recurringVariant` field so the homepage chat (`index.html`) can surface "also runs as a recurring agent" for matching workflows (moved from §12 Phase 2 — frontend wiring is otherwise complete)
 
 Cost model: Workers Paid $5/mo base. 1M requests + 400K GB-seconds included. Estimated $10-20/mo at 10K users with 5 recurring agents each.
 
@@ -261,13 +262,9 @@ Current stack (unchanged until benchmarking):
 - Fast extraction: Llama 3.1 8B Instant on Groq
 - Structured extraction: Llama 3.3 70B Versatile on Groq
 
-### 5.5 Plugin Registry Worker — Orphaned (needs decision)
+### 5.5 Plugin Registry Worker ✅ RESOLVED (2026-04-24)
 
-`workers/plugin-registry/` exposes a full plugin metadata REST API (`GET /plugins`, `/plugins/{id}`, `/plugins/tier/{tier}`, `/plugins/privacy/{tier}`, `/plugins/capabilities`). Discovered April 18, 2026. Not wired to any frontend or Firebase function. Not documented in architecture.md.
-
-- [ ] Decide: integrate into `marketplace.html` as a data source, feed into §4.4 Catalogue Updates Endpoint, or remove
-- [ ] If keeping: document in architecture.md Section 2 and add to wrangler deployment pipeline
-- [ ] If removing: delete `workers/plugin-registry/` to avoid confusion
+`workers/plugin-registry/` was deleted in commit `4311c49` (stub with 3/22 plugins, orphaned). The plugin catalogue is served by the `swarmspacePluginCatalog` Firebase function, which is the canonical source. Section retained for history; the future user-aware filtering layer is tracked under §4.4 Catalogue Updates Endpoint.
 
 ---
 
@@ -831,7 +828,8 @@ All JS wiring complete. Full feature set shipped:
 - 3-turn limit → signup gate with link, input disabled
 - 429 rate-limit → signup link, input disabled
 - Mobile: explicit `flex-direction:column` on `.chain-card-row` at 480px
-- Note: `recurringVariant` not in API response schema — backend would need to add this field before it can be rendered
+
+> `recurringVariant` surfacing was originally scoped here but has been moved to §5.2 (Durable Objects), since the field only becomes meaningful once recurring DO variants exist.
 
 ### Phase 3: Chain-to-Signup Handoff
 
@@ -1235,7 +1233,7 @@ Queries existing live free-tier plugins:
 
 ### Step 3: Citation Verification
 
-See Section 14 (Citation Verifier Plugin) for full specification.
+See Section 18 (Citation Verifier Plugin) for full specification.
 
 **Key principle:** Every candidate paper verified against Semantic Scholar API (primary) and CrossRef (fallback). Hallucinated citations removed. User-provided references flagged but never silently deleted.
 
@@ -1274,7 +1272,7 @@ Sections drafted sequentially. Each receives: outline entry, verified citation s
 
 ### Step 6: Iterative Refinement
 
-See Section 15 (Iterative Refinement Agent Plugin) for full specification.
+See Section 19 (Iterative Refinement Agent Plugin) for full specification.
 
 **Annotation types:** Section rewrite, Expand, Condense, Strengthen argument, Tone adjustment, Citation request, Factual flag.
 
@@ -2184,4 +2182,4 @@ The Safe Room does not replace any existing control. It closes the output-side g
 
 ---
 
-*SwarmSpace Full Backlog — Orbital AI — April 19, 2026*
+*SwarmSpace Full Backlog — Orbital AI — May 1, 2026*

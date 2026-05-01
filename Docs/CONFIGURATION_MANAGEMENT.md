@@ -117,6 +117,15 @@ When running a doc sync or release:
 - `d293bd5` removed unused functions (Ollama, AssemblyAI, Wispr)
 - `4311c49` credential isolation (per-request token injection) + orphaned worker cleanup
 
+**Follow-up sweep (same day):**
+- `backlog.md` §4.5 — verified credit-balance hydration is wired in `dashboard.html:573-583`; updated note from "not confirmed" to ✅.
+- `backlog.md` §5.5 — marked Plugin Registry Worker resolved (deleted in `4311c49`); was previously "needs decision".
+- `backlog.md` §5.2 — added `recurringVariant` discovery-agent surfacing as a sub-task under Durable Objects (moved from §12 Phase 2, where the field was a dangling dependency).
+- `backlog.md` §12 — replaced the dangling `recurringVariant` note with a pointer to §5.2.
+- `backlog.md` §17 — fixed cross-references (Citation Verifier §14 → §18, Iterative Refinement §15 → §19) — drift from the §14 Terminology Update renumbering.
+- `backlog.md` footer — bumped April 19 → May 1, 2026.
+- `Docs/context.md` — closed the loop on the Gemini API key rotation (originally flagged 2026-04-19 in commit `af723ea`); confirmed rotated 2026-05-01.
+
 ---
 
 ### 2026-04-19 — Community launch gate cleared + workflow fixes (v1.5.0)
