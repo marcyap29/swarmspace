@@ -234,7 +234,7 @@ For TypeScript/npm deps: use `@cloudflare/worker-bundler` to transpile and bundl
 
 ### 5.2 Durable Objects (Recurring Agent Runtime)
 
-Depends on: orchestrator execution modes landing first.
+Depends on: live orchestrator routes ✅. **Does NOT depend on §5.3** for curated workflow DOs (verified 2026-05-01): the orchestrator at `workers/orchestrator/src/index.js` has zero execution-mode awareness; routes like `/news-brief` are plain POST handlers running pre-baked, read-only plugin chains. §5.3 (plan/auto/bubble/interactive) only matters for agent-assembled chains where unknown plugins might be selected at runtime — not for cron-driven curated workflows.
 
 - [ ] Define first Durable Object class extending `DurableObject` from `cloudflare:workers`
 - [ ] Add `durable_objects` bindings to wrangler config
@@ -2181,6 +2181,553 @@ The Safe Room does not replace any existing control. It closes the output-side g
 - Applies only to plugins with `fetches_external_content: true`. Plugins without this flag are not subject to output schema requirements.
 - Safe Room is a public-facing primitive name. It appears in developer docs, security page, and eventually in marketing copy. Treat it as a named architecture concept, not an internal implementation term.
 - See standalone doc: *SwarmSpace Safe Room — A Named Primitive for Structural Prompt Injection Defense* for the full rationale and architecture narrative.
+
+---
+
+## 22. MEETING PREP AGENT — Priority: HIGH (on-demand v1)
+
+> **Specced 2026-05-01.** Standard-tier on-demand agent that prepares a structured brief before a meeting. Pulls personal context from LUMARA (CHRONICLE + documents + optional calendar) and fuses it with external intel (web search + LinkedIn) via the SwarmSpace orchestrator.
+>
+> **LUMARA dependency: YES (substantial).** LUMARA owns: CHRONICLE/document lookup, OAuth token management, `MeetingPrepWorkflow` class, UI screen, and the `calendar-reader` registry entry in `swarmspaceRouter.ts`. SwarmSpace owns: `calendar-reader` plugin Worker, `/meeting-prep` orchestrator route, registry entry in `workers/plugins/REGISTRY_ENTRIES.ts`. Cross-repo work is gated by the Integration Contract at the bottom of this section.
+>
+> **Out of scope (Phase 2):** Durable Object auto-fire (recurring meeting briefs). Design after on-demand flow is stable. Will live as a §5.2 variant.
+>
+> **Dependencies:** orchestrator live ✅, `jina-reader` / `brave-search` / `gemini-flash` live ✅, `swarmspaceRouter` Standard-tier gate live ✅. No blockers.
+
+### Step 0 — Identify your repo before doing anything else
+
+Check your codebase root:
+
+- If you see `workers/orchestrator/src/index.js` and a `workers/plugins/` directory → **you are in SwarmSpace**. Execute the **SWARMSPACE TASKS** section only.
+- If you see `_LUMARA/lib/` with Flutter/Dart files and `pubspec.yaml` → **you are in LUMARA**. Execute the **LUMARA TASKS** section only.
+
+Read both sections regardless. The **Integration Contract** at the bottom is the shared source of truth for both repos — do not deviate from it.
+
+### Feature Overview (read regardless of repo)
+
+**Meeting Prep** is an on-demand agent that prepares a structured brief before a meeting. When a user triggers it:
+
+1. LUMARA queries its own CHRONICLE memory and document storage for prior mentions of the attendee and their company — this happens entirely on the LUMARA side, before anything touches SwarmSpace
+2. The assembled context plus attendee details are sent to the SwarmSpace orchestrator at `/meeting-prep`
+3. The orchestrator runs: parallel web + LinkedIn search via `brave-search`, LinkedIn page fetch via `jina-reader`, then synthesis via `gemini-flash`
+4. The brief is returned to LUMARA and rendered to the user
+
+For Standard-tier users, step 1 also includes reading upcoming calendar events via the new `calendar-reader` plugin (called through `swarmspaceRouter` before the orchestrator call).
+
+**Critical architectural boundary:** CHRONICLE context and document snippets are assembled by LUMARA and passed as string params to the orchestrator. They never flow through the SwarmSpace plugin registry or PRISM. Only external lookups run inside SwarmSpace.
+
+**Tier split:**
+- **Free:** User manually inputs attendee name + company. No calendar read. Gets web intel + CHRONICLE + documents + synthesis.
+- **Standard:** Automatic calendar read via `calendar-reader`. The rest of the chain is the same.
+
+**Output format (both tiers produce this):**
+```
+MEETING BRIEF
+─────────────────────────────────
+[Meeting title] · [Date & time] · [Duration]
+[Video link or location if available]
+
+ATTENDEE: [Full name], [Title] at [Company]
+
+FROM YOUR NOTES
+• [CHRONICLE mention with approximate date]
+• [Relevant document: filename — one line on why it's relevant]
+
+PERSON INTEL
+• [LinkedIn role/background]
+• [Recent company news or activity]
+• [Point 3]
+• [Point 4]
+• [Point 5]
+
+SUGGESTED TALKING POINTS
+• [Synthesized from CHRONICLE + web intel]
+• [Point 2]
+• [Point 3]
+```
+If CHRONICLE has no mentions of the attendee, omit the "FROM YOUR NOTES" section entirely rather than showing an empty block.
+
+### SWARMSPACE TASKS
+
+> Only execute this section if you are in the SwarmSpace repo.
+
+#### Pre-flight check
+Before writing any code:
+- Open `workers/orchestrator/src/index.js`. Confirm `callPlugin`, `parallel`, and `corsResponse` helpers are present and that the 12 existing routes follow the same pattern you are about to add.
+- Confirm `jina-reader` is in `workers/plugins/jina-reader/` and its `wrangler.toml` name is `swarmspace-plugin-jina-reader`.
+- Confirm `brave-search` is registered in `PLUGIN_REGISTRY` in the Firebase function `swarmspaceRouter.ts` (this file is in the LUMARA/ARCv2.5 repo, not here — you cannot edit it, but confirm it exists per the Integration Contract).
+
+#### Task SS-1: Build the `calendar-reader` Cloudflare Worker
+
+Create `workers/plugins/calendar-reader/src/index.ts` and `workers/plugins/calendar-reader/wrangler.toml`. Follow the exact structure of existing plugins such as `workers/plugins/jina-reader/` — TypeScript, CORS headers, `SWARMSPACE_INTERNAL_TOKEN` auth check, `/invoke` route.
+
+**What it does:** Accepts a Google OAuth access token, calls the Google Calendar API, returns upcoming events.
+
+**`wrangler.toml`:**
+```toml
+name = "swarmspace-plugin-calendar-reader"
+main = "src/index.ts"
+compatibility_date = "2026-03-01"
+```
+
+**Env interface:**
+```typescript
+export interface Env {
+  SWARMSPACE_INTERNAL_TOKEN: string;
+  // No other secrets — the OAuth token comes in as a param from LUMARA
+}
+```
+
+**Input params (received in request body):**
+```typescript
+{
+  access_token: string,    // Google OAuth token scoped to calendar.readonly
+  lookahead_hours?: number, // default 24
+  max_events?: number,      // default 5
+}
+```
+
+**Implementation:**
+- Validate `access_token` is present; return `{ error: "Missing required parameter: access_token" }` if not
+- Call: `GET https://www.googleapis.com/calendar/v3/calendars/primary/events` with params: `orderBy=startTime`, `singleEvents=true`, `timeMin=[now ISO]`, `timeMax=[now + lookahead_hours ISO]`, `maxResults=[max_events]`
+- Set `Authorization: Bearer {access_token}` on the Google API call
+- On `401` from Google: return `{ error: "calendar_auth_expired" }` with status 401 — LUMARA will handle token refresh
+- On `200`: map each event to:
+```typescript
+{
+  id: string,
+  title: string,           // event.summary
+  start_time: string,      // event.start.dateTime or event.start.date
+  end_time: string,
+  duration_minutes: number,
+  location: string | null,
+  video_link: string | null,  // extract from location + description using regex
+  attendees: Array<{
+    name: string | null,
+    email: string,
+    is_organizer: boolean,
+  }>,
+}
+```
+- Extract video link: match `meet.google.com`, `zoom.us/j/`, or `teams.microsoft.com` anywhere in `event.location` or `event.description`
+- Return `{ results: events, source: "calendar-reader", count: events.length }`
+- If calendar returns zero events in window: return `{ results: [], source: "calendar-reader", count: 0 }` — do not throw
+
+**Auth note on PRISM:** `access_token` is declared in `privacy_data_required` (see registry entry below). PRISM's field filter allows any key listed there to pass through to the Worker. Without this, swarmspaceRouter would strip `access_token` before it reaches the Worker.
+
+#### Task SS-2: Register `calendar-reader` in the plugin registry
+
+**Add to `workers/plugins/REGISTRY_ENTRIES.ts`** (append after the last entry):
+```typescript
+"calendar-reader": {
+  workerUrl: "https://swarmspace-plugin-calendar-reader.orbitalai.workers.dev",
+  requiredTier: "standard",
+  capabilities: ["calendar", "scheduling", "meetings", "attendees"],
+  description: "Read upcoming calendar events and attendee details from Google Calendar.",
+  exampleQuery: "What meetings do I have today?",
+  privacy_data_required: ["calendar_events", "attendee_names", "attendee_emails", "access_token"],
+  privacyTier: "STRUCTURED_PERSONAL",
+  dataTypes: ["calendar_events", "attendee_data"],
+  is_read_only: true,
+  is_destructive: false,
+  schedulable: true,
+  headless: true,
+},
+```
+
+This entry also needs to be added to `PLUGIN_REGISTRY` in the Firebase functions repo (`swarmspaceRouter.ts`). That file lives in the LUMARA/ARCv2.5 repo — the LUMARA task (L-1) handles that addition. You do not need to touch it from here.
+
+#### Task SS-3: Add `/meeting-prep` route to the orchestrator
+
+Open `workers/orchestrator/src/index.js`. Add `'/meeting-prep': runMeetingPrepWorkflow` to the `routes` object, then add the function below. Follow the exact same JS style as the existing 12 routes — no TypeScript, same `callPlugin`/`parallel` helpers.
+
+```javascript
+// 13. /meeting-prep — Pre-meeting intelligence brief
+async function runMeetingPrepWorkflow(ctx) {
+  const attendeeName     = ctx.params.attendee_name    || '';
+  const attendeeCompany  = ctx.params.attendee_company || '';
+  const meetingTitle     = ctx.params.meeting_title    || '';
+  const meetingTime      = ctx.params.meeting_time     || '';
+  const durationMinutes  = ctx.params.meeting_duration_minutes || 0;
+  const meetingLocation  = ctx.params.meeting_location || '';
+  const chronicleCtx     = ctx.params.chronicle_context    || '';
+  const documentSnippets = ctx.params.document_snippets    || '';
+  const webEnabled       = ctx.params.web_search_enabled !== false;
+
+  if (!webEnabled) {
+    const brief = await callPlugin(ctx, 'gemini-flash', {
+      prompt: buildSynthesisPrompt({
+        attendeeName, attendeeCompany, meetingTitle, meetingTime,
+        durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
+        generalSearchResults: '', linkedInPageContent: '',
+      }),
+    });
+    return { brief };
+  }
+
+  // Two sequential brave-search calls — parallel() keys results by plugin_id,
+  // so two brave-search entries would overwrite each other. Keep them sequential.
+  let generalResults = {};
+  try {
+    generalResults = await callPlugin(ctx, 'brave-search', {
+      query: `${attendeeName} ${attendeeCompany}`,
+      count: 6,
+    });
+  } catch (_) { /* non-fatal */ }
+
+  let linkedInPageContent = '';
+  try {
+    const linkedInSearch = await callPlugin(ctx, 'brave-search', {
+      query: `${attendeeName} ${attendeeCompany} LinkedIn`,
+      count: 4,
+    });
+    const linkedInUrl = extractLinkedInUrl(linkedInSearch);
+    if (linkedInUrl) {
+      const pageResult = await callPlugin(ctx, 'jina-reader', { url: linkedInUrl });
+      const content = pageResult?.results?.[0]?.content || '';
+      // Only use if substantive — LinkedIn often blocks scrapers
+      linkedInPageContent = content.length > 200 ? content.slice(0, 3000) : '';
+    }
+  } catch (_) { /* non-fatal */ }
+
+  const brief = await callPlugin(ctx, 'gemini-flash', {
+    prompt: buildSynthesisPrompt({
+      attendeeName, attendeeCompany, meetingTitle, meetingTime,
+      durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
+      generalSearchResults: JSON.stringify(generalResults).slice(0, 2000),
+      linkedInPageContent,
+    }),
+  });
+
+  return { brief };
+}
+
+function extractLinkedInUrl(searchResult) {
+  try {
+    const str = JSON.stringify(searchResult);
+    const match = str.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[^"\s]+/);
+    return match ? match[0] : null;
+  } catch (_) { return null; }
+}
+
+function buildSynthesisPrompt(p) {
+  return `You are preparing a meeting brief. Use only the information provided. Do not invent facts. If a section has no data, omit it entirely.
+
+MEETING: ${p.meetingTitle || 'Upcoming meeting'} · ${p.meetingTime || ''} · ${p.durationMinutes ? p.durationMinutes + ' min' : ''} · ${p.meetingLocation || ''}
+ATTENDEE: ${p.attendeeName} at ${p.attendeeCompany}
+
+PERSONAL CONTEXT (user's own notes and documents — highest priority):
+${p.chronicleCtx || '(none)'}
+${p.documentSnippets || ''}
+
+WEB RESEARCH:
+${p.generalSearchResults || '(none)'}
+
+LinkedIn profile content:
+${p.linkedInPageContent || '(not available)'}
+
+---
+Produce a brief in exactly this format. Omit any section that has no supporting data.
+
+MEETING BRIEF
+─────────────────────────────────
+[meeting title] · [date and time] · [duration] minutes
+[location or video link if available]
+
+ATTENDEE: [full name], [title if found] at [company]
+
+FROM YOUR NOTES
+[bullet points from personal context only; omit this section if personal context is empty]
+
+PERSON INTEL
+[3–5 factual bullet points from web research; omit if no web data]
+
+SUGGESTED TALKING POINTS
+[2–3 bullet points synthesizing personal context with web intel; omit if insufficient data]`;
+}
+```
+
+**Note on `_prism_consent`:** Do not add this manually in the route. The `callPlugin` helper already injects `_prism_consent: true` on every call. It's set once in the helper and covers all plugin calls automatically.
+
+#### Task SS-4: Deploy and verify
+
+1. Deploy the calendar-reader Worker:
+   ```bash
+   cd workers/plugins/calendar-reader
+   npx wrangler deploy
+   npx wrangler secret put SWARMSPACE_INTERNAL_TOKEN
+   ```
+
+2. Deploy the updated orchestrator:
+   ```bash
+   cd workers/orchestrator
+   npx wrangler deploy
+   ```
+
+3. Test the orchestrator route with curl:
+   ```bash
+   curl -X POST https://swarmspace-orchestrator.orbitalai.workers.dev/meeting-prep \
+     -H "Authorization: Bearer YOUR_FIREBASE_ID_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "attendee_name": "Jane Smith",
+       "attendee_company": "Acme Corp",
+       "chronicle_context": "",
+       "document_snippets": "",
+       "web_search_enabled": true
+     }'
+   ```
+   Expected: `{ "workflow": "/meeting-prep", "result": { "brief": "MEETING BRIEF..." } }`
+
+4. Test calendar-reader directly (with a real Google OAuth token):
+   ```bash
+   curl -X POST https://swarmspace-plugin-calendar-reader.orbitalai.workers.dev/invoke \
+     -H "Authorization: Bearer YOUR_SWARMSPACE_INTERNAL_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{ "access_token": "YOUR_GOOGLE_OAUTH_TOKEN", "lookahead_hours": 24 }'
+   ```
+
+### LUMARA TASKS
+
+> Only execute this section if you are in the LUMARA repo.
+
+#### Pre-flight check
+Before writing any code:
+- Search the codebase for existing calls to `swarmspaceRouter` (the Firebase callable). Note the pattern used.
+- Search for existing calls to the orchestrator at `swarmspace-orchestrator.orbitalai.workers.dev`. If LUMARA already calls it directly (e.g. in the agent flow), use that same call pattern for Meeting Prep.
+- Confirm CHRONICLE is queryable from wherever you'll place the new workflow class.
+
+#### Task L-1: Add `calendar-reader` to `swarmspaceRouter.ts` plugin registry
+
+Open `functions/src/functions/swarmspaceRouter.ts`. Add the following entry to `PLUGIN_REGISTRY`:
+
+```typescript
+"calendar-reader": {
+  workerUrl: "https://swarmspace-plugin-calendar-reader.orbitalai.workers.dev",
+  requiredTier: "standard",
+  capabilities: ["calendar", "scheduling", "meetings", "attendees"],
+  description: "Read upcoming calendar events and attendee details from Google Calendar.",
+  exampleQuery: "What meetings do I have today?",
+  privacy_data_required: ["calendar_events", "attendee_names", "attendee_emails", "access_token"],
+  privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
+  dataTypes: ["calendar_events", "attendee_data"],
+  owner: "swarmspace",
+  author: { name: "Orbital AI", type: "first-party" as const },
+  pricing: { model: "included" as const, cost_per_call: null },
+  version: "1.0.0",
+  deployed_at: new Date().toISOString(),
+  rateLimits: { free: 0, standard: 500, premium: 500 },
+  is_read_only: true,
+  is_destructive: false,
+  schedulable: true,
+  headless: true,
+},
+```
+
+Note: `free: 0` in `rateLimits` prevents free-tier users from calling this plugin. The `requiredTier: "standard"` tier check already blocks them, but the zero enforces it at quota level too.
+
+#### Task L-2: Build `MeetingPrepWorkflow`
+
+Create `lib/shared/arc/agents/meeting_prep/meeting_prep_workflow.dart`.
+
+This class is responsible for everything before and after the SwarmSpace call: CHRONICLE lookup, document search, context assembly, calling the orchestrator, and returning a typed result.
+
+**Class interface:**
+```dart
+class MeetingPrepWorkflow {
+  /// Free tier: user provides attendee info manually.
+  Future<MeetingBrief> prepareForAttendee({
+    required String attendeeName,
+    required String attendeeCompany,
+    String? meetingTitle,
+    String? meetingTime,
+    int? durationMinutes,
+    String? location,
+    bool webSearchEnabled = true,
+  });
+
+  /// Standard tier: pull next meeting from calendar first.
+  /// Returns a list because the calendar may have multiple upcoming events —
+  /// let the user pick which one to prep for.
+  Future<List<CalendarEvent>> getUpcomingMeetings({
+    required String googleOAuthAccessToken,
+    int lookaheadHours = 24,
+  });
+}
+```
+
+**CHRONICLE lookup logic:**
+- Query CHRONICLE (Layer 0 entries) for any entry containing `attendeeName` or `attendeeCompany`, case-insensitive
+- Return up to 5 most recent matches
+- Format each as: `"[~Month Year] [first 120 chars of entry text]"`
+- If no matches: return empty string — do not fabricate
+
+**Document search logic:**
+- Search the user's document store for files whose title or extracted content contains `attendeeName` or `attendeeCompany`
+- Return up to 3 matches
+- Format each as: `"[filename]: [one-line reason why it's relevant]"`
+- If no matches: return empty string
+
+**Orchestrator call** (call the orchestrator Worker directly, same pattern as agent-worker calls in existing code):
+```dart
+// POST to https://swarmspace-orchestrator.orbitalai.workers.dev/meeting-prep
+// Authorization: Bearer {Firebase ID token}
+// Body: see Integration Contract params below
+```
+
+Parse the `result.brief` string from the response.
+
+**Return types:**
+```dart
+class MeetingBrief {
+  final String rawMarkdown;
+  final String attendeeName;
+  final String attendeeCompany;
+  final DateTime generatedAt;
+}
+
+class CalendarEvent {
+  final String id;
+  final String title;
+  final String startTime;
+  final int durationMinutes;
+  final String? location;
+  final String? videoLink;
+  final List<CalendarAttendee> attendees;
+}
+
+class CalendarAttendee {
+  final String? name;
+  final String email;
+  final bool isOrganizer;
+}
+```
+
+Throw a `MeetingPrepException` with a user-readable message on any error (network failure, quota exceeded, plugin unavailable). Map SwarmSpace `resource-exhausted` errors to: `"You've reached your daily limit. Try again tomorrow or upgrade to get more calls."`.
+
+#### Task L-3: Build the UI screen
+
+Create `lib/mobile/screens/arc/agents/meeting_prep/meeting_prep_screen.dart`.
+
+**Free tier layout:**
+- Header: "Meeting Prep"
+- Text field: "Who are you meeting?" (attendee name)
+- Text field: "Their company" (company name)
+- Text field (optional, collapsed by default): "Meeting title" — expandable with a "+" tap
+- Toggle: "Search the web for background" (on by default)
+- Primary button: "Prepare Brief"
+- Loading states (sequential, not spinner-only):
+  1. "Searching your notes…"
+  2. "Looking them up online…"
+  3. "Writing your brief…"
+- Result: render `MeetingBrief.rawMarkdown` using the existing markdown widget used elsewhere in the app
+- Error: show `MeetingPrepException.message` with a Retry button
+
+**Standard tier upgrade card:**
+Show this card below the input fields on the free tier screen. Do not build the calendar flow now — this is a placeholder:
+```
+[ 📅  Read your calendar automatically ]
+[ Upgrade to Standard to auto-detect    ]
+[ your next meeting and pull attendees. ]
+[ → Upgrade                            ]
+```
+The calendar selection UI is Phase 2. The card is static for now.
+
+**Navigation:** Add a "Meeting Prep" entry to the Agents screen. Match the icon style and layout of existing agent entries.
+
+#### Task L-4: End-to-end verification
+
+With a free tier test account:
+1. Agents screen → Meeting Prep entry is visible
+2. Enter a name and company where you know CHRONICLE has prior mentions
+3. Tap "Prepare Brief"
+4. All three loading states display in sequence
+5. Brief renders with the "FROM YOUR NOTES" section populated from CHRONICLE
+6. Brief renders with the "PERSON INTEL" section populated from web search
+7. Upgrade card visible below inputs; no calendar UI present
+8. Force a quota error (exhaust free tier calls) → user sees the friendly quota message
+
+### Integration Contract
+
+The source of truth for both repos. Neither side should deviate.
+
+#### Params LUMARA sends to the orchestrator `/meeting-prep`
+
+LUMARA POSTs directly to `https://swarmspace-orchestrator.orbitalai.workers.dev/meeting-prep` with `Authorization: Bearer {Firebase ID token}`.
+
+```json
+{
+  "attendee_name": "Jane Smith",
+  "attendee_company": "Acme Corp",
+  "meeting_title": "Q2 Review",
+  "meeting_time": "2026-05-08T14:00:00-07:00",
+  "meeting_duration_minutes": 45,
+  "meeting_location": "https://meet.google.com/abc-xyz",
+  "chronicle_context": "[~March 2026] Discussed Q2 roadmap, she pushed back on analytics timeline.",
+  "document_snippets": "Acme partnership proposal v2.pdf: References her team's requirements directly.",
+  "web_search_enabled": true
+}
+```
+
+All fields except `attendee_name` are optional. Send empty strings rather than null for missing string fields. Send `0` for missing `meeting_duration_minutes`.
+
+#### Response the orchestrator returns
+
+```json
+{
+  "workflow": "/meeting-prep",
+  "result": {
+    "brief": "MEETING BRIEF\n─────────...\n"
+  }
+}
+```
+
+On error, the orchestrator returns `{ "error": "..." }` with an appropriate HTTP status. LUMARA surfaces the error message to the user.
+
+#### `calendar-reader` plugin call (Standard tier, LUMARA → swarmspaceRouter → Worker)
+
+LUMARA calls `swarmspaceRouter` (Firebase callable) with:
+```json
+{
+  "plugin_id": "calendar-reader",
+  "params": {
+    "access_token": "ya29.GOOGLE_OAUTH_TOKEN",
+    "lookahead_hours": 24,
+    "max_events": 5,
+    "_prism_consent": true
+  }
+}
+```
+
+`_prism_consent: true` is required because `calendar-reader` has `privacyTier: STRUCTURED_PERSONAL`. Without it, swarmspaceRouter blocks the call.
+
+Token refresh is LUMARA's responsibility. If the Worker returns `{ "error": "calendar_auth_expired" }`, LUMARA refreshes the token and retries once before surfacing an error to the user.
+
+#### What LUMARA never sends to SwarmSpace
+
+- Raw CHRONICLE data structures or layer JSON
+- Journal entry text
+- User PII beyond the attendee name and company entered by the user
+- The Google OAuth token is only ever sent to `calendar-reader` — it is never included in orchestrator call params
+
+### Definition of Done
+
+**SwarmSpace is done when:**
+- [ ] `calendar-reader` Worker deployed at `swarmspace-plugin-calendar-reader.orbitalai.workers.dev`
+- [ ] `calendar-reader` entry added to `workers/plugins/REGISTRY_ENTRIES.ts`
+- [ ] `/meeting-prep` route added to `workers/orchestrator/src/index.js` and orchestrator redeployed
+- [ ] Test curl to `/meeting-prep` returns a populated brief for a real attendee
+- [ ] Test curl to `calendar-reader /invoke` returns events for a valid Google OAuth token
+- [ ] `calendar_auth_expired` returned correctly when an invalid token is provided
+
+**LUMARA is done when:**
+- [ ] `calendar-reader` added to `PLUGIN_REGISTRY` in `swarmspaceRouter.ts`
+- [ ] `MeetingPrepWorkflow` builds; CHRONICLE lookup returns results for a known name
+- [ ] Meeting Prep screen is visible in Agents screen
+- [ ] Full free-tier flow produces a brief in the UI for a manually entered attendee
+- [ ] "FROM YOUR NOTES" section appears when CHRONICLE has matches; absent when it doesn't
+- [ ] Upgrade card visible; no calendar picker UI present
+- [ ] Quota error produces a user-friendly message
 
 ---
 

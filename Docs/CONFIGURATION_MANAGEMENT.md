@@ -133,6 +133,10 @@ When running a doc sync or release:
 - `backlog.md` §3.4 Earnings Dashboard — split into ✅ frontend display (verified `earnings.html:178-183`) and ❌ backend population (no Firebase function writes `total_earned`/`pending_payout`/`merit_score`).
 - `backlog.md` §2.3 Credential Isolation — replaced stale "13 plugin Workers" claim with verified in-repo audit: 8 plugin workers + `media-upload` are clean; `social-publisher` still env-bound but unrouted; ~10 catalogue plugins not in this repo.
 
+**Third drift sweep (same day) — sequencing-claim correction + Meeting Prep spec added:**
+- `backlog.md` §5.2 — corrected the "Depends on: orchestrator execution modes landing first" assertion (stale sequential thinking, not a code-level dependency). Verified: `workers/orchestrator/src/index.js` has zero execution-mode awareness; routes are plain POST handlers running pre-baked, read-only chains. §5.3 only matters for agent-assembled chains. Curated workflow DOs (News Briefing, Competitor Research, Trend Spotter, Market Intelligence) can be built directly against the live orchestrator routes without §5.3.
+- `backlog.md` §22 MEETING PREP AGENT — added full implementation spec inline. Cross-repo: SwarmSpace owns `calendar-reader` plugin Worker + `/meeting-prep` orchestrator route; LUMARA owns `swarmspaceRouter.ts` registry entry + `MeetingPrepWorkflow` class + UI screen + CHRONICLE/document lookup + OAuth token management. Integration Contract is the source of truth. DO auto-fire (recurring meeting briefs) is Phase 2, will live as a §5.2 variant.
+
 ---
 
 ### 2026-04-19 — Community launch gate cleared + workflow fixes (v1.5.0)
