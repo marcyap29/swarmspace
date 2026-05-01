@@ -4,10 +4,11 @@
 > **Overwrite this section at session start. Ground truth only — no prose. Verify against `git status` before writing.**
 
 - **Branch:** `main`
-- **Working tree:** Clean — verified 2026-04-23
-- **Last commit:** `d293bd5` — chore: remove unused functions (Ollama, AssemblyAI, Wispr)
-- **planner.md:** Empty — no active tasks
-- **Next action:** Pull from `backlog.md`; top open items: §8 flip `useOrchestrator` flag (`_LUMARA/lib/shared/state/feature_flags.dart:22`), §2.3 credential isolation (4 workers), §3.3 Stripe Connect wiring
+- **Working tree:** Modified: `Docs/context.md`, `Planner.md`. Untracked: `swarmspace.code-workspace`. Verified 2026-04-30.
+- **Last commit:** `4311c49` — security: credential isolation + remove orphaned workers
+- **Deployed:** All 23 Firebase functions live as of 2026-04-24
+- **planner.md:** Cleaned — no active tasks
+- **Next action:** Pull from `backlog.md`; top open items: §3.3 Stripe Connect wiring, §5.3 Orchestrator Execution Modes, §4.4 Catalogue Updates endpoint
 
 ---
 
@@ -48,6 +49,25 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 - When a session ends, leave a final "Open items / handoff" line on the most recent entry so the next agent knows where to pick up.
 - **At session start:** Run `git status` and update the Current State section at the top before doing anything else. Never trust prior session notes about uncommitted work without verifying.
 - **Close the loop:** When work that was logged as "not yet committed" gets committed, append `→ committed [hash]` inline to the original outcome line. Do not delete it.
+
+---
+
+## SESSION — 2026-04-24 — Claude Sonnet 4.6 (Claude Code) — Launch day: OAuth fix, credential isolation, deploy
+
+### 2026-04-24 — Credential isolation + cleanup — committed `4311c49`
+- **Files touched:** `functions/src/functions/swarmspaceRouter.ts`, `workers/plugins/github-public/src/index.ts`, `workers/plugins/jina-reader/src/index.ts`, `workers/plugins/pubmed/src/index.ts`, `workers/plugin-registry/` (deleted), `Docs/context.md`, `planner.md`
+- **Decisions:** Router now injects GITHUB_TOKEN, JINA_API_KEY, NCBI_API_KEY per-request. Workers removed env declarations. social-publisher removed from plugin registry (stateful OAuth, doesn't fit plugin model). plugin-registry worker deleted (stub with 3/22 plugins, orphaned). context.md improved with Current State block + stale entry conventions.
+- **Outcome:** Committed and deployed. All 23 functions live.
+
+### 2026-04-24 — OAuth login fix
+- **Root cause:** Firebase web API key had HTTP referrer restrictions that blocked `arc-epi.firebaseapp.com` (Firebase's own auth handler domain). Removed all referrer restrictions from the API key in Google Cloud Console → APIs & Services → Credentials.
+- **Outcome:** OAuth login working on swarmspace.app.
+
+### 2026-04-24 — Firebase secrets set and deployed
+- **Secrets set:** GITHUB_TOKEN, JINA_API_KEY, NCBI_API_KEY via `firebase functions:secrets:set`
+- **Deleted:** getAssemblyAIToken, getWisprApiKey, proxyOllama (unused, removed in prior session)
+- **Outcome:** Full deploy complete. SwarmSpace launched. LinkedIn announcement posted.
+- **Open items / handoff:** Next priorities from backlog: §3.3 Stripe Connect wiring, §5.2 Durable Objects Phase 0, §4.4 Catalogue Updates endpoint. LUMARA: useOrchestrator flag flipped by user on 2026-04-24.
 
 ---
 

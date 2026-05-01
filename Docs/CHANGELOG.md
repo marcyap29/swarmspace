@@ -1,7 +1,34 @@
 # SwarmSpace Changelog
 
-**Version:** 1.5.0
-**Last Updated:** 2026-04-19
+**Version:** 1.5.1
+**Last Updated:** 2026-05-01
+
+---
+
+## [1.5.1] - 2026-05-01
+
+### Security
+
+- **Credential isolation (§2.3)** — `swarmspaceRouter` now injects `GITHUB_TOKEN`, `JINA_API_KEY`, and `NCBI_API_KEY` per-request into worker bodies. `github-public`, `jina-reader`, and `pubmed` workers read credentials from request body; env declarations removed. Plugin Workers no longer hold long-lived secrets. Commit `4311c49`.
+- **Gemini API key removed from repo + history** — Server-side Gemini key was redacted from `functions/SETUP_API_KEYS.md` and rewritten across all 137 commits via `git filter-repo`; force-pushed to `origin/main`. `scripts/get-test-token.js` removed from tracking and added to `.gitignore`. Commit `af723ea`. **User action:** rotate the key in Google AI Studio (force-push removes from future clones but the key may have been cached).
+
+### Added
+
+- **§16 Roles browsing page** (`roles.html`) — End-user surface for Work Chains. 6 cards (5 Free, 1 Standard) with role name + tagline, expandable plugin chain detail, tier badge, and signed-in/guest CTAs. Linked from `index.html` nav. Commit `cd71c9c`.
+- **§12 Phase 2 discovery agent JS complete** — `index.html` discovery agent now handles `requires_paid` chains, mobile 375px breakpoint, 3-turn gate with signup link, 429 rate-limit message with signup link, and `.chain-paid` styling. Commit `0e2e85c`.
+- **`Docs/Agents.md` cross-repo dependency rule** — Every SwarmSpace feature must explicitly state whether it has a LUMARA dependency. References `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` and the `useOrchestrator` flag location. Commit `36fa6e3`.
+
+### Changed
+
+- **`Docs/claude.md` → v1.5.1** — Removed all `Docs/RULE.md` references (RULE.md was deleted in 1.5.0 but pointers remained). Removed all `overview.md` references (canonical filename is `Swarmspace_Overview.md`). Refreshed Backlog Sections Reference table (§12 Phase 2 done, §16 done). Fixed version footer (was 1.3.0). Updated File Structure to include `Agents.md`, `context.md`, `CHRONICLE.md`, and `roles.html`.
+- **`Docs/CONFIGURATION_MANAGEMENT.md`** — Key Documents table cleaned of stale references; inventory refreshed; `roles.html` and `Docs/context.md` added.
+
+### Removed
+
+- **`Planner.md` (uppercase)** — Removed from git index. Case-collided with lowercase `planner.md` (the canonical filename used throughout the SOPs). Two distinct blobs were tracked despite macOS case-insensitive FS hiding the conflict; would have broken Linux/CI checkouts.
+- **Unused Cloud Functions** — Deleted `getAssemblyAIToken`, `getWisprApiKey`, `proxyOllama`. Commit `d293bd5`.
+- **Orphaned `workers/plugin-registry/`** — Stub worker with 3/22 plugins, not wired to any frontend or Firebase function. Commit `4311c49`.
+- **`social-publisher` plugin** — Removed from plugin registry; stateful OAuth model doesn't fit the stateless plugin contract. Commit `4311c49`.
 
 ---
 

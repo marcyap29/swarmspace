@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-04-19
+**Last Updated:** 2026-05-01
 **Status:** ✅ Synced
 
 ---
@@ -15,12 +15,13 @@ Tracks changes between the repository codebase and documentation, ensuring docs 
 
 | Entry point | Purpose | When to read |
 |-------------|---------|--------------|
-| **overview.md** | Purpose, flow, orientation for users/agents | First read; what is SwarmSpace |
+| **Swarmspace_Overview.md** | Purpose, flow, orientation for users/agents | First read; what is SwarmSpace |
 | **README.md** | Setup guide (Firebase, Stripe, Vercel) | Deploy instructions |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | API integration |
 | **architecture.md** | SwarmStore architecture & hosting | Broader vision; plugin format |
-| **Docs/claude.md** | AI context guide; Documentation & Config Role | Onboarding; doc workflows |
-| **Docs/RULE.md** | Cursor/agent rules (API, tiers, security) | Day-to-day agent guidance |
+| **Docs/claude.md** | AI context guide; SOPs; Documentation & Config Role | Onboarding; doc workflows |
+| **Docs/Agents.md** | Cross-repo dependency check (LUMARA ↔ SwarmSpace) | Before/after every feature touching shared functions |
+| **Docs/context.md** | Session handoff log | Read at session start; append after each meaningful action |
 | **Docs/CONFIGURATION_MANAGEMENT.md** (this file) | Docs inventory and change log | Sync status; what changed |
 | **Docs/CHANGELOG.md** | Version history | What changed and when |
 | **Docs/FEATURES.md** | Feature list | Capabilities |
@@ -49,7 +50,7 @@ When running a doc sync or release:
 
 | Document | Location | Last Reviewed | Status | Notes |
 |----------|----------|---------------|--------|-------|
-| overview.md | root | 2026-03-01 | ✅ Synced | |
+| Swarmspace_Overview.md | root | 2026-03-01 | ✅ Synced | Renamed from overview.md (canonical filename) |
 | README.md | root | 2026-04-06 | ✅ Synced | Firebase submit/admin; file structure |
 | SWARMSPACE_API_CONTEXT.md | root | 2026-04-19 | ✅ Synced | Full Workflow/Work Chain API section added (12 orchestrator routes) |
 | architecture.md | root | 2026-04-14 | ✅ Synced | v1.4.1 full rewrite — PRISM, discovery, founding dev, orchestrator, 22 plugins, 10 collections |
@@ -65,7 +66,9 @@ When running a doc sync or release:
 | Docs/PRIVACY.md | Docs/ | 2026-04-06 | ✅ Synced | Privacy policy (Markdown) |
 | DEVELOPER_GUIDE.md | root | 2026-04-04 | ✅ Synced | Developer / manifest reference |
 | Docs/PRISM.md | Docs/ | 2026-04-04 | ✅ Synced | PRISM reference |
-| Docs/claude.md | Docs/ | 2026-04-19 | ✅ Synced | v1.4.0: earnings.html reference, Backlog Sections Reference table |
+| Docs/claude.md | Docs/ | 2026-05-01 | ✅ Synced | v1.5.1: RULE.md/overview.md references removed, §12/§16 status updated, file structure refreshed |
+| Docs/context.md | Docs/ | 2026-05-01 | ✅ Synced | Session handoff log; updated with launch-day and post-launch sessions |
+| roles.html | root | 2026-04-19 | ✅ Synced | §16 Roles browsing page (6 cards: 5 Free, 1 Standard) |
 | Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-04-06 | ✅ Synced | |
 | Docs/CHANGELOG.md | Docs/ | 2026-04-06 | ✅ Synced | |
 | Docs/FEATURES.md | Docs/ | 2026-04-06 | ✅ Synced | |
@@ -94,6 +97,27 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-05-01 — SOP doc-drift sweep (v1.5.1)
+
+**Action:** Cleared stale references in SOP layer, removed case-collision risk for `planner.md`, recorded post-launch commits.
+
+**Changes:**
+- Deleted: `Planner.md` (uppercase) from git index — case collision with lowercase `planner.md` would break Linux/CI checkouts. Lowercase is canonical (matches all SOP wording).
+- Updated: `Docs/claude.md` v1.4.0 → **v1.5.1** — removed all `Docs/RULE.md` references (RULE.md was deleted in 1.5.0 but pointers lingered in Quick Reference, File Structure, Reference files); removed all `overview.md` references (canonical filename is `Swarmspace_Overview.md`); refreshed Backlog Sections Reference (§12 Phase 2 ✅, §16 Roles ✅); fixed version footer (was 1.3.0, now 1.5.1); added `Docs/Agents.md`, `Docs/context.md`, `Docs/CHRONICLE.md`, and `roles.html` to file structure.
+- Updated: `Docs/CONFIGURATION_MANAGEMENT.md` (this file) — Key Documents table cleaned; inventory refreshed; `roles.html` added; `Docs/context.md` row added.
+- Added: `Docs/CHANGELOG.md` v1.5.1 entry covering 7 post-launch commits since 1.5.0.
+
+**Recorded post-launch commits (Apr 19 → Apr 24):**
+- `0e2e85c` §12 Phase 2 discovery agent JS complete
+- `af723ea` Gemini API key removed from repo + history rewrite
+- `ca18197` context.md security remediation notes
+- `cd71c9c` §16 Roles browsing page + Firebase timeout investigation
+- `36fa6e3` LUMARA cross-repo dependency check rule added to Agents.md
+- `d293bd5` removed unused functions (Ollama, AssemblyAI, Wispr)
+- `4311c49` credential isolation (per-request token injection) + orphaned worker cleanup
+
+---
 
 ### 2026-04-19 — Community launch gate cleared + workflow fixes (v1.5.0)
 

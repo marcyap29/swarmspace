@@ -1,7 +1,7 @@
 # SwarmSpace Documentation Context Guide
 
-**Version:** 1.4.0
-**Last Updated:** April 17, 2026
+**Version:** 1.5.1
+**Last Updated:** May 1, 2026
 **Current Branch:** `main`
 
 *This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
@@ -207,11 +207,10 @@ For structural changes (new functions, ownership changes), update `LUMARA_SWARMS
 |----------|---------|------|
 | **planner.md** | Active planning scratch pad — current tasking | `planner.md` |
 | **backlog.md** | Backlog items and future features | `backlog.md` |
-| **overview.md** | SwarmSpace purpose, flow, and orientation for users/agents | `overview.md` |
+| **Swarmspace_Overview.md** | SwarmSpace purpose, flow, and orientation for users/agents | `Swarmspace_Overview.md` |
 | **README.md** | Setup guide (Firebase, Stripe, Vercel) | `README.md` |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | `SWARMSPACE_API_CONTEXT.md` |
 | **architecture.md** | SwarmStore architecture & hosting | `architecture.md` |
-| **Docs/RULE.md** | Cursor/agent rules (API, security, workflows) | `Docs/RULE.md` |
 | **Docs/CONFIGURATION_MANAGEMENT.md** | Docs inventory and change tracking | `Docs/CONFIGURATION_MANAGEMENT.md` |
 | **Docs/CHANGELOG.md** | Version history | `Docs/CHANGELOG.md` |
 | **Docs/FEATURES.md** | Feature list | `Docs/FEATURES.md` |
@@ -246,9 +245,9 @@ Key backlog sections for orientation when picking up work:
 | §5.3 | Orchestrator Execution Modes (plan/auto/bubble/interactive) | Open — blocks §5.2 and Work Chain chaining |
 | §10 | Agent Wallet System — per-agent credit delegation + policy engine | Open (Phase 0–4 designed) |
 | §11 | Session Broker — A2A gateway between external agents and plugins | Open (future, after orchestrator modes) |
-| §12 | Front-Page Discovery Agent | Phase 1 ✅ done; Phase 2 partial (JS wiring remaining); Phase 3 open |
+| §12 | Front-Page Discovery Agent | Phase 1 ✅ done; Phase 2 ✅ done (committed `0e2e85c`); Phase 3 open |
 | §15 | Work Chains Catalogue — 6 live, 2 near-complete (need CRM/email plugin) | Partial |
-| §16 | Roles Browsing Page — end-user surface for Work Chains | Open |
+| §16 | Roles Browsing Page — end-user surface for Work Chains | ✅ done (committed `cd71c9c`) |
 
 ---
 
@@ -275,7 +274,7 @@ This is where any and all backlog items and future features are stored that you 
 ## Core Documentation
 
 ### SwarmSpace Overview
-- **overview.md** — Purpose, user flow, account model, orientation for users and AI agents.
+- **Swarmspace_Overview.md** — Purpose, user flow, account model, orientation for users and AI agents.
 - **README.md** — Setup, deploy, test flow. Firebase, Stripe, Vercel env vars.
 - **SWARMSPACE_API_CONTEXT.md** — Endpoints (swarmspaceRouter, swarmspacePluginStatus), tiers (Free/Standard/Premium), request schemas. Auth: Firebase ID token. Never commit API keys.
 
@@ -287,14 +286,14 @@ This is where any and all backlog items and future features are stored that you 
 swarmspace/
 ├── planner.md          ← Active planning scratch pad (read on startup)
 ├── backlog.md          ← Backlog items and future features
-├── overview.md         ← Orientation for users and agents
-├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html, ast10.html, founding-developers.html, developer-guide.html
+├── Swarmspace_Overview.md  ← Orientation for users and agents
+├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html, ast10.html, founding-developers.html, developer-guide.html, roles.html
 ├── DEVELOPER_GUIDE.md
 ├── api/create-checkout.js, api/stripe-webhook.js
 ├── vercel.json
 ├── SWARMSPACE_API_CONTEXT.md, architecture.md
 └── Docs/
-    ├── claude.md, RULE.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, FEATURES.md
+    ├── claude.md, Agents.md, context.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, CHRONICLE.md, FEATURES.md
     ├── backend.md, PRISM.md, PRIVACY.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
     └── bugtracker/
 ```
@@ -450,7 +449,8 @@ For each change, update the appropriate documents (only where relevant):
 - `SWARMSPACE_API_CONTEXT.md` — API reference for LUMARA integration
 - `architecture.md` — SwarmStore architecture and hosting
 - `Docs/claude.md` — context guide and role definitions
-- `Docs/RULE.md` — Cursor/agent rules for SwarmSpace
+- `Docs/Agents.md` — cross-repo dependency check rule (LUMARA ↔ SwarmSpace)
+- `Docs/context.md` — agent handoff log (read at session start)
 - `Docs/CONFIGURATION_MANAGEMENT.md` — docs inventory and change log
 - `Docs/CHANGELOG.md` — version history
 - `Docs/FEATURES.md` — feature catalog
@@ -589,4 +589,4 @@ Work continuously and comprehensively. Provide complete technical analysis. NO A
 ---
 
 *SwarmSpace — Developer dashboard and plugin marketplace. API layer for LUMARA.*
-*Version 1.3.0 — SOPs adapted from LUMARA/ARC doc-config workflow.*
+*Version 1.5.1 — SOPs adapted from LUMARA/ARC doc-config workflow.*
