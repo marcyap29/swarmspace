@@ -1,0 +1,24 @@
+name = "swarmspace-durable-object-news-briefing"
+main = "src/index.ts"
+compatibility_date = "2026-03-01"
+
+[vars]
+FIREBASE_PROJECT_ID = "arc-epi"
+ORCHESTRATOR_URL = "https://swarmspace-orchestrator.orbitalai.workers.dev"
+
+[[durable_objects.bindings]]
+name = "NEWS_BRIEFING"
+class_name = "NewsBriefingDO"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["NewsBriefingDO"]
+
+# Required secrets (set via `wrangler secret put`):
+#   SWARMSPACE_INTERNAL_TOKEN          — service token for orchestrator calls
+#   FIREBASE_API_KEY                   — Firebase Web API key for token verification
+#   FIRESTORE_SERVICE_ACCOUNT_JSON     — base64-encoded service account JSON for Firestore reads
+#
+# Required vars (set above in [vars]):
+#   FIREBASE_PROJECT_ID                — Firebase project id (= "arc-epi")
+#   ORCHESTRATOR_URL                   — base URL of the orchestrator Worker
