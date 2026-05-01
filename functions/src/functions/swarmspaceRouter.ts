@@ -702,9 +702,45 @@ export const swarmspaceRouter = onCall(
     secrets: [SWARMSPACE_INTERNAL_TOKEN, LLM_SETTINGS_ENCRYPTION_KEY, GITHUB_TOKEN, JINA_API_KEY, NCBI_API_KEY],
   },
   async (request) => {
-    // Step 1: Verify the user is logged in (Firebase handles token validation automatically).
-    // This is exactly the same pattern as your existing proxyGemini function.
-    const { userId, isPremium, user } = await enforceAuth(request);
+    // Step 1: Authentication.
+    //
+    // Two paths:
+    //   (a) Normal: Firebase ID token → enforceAuth (existing behavior, used by LUMARA app)
+    //   (b) Service-token bypass: request.data._service_token matches SWARMSPACE_INTERNAL_TOKEN
+    //       AND request.data._run_as_uid is provided → skip enforceAuth, run as that uid.
+    //       Used by Durable Object alarms (recurring agents) where a user-bound Firebase
+    //       ID token isn't available at fire time. Internal infrastructure only — the
+    //       service token never leaves SwarmSpace.
+    let userId: string;
+    let isPremium: boolean;
+    let user: Awaited<ReturnType<typeof enforceAuth>>["user"];
+
+    const reqServiceToken = request.data?._service_token;
+    const reqRunAsUid = request.data?._run_as_uid;
+    if (reqServiceToken !== undefined || reqRunAsUid !== undefined) {
+      if (reqServiceToken !== SWARMSPACE_INTERNAL_TOKEN.value()) {
+        throw new HttpsError("permission-denied", "invalid service token");
+      }
+      if (typeof reqRunAsUid !== "string" || !reqRunAsUid) {
+        throw new HttpsError("invalid-argument", "_run_as_uid is required when _service_token is set");
+      }
+      const db = getFirestore();
+      const userSnap = await db.collection("users").doc(reqRunAsUid).get();
+      if (!userSnap.exists) {
+        throw new HttpsError("not-found", `user ${reqRunAsUid} not found`);
+      }
+      user = userSnap.data() as typeof user;
+      userId = reqRunAsUid;
+      isPremium = (user as { isPremium?: boolean; plan?: string }).isPremium === true
+        || (user as { plan?: string }).plan === "pro"
+        || (user as { plan?: string }).plan === "premium";
+      logger.info(`SwarmSpace router: SERVICE-TOKEN call for uid=${userId}`);
+    } else {
+      const auth = await enforceAuth(request);
+      userId = auth.userId;
+      isPremium = auth.isPremium;
+      user = auth.user;
+    }
 
     // Step 2: Parse the request — LUMARA sends { plugin_id, params }
     const { plugin_id, params } = request.data ?? {};

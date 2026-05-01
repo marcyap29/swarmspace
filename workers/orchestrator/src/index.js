@@ -1,11 +1,16 @@
 // SwarmSpace Orchestration Worker
 // Routes: /research, /competitor, /marketing, /plugins, /academic,
 //         /news-brief, /market-scan, /location-brief, /health-research,
-//         /tech-scout, /fact-check, /content-brief
+//         /tech-scout, /fact-check, /content-brief, /meeting-prep
 //
 // Each route chains multiple free-tier SwarmSpace plugins into a single
 // workflow. Authenticated via Firebase ID token (passed through to
 // swarmspaceRouter).
+//
+// DO-initiated calls (e.g. recurring News Briefing) carry _service_token +
+// _run_as_uid in the body instead of a Firebase ID token; these are
+// forwarded to swarmspaceRouter which validates the service token and
+// runs the call as the named uid. Used by Durable Object alarms.
 
 export default {
   async fetch(request, env) {
@@ -36,6 +41,8 @@ export default {
       routerUrl: env.SWARMSPACE_ROUTER_URL,
       query: body.query || body.topic || '',
       params: body,
+      serviceToken: body._service_token || null,
+      runAsUid: body._run_as_uid || null,
     };
 
     const routes = {
@@ -51,6 +58,7 @@ export default {
       '/tech-scout':     runTechScoutWorkflow,
       '/fact-check':     runFactCheckWorkflow,
       '/content-brief':  runContentBriefWorkflow,
+      '/meeting-prep':   runMeetingPrepWorkflow,
     };
 
     const handler = routes[url.pathname];
@@ -75,13 +83,20 @@ export default {
 async function callPlugin(ctx, pluginId, params) {
   // _prism_consent: true — user consented by initiating the workflow.
   // This is a first-party orchestrator; consent is implicit in the trigger.
+  const data = { plugin_id: pluginId, params: { ...params, _prism_consent: true } };
+  // DO-initiated calls (alarm-fired): propagate service-token + run-as-uid.
+  // swarmspaceRouter validates the token and bypasses Firebase ID-token auth.
+  if (ctx.serviceToken && ctx.runAsUid) {
+    data._service_token = ctx.serviceToken;
+    data._run_as_uid = ctx.runAsUid;
+  }
   const res = await fetch(ctx.routerUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': ctx.token,
     },
-    body: JSON.stringify({ data: { plugin_id: pluginId, params: { ...params, _prism_consent: true } } }),
+    body: JSON.stringify({ data }),
   });
 
   if (!res.ok) {
@@ -318,4 +333,112 @@ async function runContentBriefWorkflow(ctx) {
   });
 
   return { research: results, brief };
+}
+
+// 13. /meeting-prep — Pre-meeting intelligence brief
+// LUMARA assembles CHRONICLE + document context client-side and passes it
+// as string params here. Only external lookups (web + LinkedIn) run inside
+// SwarmSpace. Calendar reads (Standard tier) happen in LUMARA via
+// swarmspaceRouter -> calendar-reader plugin BEFORE this route is invoked.
+async function runMeetingPrepWorkflow(ctx) {
+  const attendeeName     = ctx.params.attendee_name    || '';
+  const attendeeCompany  = ctx.params.attendee_company || '';
+  const meetingTitle     = ctx.params.meeting_title    || '';
+  const meetingTime      = ctx.params.meeting_time     || '';
+  const durationMinutes  = ctx.params.meeting_duration_minutes || 0;
+  const meetingLocation  = ctx.params.meeting_location || '';
+  const chronicleCtx     = ctx.params.chronicle_context    || '';
+  const documentSnippets = ctx.params.document_snippets    || '';
+  const webEnabled       = ctx.params.web_search_enabled !== false;
+
+  if (!webEnabled) {
+    const brief = await callPlugin(ctx, 'gemini-flash', {
+      prompt: buildMeetingPrepPrompt({
+        attendeeName, attendeeCompany, meetingTitle, meetingTime,
+        durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
+        generalSearchResults: '', linkedInPageContent: '',
+      }),
+    });
+    return { brief };
+  }
+
+  // Two sequential brave-search calls — parallel() keys results by plugin_id,
+  // so two brave-search entries would overwrite each other. Keep them sequential.
+  let generalResults = {};
+  try {
+    generalResults = await callPlugin(ctx, 'brave-search', {
+      query: `${attendeeName} ${attendeeCompany}`,
+      count: 6,
+    });
+  } catch (_) { /* non-fatal */ }
+
+  let linkedInPageContent = '';
+  try {
+    const linkedInSearch = await callPlugin(ctx, 'brave-search', {
+      query: `${attendeeName} ${attendeeCompany} LinkedIn`,
+      count: 4,
+    });
+    const linkedInUrl = extractLinkedInUrl(linkedInSearch);
+    if (linkedInUrl) {
+      const pageResult = await callPlugin(ctx, 'jina-reader', { url: linkedInUrl });
+      const content = pageResult?.results?.[0]?.content || '';
+      // Only use if substantive — LinkedIn often blocks scrapers
+      linkedInPageContent = content.length > 200 ? content.slice(0, 3000) : '';
+    }
+  } catch (_) { /* non-fatal */ }
+
+  const brief = await callPlugin(ctx, 'gemini-flash', {
+    prompt: buildMeetingPrepPrompt({
+      attendeeName, attendeeCompany, meetingTitle, meetingTime,
+      durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
+      generalSearchResults: JSON.stringify(generalResults).slice(0, 2000),
+      linkedInPageContent,
+    }),
+  });
+
+  return { brief };
+}
+
+function extractLinkedInUrl(searchResult) {
+  try {
+    const str = JSON.stringify(searchResult);
+    const match = str.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[^"\s]+/);
+    return match ? match[0] : null;
+  } catch (_) { return null; }
+}
+
+function buildMeetingPrepPrompt(p) {
+  return `You are preparing a meeting brief. Use only the information provided. Do not invent facts. If a section has no data, omit it entirely.
+
+MEETING: ${p.meetingTitle || 'Upcoming meeting'} · ${p.meetingTime || ''} · ${p.durationMinutes ? p.durationMinutes + ' min' : ''} · ${p.meetingLocation || ''}
+ATTENDEE: ${p.attendeeName} at ${p.attendeeCompany}
+
+PERSONAL CONTEXT (user's own notes and documents — highest priority):
+${p.chronicleCtx || '(none)'}
+${p.documentSnippets || ''}
+
+WEB RESEARCH:
+${p.generalSearchResults || '(none)'}
+
+LinkedIn profile content:
+${p.linkedInPageContent || '(not available)'}
+
+---
+Produce a brief in exactly this format. Omit any section that has no supporting data.
+
+MEETING BRIEF
+─────────────────────────────────
+[meeting title] · [date and time] · [duration] minutes
+[location or video link if available]
+
+ATTENDEE: [full name], [title if found] at [company]
+
+FROM YOUR NOTES
+[bullet points from personal context only; omit this section if personal context is empty]
+
+PERSON INTEL
+[3–5 factual bullet points from web research; omit if no web data]
+
+SUGGESTED TALKING POINTS
+[2–3 bullet points synthesizing personal context with web intel; omit if insufficient data]`;
 }
