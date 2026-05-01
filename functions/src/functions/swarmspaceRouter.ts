@@ -23,6 +23,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { createHash } from "crypto";
 import { enforceAuth, isAdminEmail } from "../authGuard";
 import { loadUserLlmSettings } from "../userLlmSettings";
 import { LLM_SETTINGS_ENCRYPTION_KEY } from "../config";
@@ -1035,14 +1036,123 @@ export const swarmspacePluginStatus = onCall(
 // ── Plugin catalog endpoint ────────────────────────────────────────────────────
 // Returns full catalog with metadata + availability for the current user.
 // Used by the SwarmSpace catalog UI and by the orchestrator for capability routing.
+//
+// §4.4 /catalogue/updates — optional delta-sync params:
+//   - since (ISO 8601 string): when provided, returns only plugins with
+//     deployed_at > since, sorted descending. Triggers per-UID rate limit
+//     (1 successful call per 6 hours, mirrors discovery_rate_limits pattern).
+//   - interest_tags (string[], max 20): when provided, capability-tag matching is
+//     done over SHA-256 hashes (lowercased input, first 16 hex chars). LUMARA
+//     never sends raw tag strings on the wire; the server hashes plugin
+//     capabilities the same way and intersects. Note: server still computes the
+//     hashes server-side, so the privacy benefit is wire-level only — this is
+//     the design intent per backlog §4.4.
+//
+// Backwards-compatible: when neither param is provided, behavior is unchanged
+// (full catalog, no rate limit).
+const CATALOGUE_UPDATES_WINDOW_MS = 6 * 60 * 60 * 1000; // 6 hours
+const CATALOGUE_UPDATES_MAX = 1; // 1 successful call per window
+
+/**
+ * Hashes a tag string for capability/interest matching. Mirrors the hashIp
+ * pattern in swarmspaceDiscoveryAgent.ts:113-115. Lowercases input first so
+ * casing differences between LUMARA-supplied tags and registry capabilities
+ * do not cause false misses.
+ */
+function hashTag(tag: string): string {
+  return createHash("sha256").update(tag.toLowerCase()).digest("hex").slice(0, 16);
+}
+
 export const swarmspacePluginCatalog = onCall(
   {},
   async (request) => {
-    const { isPremium, user } = await enforceAuth(request);
+    const { isPremium, user, userId } = await enforceAuth(request);
     const userTier = effectiveUserTier(request, user, isPremium);
 
+    // ── Parse optional §4.4 delta-sync params ───────────────────────────────
+    const data = (request.data || {}) as { since?: unknown; interest_tags?: unknown };
+    const sinceRaw = data.since;
+    const interestTagsRaw = data.interest_tags;
+
+    let sinceIso: string | null = null;
+    if (sinceRaw !== undefined && sinceRaw !== null) {
+      if (typeof sinceRaw !== "string") {
+        throw new HttpsError("invalid-argument", "invalid since timestamp");
+      }
+      const parsed = new Date(sinceRaw);
+      if (isNaN(parsed.getTime())) {
+        throw new HttpsError("invalid-argument", "invalid since timestamp");
+      }
+      sinceIso = sinceRaw;
+    }
+
+    let interestTags: string[] | null = null;
+    if (interestTagsRaw !== undefined && interestTagsRaw !== null) {
+      if (
+        !Array.isArray(interestTagsRaw) ||
+        interestTagsRaw.length > 20 ||
+        !interestTagsRaw.every((t) => typeof t === "string")
+      ) {
+        throw new HttpsError("invalid-argument", "invalid interest_tags");
+      }
+      interestTags = interestTagsRaw as string[];
+    }
+
+    const isFiltered = sinceIso !== null || interestTags !== null;
+
+    // ── Per-UID rate limit (only when `since` is provided) ──────────────────
+    // Mirrors the discovery_rate_limits pattern: { count, windowStart }, reset
+    // when (now - windowStart) exceeds the window.
+    if (sinceIso !== null) {
+      const db = getFirestore();
+      const ref = db.collection("catalogue_update_rate_limits").doc(userId);
+      const doc = await ref.get();
+      const now = Date.now();
+
+      if (!doc.exists) {
+        await ref.set({ count: 1, windowStart: now });
+      } else {
+        const rl = doc.data()!;
+        const elapsed = now - (rl.windowStart || 0);
+        if (elapsed > CATALOGUE_UPDATES_WINDOW_MS) {
+          // Reset window
+          await ref.set({ count: 1, windowStart: now });
+        } else if ((rl.count || 0) >= CATALOGUE_UPDATES_MAX) {
+          throw new HttpsError(
+            "resource-exhausted",
+            "catalogue updates limited to 1 per 6 hours"
+          );
+        } else {
+          await ref.update({ count: FieldValue.increment(1) });
+        }
+      }
+    }
+
     const registry = await getMergedRegistry();
-    const plugins = Object.entries(registry).map(([pluginId, config]) => ({
+    let entries = Object.entries(registry);
+
+    // ── since filter: deployed_at > since (ISO lexicographic compare) ───────
+    if (sinceIso !== null) {
+      const sinceCmp = sinceIso;
+      entries = entries.filter(([, config]) => (config.deployed_at || "") > sinceCmp);
+      // Sort descending by deployed_at
+      entries.sort(([, a], [, b]) => (b.deployed_at || "").localeCompare(a.deployed_at || ""));
+    }
+
+    // ── interest_tags filter: hashed capability ∩ hashed interest tags ──────
+    // Privacy note: hashing happens both client-side (LUMARA) and server-side
+    // (here, over plugin capabilities), so the hash is trivially reversible
+    // server-side. The benefit is wire-level: raw tag strings never travel
+    // across the network from LUMARA → SwarmSpace. Design intent per §4.4.
+    if (interestTags !== null) {
+      const interestHashes = new Set(interestTags.map(hashTag));
+      entries = entries.filter(([, config]) => {
+        const capHashes = (config.capabilities || []).map(hashTag);
+        return capHashes.some((h) => interestHashes.has(h));
+      });
+    }
+
+    const plugins = entries.map(([pluginId, config]) => ({
       plugin_id: pluginId,
       description: config.description,
       required_tier: config.requiredTier,
@@ -1061,13 +1171,24 @@ export const swarmspacePluginCatalog = onCall(
       source: config.source ?? "first-party",
     }));
 
-    return {
+    const baseResponse = {
       user_tier: userTier,
       catalog_version: CATALOG_VERSION,
       plugins,
       chains: CHAIN_DEFINITIONS,
       upgrade_url: "https://swarmspace.ai/upgrade",
     };
+
+    if (isFiltered) {
+      return {
+        ...baseResponse,
+        filtered: true,
+        since: sinceIso,
+        count: plugins.length,
+      };
+    }
+
+    return baseResponse;
   }
 );
 
