@@ -63,6 +63,20 @@
     description: "Fetch and extract any URL content",
     exampleQuery: "Read https://example.com",
   },
+  "calendar-reader": {
+    workerUrl: "https://swarmspace-plugin-calendar-reader.orbitalai.workers.dev",
+    requiredTier: "standard",
+    capabilities: ["calendar", "scheduling", "meetings", "attendees"],
+    description: "Read upcoming calendar events and attendee details from Google Calendar.",
+    exampleQuery: "What meetings do I have today?",
+    privacy_data_required: ["calendar_events", "attendee_names", "attendee_emails", "access_token"],
+    privacyTier: "STRUCTURED_PERSONAL",
+    dataTypes: ["calendar_events", "attendee_data"],
+    is_read_only: true,
+    is_destructive: false,
+    schedulable: true,
+    headless: true,
+  },
 
 // ── Deployment checklist ────────────────────────────────────────────────────
 //
