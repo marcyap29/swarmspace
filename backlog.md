@@ -2335,7 +2335,7 @@ export interface Env {
 },
 ```
 
-This entry also needs to be added to `PLUGIN_REGISTRY` in the Firebase functions repo (`swarmspaceRouter.ts`). That file lives in the LUMARA/ARCv2.5 repo — the LUMARA task (L-1) handles that addition. You do not need to touch it from here.
+This entry also needs to be added to `PLUGIN_REGISTRY` in `functions/src/functions/swarmspaceRouter.ts` — handled by **SS-5** below. (Corrected 2026-05-01: original spec mislabeled this as a LUMARA task, but `swarmspaceRouter.ts` lives in this SwarmSpace repo and is owned by SwarmSpace per `Docs/CLAUDE.md`.)
 
 #### Task SS-3: Add `/meeting-prep` route to the orchestrator
 
@@ -2449,6 +2449,39 @@ SUGGESTED TALKING POINTS
 
 **Note on `_prism_consent`:** Do not add this manually in the route. The `callPlugin` helper already injects `_prism_consent: true` on every call. It's set once in the helper and covers all plugin calls automatically.
 
+#### Task SS-5: Add `calendar-reader` to `PLUGIN_REGISTRY` in `swarmspaceRouter.ts`
+
+> **Correction (2026-05-01):** This was originally written as LUMARA task L-1, but `functions/src/functions/swarmspaceRouter.ts` lives in this SwarmSpace repo and is owned by SwarmSpace per `Docs/CLAUDE.md` Cross-Repo Ownership Rules. LUMARA confirmed it has no copy of this file — verified by their pre-flight `ls functions/src/functions/`. So the registry entry must be added here.
+
+Open `functions/src/functions/swarmspaceRouter.ts` and add the following entry to `PLUGIN_REGISTRY` in the Standard tier section (after `tavily-search`, before the Premium tier comment):
+
+```typescript
+"calendar-reader": {
+  workerUrl: "https://swarmspace-plugin-calendar-reader.orbitalai.workers.dev",
+  requiredTier: "standard",
+  capabilities: ["calendar", "scheduling", "meetings", "attendees"],
+  description: "Read upcoming calendar events and attendee details from Google Calendar.",
+  exampleQuery: "What meetings do I have today?",
+  privacy_data_required: ["calendar_events", "attendee_names", "attendee_emails", "access_token"],
+  privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
+  dataTypes: ["calendar_events", "attendee_data"],
+  owner: "swarmspace",
+  author: { name: "Orbital AI", type: "first-party" as const },
+  pricing: { model: "included" as const, cost_per_call: null },
+  version: "1.0.0",
+  deployed_at: "2026-05-01T00:00:00Z",
+  rateLimits: { free: 0, standard: 500, premium: 500 },
+  is_read_only: true,
+  is_destructive: false,
+  schedulable: true,
+  headless: true,
+},
+```
+
+The four behavioral fields (`is_read_only`, `is_destructive`, `schedulable`, `headless`) require extending the `PluginConfig` interface with these as optional fields. Forward-looking — currently no consumer in `swarmspaceRouter.ts`, but the §22 spec and backlog §6 (Layer 3 Agents) reference them as manifest-v2 declarations.
+
+`free: 0` in `rateLimits` belt-and-suspenders the `requiredTier: "standard"` check at quota level too.
+
 #### Task SS-4: Deploy and verify
 
 1. Deploy the calendar-reader Worker:
@@ -2462,6 +2495,12 @@ SUGGESTED TALKING POINTS
    ```bash
    cd workers/orchestrator
    npx wrangler deploy
+   ```
+
+3. Deploy the updated Firebase functions (after SS-5):
+   ```bash
+   cd functions && npm run build && cd ..
+   firebase deploy --only functions --project arc-epi
    ```
 
 3. Test the orchestrator route with curl:
@@ -2497,36 +2536,9 @@ Before writing any code:
 - Search for existing calls to the orchestrator at `swarmspace-orchestrator.orbitalai.workers.dev`. If LUMARA already calls it directly (e.g. in the agent flow), use that same call pattern for Meeting Prep.
 - Confirm CHRONICLE is queryable from wherever you'll place the new workflow class.
 
-#### Task L-1: Add `calendar-reader` to `swarmspaceRouter.ts` plugin registry
+> **L-1 was relocated to SS-5 on 2026-05-01.** `swarmspaceRouter.ts` lives in the SwarmSpace repo, not LUMARA. Tasks below renumbered: original L-2 → L-1, L-3 → L-2, L-4 → L-3. New L-4 added for `SwarmSpaceOrchestratorService.v1RouteSet`.
 
-Open `functions/src/functions/swarmspaceRouter.ts`. Add the following entry to `PLUGIN_REGISTRY`:
-
-```typescript
-"calendar-reader": {
-  workerUrl: "https://swarmspace-plugin-calendar-reader.orbitalai.workers.dev",
-  requiredTier: "standard",
-  capabilities: ["calendar", "scheduling", "meetings", "attendees"],
-  description: "Read upcoming calendar events and attendee details from Google Calendar.",
-  exampleQuery: "What meetings do I have today?",
-  privacy_data_required: ["calendar_events", "attendee_names", "attendee_emails", "access_token"],
-  privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
-  dataTypes: ["calendar_events", "attendee_data"],
-  owner: "swarmspace",
-  author: { name: "Orbital AI", type: "first-party" as const },
-  pricing: { model: "included" as const, cost_per_call: null },
-  version: "1.0.0",
-  deployed_at: new Date().toISOString(),
-  rateLimits: { free: 0, standard: 500, premium: 500 },
-  is_read_only: true,
-  is_destructive: false,
-  schedulable: true,
-  headless: true,
-},
-```
-
-Note: `free: 0` in `rateLimits` prevents free-tier users from calling this plugin. The `requiredTier: "standard"` tier check already blocks them, but the zero enforces it at quota level too.
-
-#### Task L-2: Build `MeetingPrepWorkflow`
+#### Task L-1: Build `MeetingPrepWorkflow`
 
 Create `lib/shared/arc/agents/meeting_prep/meeting_prep_workflow.dart`.
 
@@ -2605,7 +2617,7 @@ class CalendarAttendee {
 
 Throw a `MeetingPrepException` with a user-readable message on any error (network failure, quota exceeded, plugin unavailable). Map SwarmSpace `resource-exhausted` errors to: `"You've reached your daily limit. Try again tomorrow or upgrade to get more calls."`.
 
-#### Task L-3: Build the UI screen
+#### Task L-2: Build the UI screen
 
 Create `lib/mobile/screens/arc/agents/meeting_prep/meeting_prep_screen.dart`.
 
@@ -2635,7 +2647,7 @@ The calendar selection UI is Phase 2. The card is static for now.
 
 **Navigation:** Add a "Meeting Prep" entry to the Agents screen. Match the icon style and layout of existing agent entries.
 
-#### Task L-4: End-to-end verification
+#### Task L-3: End-to-end verification
 
 With a free tier test account:
 1. Agents screen → Meeting Prep entry is visible
@@ -2646,6 +2658,12 @@ With a free tier test account:
 6. Brief renders with the "PERSON INTEL" section populated from web search
 7. Upgrade card visible below inputs; no calendar UI present
 8. Force a quota error (exhaust free tier calls) → user sees the friendly quota message
+
+#### Task L-4: Allowlist `/meeting-prep` in `SwarmSpaceOrchestratorService.v1RouteSet`
+
+LUMARA-side route gate. Search the LUMARA codebase for `SwarmSpaceOrchestratorService` (likely under `lib/shared/arc/` or similar) and add `'meeting-prep'` (or `/meeting-prep`, match the existing convention) to its `v1RouteSet` allowlist. Without this, LUMARA will reject the orchestrator response before it reaches `MeetingPrepWorkflow`.
+
+(Surfaced by LUMARA Claude during pre-flight 2026-05-01 — original spec missed this gate.)
 
 ### Integration Contract
 

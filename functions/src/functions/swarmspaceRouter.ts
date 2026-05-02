@@ -91,6 +91,13 @@ interface PluginConfig {
   deployed_at: string;
   rateLimits: { free: number; standard: number; premium: number | null };
   source?: "first-party" | "developer";
+  /** Manifest behavioral fields (forward-looking; see §22 + §6 of backlog). */
+  is_read_only?: boolean;
+  is_destructive?: boolean;
+  /** Verified-only: declares plugin is safe to run on schedule (DO recurring agents). */
+  schedulable?: boolean;
+  /** Verified-only: declares plugin runs without user-approval step (auto execution mode). */
+  headless?: boolean;
 }
 
 const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
@@ -402,6 +409,26 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     version: "1.0.0",
     deployed_at: "2026-03-15T00:00:00Z",
     rateLimits: { free: 20, standard: 500, premium: 500 },
+  },
+  "calendar-reader": {
+    workerUrl: "https://swarmspace-plugin-calendar-reader.orbitalai.workers.dev",
+    requiredTier: "standard",
+    capabilities: ["calendar", "scheduling", "meetings", "attendees"],
+    description: "Read upcoming calendar events and attendee details from Google Calendar.",
+    exampleQuery: "What meetings do I have today?",
+    privacy_data_required: ["calendar_events", "attendee_names", "attendee_emails", "access_token"],
+    privacyTier: PrivacyTier.STRUCTURED_PERSONAL,
+    dataTypes: ["calendar_events", "attendee_data"],
+    owner: "swarmspace",
+    author: { name: "Orbital AI", type: "first-party" as const },
+    pricing: { model: "included" as const, cost_per_call: null },
+    version: "1.0.0",
+    deployed_at: "2026-05-01T00:00:00Z",
+    rateLimits: { free: 0, standard: 500, premium: 500 },
+    is_read_only: true,
+    is_destructive: false,
+    schedulable: true,
+    headless: true,
   },
   // ── Premium tier ──────────────────────────────────────────────────────────
   "exa-search": {
