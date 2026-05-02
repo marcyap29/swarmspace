@@ -135,7 +135,31 @@ When running a doc sync or release:
 
 **Third drift sweep (same day) — sequencing-claim correction + Meeting Prep spec added:**
 - `backlog.md` §5.2 — corrected the "Depends on: orchestrator execution modes landing first" assertion (stale sequential thinking, not a code-level dependency). Verified: `workers/orchestrator/src/index.js` has zero execution-mode awareness; routes are plain POST handlers running pre-baked, read-only chains. §5.3 only matters for agent-assembled chains. Curated workflow DOs (News Briefing, Competitor Research, Trend Spotter, Market Intelligence) can be built directly against the live orchestrator routes without §5.3.
-- `backlog.md` §22 MEETING PREP AGENT — added full implementation spec inline. Cross-repo: SwarmSpace owns `calendar-reader` plugin Worker + `/meeting-prep` orchestrator route; LUMARA owns `swarmspaceRouter.ts` registry entry + `MeetingPrepWorkflow` class + UI screen + CHRONICLE/document lookup + OAuth token management. Integration Contract is the source of truth. DO auto-fire (recurring meeting briefs) is Phase 2, will live as a §5.2 variant.
+- `backlog.md` §22 MEETING PREP AGENT — added full implementation spec inline. Cross-repo: SwarmSpace owns `calendar-reader` plugin Worker + `/meeting-prep` orchestrator route; LUMARA owns `MeetingPrepWorkflow` class + UI screen + CHRONICLE/document lookup + OAuth token management. Integration Contract is the source of truth. DO auto-fire (recurring meeting briefs) is Phase 2, will live as a §5.2 variant.
+
+---
+
+### 2026-05-01 — v1.5.2 release: §4.4 + §22 (SwarmSpace half) + §5.2 v1 + service-token bypass
+
+**Action:** Three high-priority backlog items shipped in parallel via SOP-ORCH (lead + 3 sub-agents in worktrees), plus correction of §22 spec ownership mislabel after LUMARA Claude pre-flight confirmed `swarmspaceRouter.ts` lives only in SwarmSpace.
+
+**Changes:**
+- **`functions/src/functions/swarmspaceRouter.ts`** —
+  - Extended `swarmspacePluginCatalog` with `since` + `interest_tags` filtering (§4.4). New Firestore collection `catalogue_update_rate_limits/{uid}` for 6h/UID gate.
+  - Added service-token bypass auth path: `request.data._service_token` + `_run_as_uid` → skip `enforceAuth`, run as that uid.
+  - Added `calendar-reader` entry to `PLUGIN_REGISTRY` (Standard tier, STRUCTURED_PERSONAL).
+  - Extended `PluginConfig` with optional `is_read_only`, `is_destructive`, `schedulable`, `headless` (forward-looking manifest fields per §22 / backlog §6).
+- **`workers/orchestrator/src/index.js`** — new `/meeting-prep` route + `runMeetingPrepWorkflow` per §22 SS-3. `ctx` carries optional `serviceToken` + `runAsUid`; `callPlugin` propagates them in the data envelope when present.
+- **`workers/plugins/calendar-reader/`** — new Cloudflare Worker. `Env { SWARMSPACE_INTERNAL_TOKEN }` only; OAuth token is a per-request param. Wraps Google Calendar API v3.
+- **`workers/plugins/REGISTRY_ENTRIES.ts`** — appended `calendar-reader` (9th entry).
+- **`workers/durable-objects/news-briefing/`** — new Worker hosting `NewsBriefingDO`. Three HTTP routes: `POST /create`, `POST /cancel`, `GET /{do_id}/latest`. SQLite state, daily/weekly Alarms, service-token bypass auth to call orchestrator's `/news-brief`. Tier gate via Firestore REST + service-account JWT.
+- **`backlog.md` §22 spec** — moved L-1 → SS-5 (registry entry lives in SwarmSpace, not LUMARA, per `Docs/CLAUDE.md` ownership rules). Updated SS-2 cross-reference. Renumbered LUMARA tasks (L-2→L-1, L-3→L-2, L-4→L-3). Added new L-4 for `SwarmSpaceOrchestratorService.v1RouteSet` allowlist (LUMARA-side route gate originally missed by spec, surfaced by LUMARA Claude pre-flight).
+- **`.gitignore`** — added `node_modules/` (the news-briefing DO Worker now carries `package.json` + lockfile).
+- **`Docs/CHANGELOG.md`** — v1.5.2 entry.
+
+**Sprint pattern:** SOP-ORCH (lead + 3 parallel sub-agents in `.claude/worktrees/`). User pre-approved A1-A3, B1-B4, C1-C3, D1-D5, E (out-of-scope list) up front so the run was non-stop. Per-track commits: `891ccc2` (§4.4), `e165496` (calendar-reader Worker), `b2e4fd5` (lead's orchestrator + service-token), `306983a` (DO Worker).
+
+**Deploy commands handed to user separately. Not yet deployed at time of write.**
 
 ---
 

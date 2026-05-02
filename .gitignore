@@ -2,6 +2,9 @@
 .DS_Store
 build
 
+# Node dependencies (commit lockfiles, never node_modules)
+node_modules/
+
 # Wrangler local dev state
 .wrangler/
 

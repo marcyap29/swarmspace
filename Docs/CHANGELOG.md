@@ -1,7 +1,27 @@
 # SwarmSpace Changelog
 
-**Version:** 1.5.1
+**Version:** 1.5.2
 **Last Updated:** 2026-05-01
+
+---
+
+## [1.5.2] - 2026-05-01
+
+### Added
+
+- **§4.4 `/catalogue/updates` (extended `swarmspacePluginCatalog`)** — accepts new optional params `since` (ISO timestamp) and `interest_tags` (string[]). When `since` is provided, returns only plugins with `deployed_at > since`, sorted descending; rate-limited to 1 call per 6 hours per UID via new Firestore collection `catalogue_update_rate_limits`. Tags are SHA-256-hashed (lowercased input, first 16 hex chars) and matched against the same hashing applied to plugin `capabilities`. Unblocks LUMARA's session-start delta discovery. Backwards-compatible: existing callers without `since` see no behavior change. Commit `891ccc2`.
+- **§22 Meeting Prep — SwarmSpace half** — three pieces:
+  - New `/meeting-prep` orchestrator route (`workers/orchestrator/src/index.js`): parallel web + LinkedIn search via `brave-search`, LinkedIn page fetch via `jina-reader`, synthesis via `gemini-flash`. CHRONICLE context and document snippets are passed by LUMARA as string params and never flow through the plugin registry or PRISM.
+  - New `calendar-reader` Cloudflare Worker (`workers/plugins/calendar-reader/`): wraps Google Calendar API v3, reads upcoming events, returns structured `{events, source, count}`. Standard tier. Returns `calendar_auth_expired` on Google 401 so LUMARA can refresh and retry.
+  - New `calendar-reader` entry in `PLUGIN_REGISTRY` in `swarmspaceRouter.ts` (Standard tier, STRUCTURED_PERSONAL privacy). Extended `PluginConfig` with optional manifest behavioral fields: `is_read_only`, `is_destructive`, `schedulable`, `headless`. Commits `e165496` + `b2e4fd5` + (this commit).
+- **§5.2 News Briefing Durable Object v1 (API-only)** — new `workers/durable-objects/news-briefing/` Worker. Three HTTP routes: `POST /durable-objects/news-briefing/create` (tier-gated; `free` rejected with `403 paid_tier_required`), `POST /durable-objects/news-briefing/cancel`, `GET /durable-objects/news-briefing/{do_id}/latest`. `NewsBriefingDO` class extends `DurableObject` from `cloudflare:workers`, stores config + previous output in SQLite, fires alarms (daily/weekly), calls orchestrator's `/news-brief` with service-token bypass auth, computes delta against previous run. Tier gate reads `users/{uid}.plan` from Firestore via REST + service-account JWT. LUMARA wires the "keep watching this" UI later. Commit `306983a`.
+- **Service-token bypass auth path** on `swarmspaceRouter` (`functions/src/functions/swarmspaceRouter.ts`) — when `request.data._service_token` matches `SWARMSPACE_INTERNAL_TOKEN` AND `_run_as_uid` is provided, skips Firebase ID token verification and runs as that uid. Required by §5.2 DO at alarm time when no user-bound Firebase ID token is available. Internal-infrastructure-only; existing LUMARA-app callers (Firebase ID token path) unchanged. Orchestrator's `callPlugin` propagates these headers in the data envelope when present. Commit `b2e4fd5`.
+
+### Changed
+
+- **`backlog.md` §22 spec correction** — original spec mislabeled L-1 ("add `calendar-reader` to PLUGIN_REGISTRY") as a LUMARA task, but `swarmspaceRouter.ts` lives in the SwarmSpace repo per `Docs/CLAUDE.md` Cross-Repo Ownership Rules. LUMARA Claude confirmed via pre-flight `ls` that no swarmspace-prefixed functions live in their repo. Relocated as **SS-5** in §SwarmSpace Tasks. SS-2's stale "LUMARA task L-1" pointer updated to "SS-5". LUMARA tasks renumbered L-2→L-1, L-3→L-2, L-4→L-3. New L-4 added: allowlist `/meeting-prep` in `SwarmSpaceOrchestratorService.v1RouteSet` (LUMARA-side gate flagged by LUMARA Claude during pre-flight, missed by original spec).
+- **`.gitignore`** — added `node_modules/` so the new `workers/durable-objects/news-briefing/` Worker can carry `package.json` + `package-lock.json` without committing dependencies.
+- **`PluginConfig` interface** in `swarmspaceRouter.ts` — added optional fields `is_read_only`, `is_destructive`, `schedulable`, `headless` (forward-looking; per §22 manifest spec and backlog §6 Layer 3 manifest-v2). Currently no consumer in the router; metadata only.
 
 ---
 

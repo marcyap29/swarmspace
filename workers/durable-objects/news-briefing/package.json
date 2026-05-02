@@ -1,0 +1,15 @@
+{
+  "name": "swarmspace-durable-object-news-briefing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SwarmSpace News Briefing Durable Object — recurring delta news briefs (§5.2)",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "typescript": "^5.4.0",
+    "wrangler": "^3.0.0"
+  }
+}
