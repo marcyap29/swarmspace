@@ -4,10 +4,11 @@
 > **Overwrite this section at session start. Ground truth only — no prose. Verify against `git status` before writing.**
 
 - **Branch:** `main`
-- **Working tree:** Modified: `backlog.md`, `Docs/context.md`. Untracked: `.claude/`, `swarmspace.code-workspace`. Verified 2026-05-03.
-- **Last commit:** `036d31b` — chore: v1.5.2 closeout (CHANGELOG + DO package.json + planner wipe)
+- **Working tree:** Modified: `Docs/CLAUDE.md`, `Docs/context.md`. Untracked: `.claude/`, `swarmspace.code-workspace`. Verified 2026-05-03.
+- **Last commit:** `3d4777c` — docs: backlog drift sweep (match repo state, clean stale items)
 - **Deployed:** All 23 Firebase functions, calendar-reader Worker, orchestrator (with `/meeting-prep`), News Briefing DO Worker, and gemini-flash Worker secret rotation — all live as of 2026-05-02
 - **planner.md:** Cleaned — no active tasks
+- **Cross-repo mirror:** Active. SwarmSpace → `/Volumes/Marc Working Drive/Development/Unified LUMARA + Swarmspace Backlog/SWARMSPACE_*.md`. Sync rule codified in `Docs/CLAUDE.md` STEP 6.
 - **Next action:** Pull from `backlog.md`. Top open items: §3.3 Stripe Connect wiring, §5.3 Orchestrator Execution Modes, §3.4 earnings backend. LUMARA-side §22 work (L-1 MeetingPrepWorkflow, L-2 UI, L-3 e2e, L-4 v1RouteSet) and §5.2 News Briefing DO UI wiring still open in LUMARA repo.
 
 ---
@@ -49,6 +50,23 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 - When a session ends, leave a final "Open items / handoff" line on the most recent entry so the next agent knows where to pick up.
 - **At session start:** Run `git status` and update the Current State section at the top before doing anything else. Never trust prior session notes about uncommitted work without verifying.
 - **Close the loop:** When work that was logged as "not yet committed" gets committed, append `→ committed [hash]` inline to the original outcome line. Do not delete it.
+
+---
+
+## SESSION — 2026-05-03 — Claude Opus 4.7 (Claude Code) — Cross-repo mirror set up + Starter Repo SOP adopted
+
+### 2026-05-03 — Mirrored canonical docs to unified dir
+- **Files touched:** `/Volumes/Marc Working Drive/Development/Unified LUMARA + Swarmspace Backlog/SWARMSPACE_{Backlog,Context,Planner,Claude}.md` (created — mirrors of `backlog.md`, `Docs/context.md`, `planner.md`, `Docs/CLAUDE.md` respectively)
+- **Decisions:** Matched LUMARA's actual file-naming convention (`<REPO>_<Title>.md`, Title Case, not the ALL_CAPS the README documents). Fixed `SWARMSPACE_Context.md` permission from 600 → 644 since the source is user-only but mirrors should be readable. Did NOT mirror `Docs/Agents.md` — convention only mirrors the SOP entry-point doc (CLAUDE.md), not the broader project reference.
+- **Outcome:** Unified dir now has parallel `LUMARA_*` and `SWARMSPACE_*` mirrors. A third-party agent can onboard from this single directory without traversing either repo.
+
+### 2026-05-03 — Adopted Starter Repo entry-point pattern in `Docs/CLAUDE.md` (v1.5.1 → v1.6.0)
+- **Files touched:** `Docs/CLAUDE.md`
+- **Decisions:** Added STEP 1-6 Standard Procedure box at the top (matching LUMARA's CLAUDE.md pattern, adapted for SwarmSpace stack: linter is `cd functions && npm run build`, not `dart analyze`). Added Key Invariants section with 7 SwarmSpace-specific non-negotiables (Gemini model pinning, LUMARA dependency declaration, admin-email auto-promote, secrets rule, lowercase planner.md, swarmspaceRouter.ts ownership, service-token internal-only). Added Cross-Repo Coordination section with the mirror table + concrete `cp` commands + the explicit rule: "I am free to edit any `.md` in this repo as the canonical source. After editing, I MUST mirror the changed files to the unified dir at STEP 6 close-session." Existing SOP-TASK / SOP-ORCH / SOP-BUG / SOP-DEBUG / SOP-DOC / SOP-PROMPT / SOP-PLAN preserved verbatim below the new top sections — they're SwarmSpace-specific implementations that the new STEP 1-6 procedure now references explicitly.
+- **Added SOP-WORKTREE** inline (slim version of Starter Repo's). When/why to use, naming convention (`wt/<id>` branch, sibling `../<repo>-<id>` worktree), full lifecycle (worktree add → bootstrap → implement → review → no-ff merge → teardown), safety guards. Notes that v1.5.2 sprint used this pattern (3 sub-agents in `.claude/worktrees/agent-*`).
+- **Fixed three uppercase `Planner.md` references** to lowercase per Key Invariant — drift left over from the case-collision deletion 2026-05-01.
+- **Outcome:** `Docs/CLAUDE.md` is now the canonical entry-point doc (STEP 1 ORIENT lands here) and codifies the cross-repo mirror rule. SwarmSpace SOPs preserved.
+- **Open items / handoff:** Larger Starter Repo adoption (folder restructure into `Docs/operations md files/` + `Docs/agents md files/` + `Docs/tracking md files/`, pulling in `agents_handoff.md`, `agents_orchestrator.md`, `agents_doc_backup.md`, `agent_scoping.md`, `startup.md`, `BUG_PREVENTION.md`, etc.) was deferred to a dedicated session — flagged but not done. CLAUDE.md plus existing SOPs are sufficient for now; the file-split is purely organizational.
 
 ---
 
