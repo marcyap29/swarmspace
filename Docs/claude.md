@@ -1,16 +1,160 @@
-# SwarmSpace Documentation Context Guide
+# SwarmSpace — Claude Code Instructions
 
-**Version:** 1.5.1
-**Last Updated:** May 1, 2026
-**Current Branch:** `main`
+**Version:** 1.6.0 *(2026-05-03 — adopted Starter Repo STEP 1-6 procedure + cross-repo mirror rule)*
+**Repo root:** `/Volumes/Marc Working Drive/Development/swarmspace/`
+**Stack:** Firebase Cloud Functions (TypeScript) + Cloudflare Workers (TS/JS) + static HTML on Vercel.
+**Linter:** `cd functions && npm run build` (functions side); `npx tsc --noEmit` from individual worker dirs (Workers side).
 
-*This file was reset for SwarmSpace. All prior versioning and EPI-specific content has been cleared.*
+---
+
+## Standard Procedure — Follow This Every Time a Prompt Is Given
+
+```
+PROMPT RECEIVED
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 1 — ORIENT (always, before anything else)                  │
+│                                                                 │
+│  Read: Docs/CLAUDE.md (this file)        ← entry point          │
+│  Read: Docs/Agents.md                    ← codebase reference   │
+│        + cross-repo dependency rules                            │
+│  Read: Docs/context.md                   ← last session, next,  │
+│                                            warnings             │
+│                                                                 │
+│  If the task touches LUMARA integration (orchestrator, plugin   │
+│  registry, PRISM, OAuth, anything cross-repo) ALSO read:        │
+│  /Volumes/Marc Working Drive/Development/Unified LUMARA +       │
+│   Swarmspace Backlog/LUMARA_Context.md   ← LUMARA's last session│
+│   ...                       /LUMARA_Backlog.md (relevant items) │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 2 — UNDERSTAND THE TASK                                    │
+│                                                                 │
+│  Read: planner.md (root)                 ← active sprint        │
+│  Read: backlog.md (root)                 ← priority pool        │
+│                                                                 │
+│  Task type?                                                     │
+│    • New feature / multi-file   → STEP 3A                       │
+│    • Bug fix                    → STEP 3B                       │
+│    • Multi-area orchestration   → STEP 3C                       │
+│    • Documentation update       → STEP 3D                       │
+│    • Security review            → STEP 3E                       │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 3A — PLAN (feature / multi-file change)                    │
+│  Apply: SOP-TASK below                                          │
+│  Apply: SOP-PLAN below (write definition of done into planner)  │
+│  Decide: worktree needed? → SOP-WORKTREE below (criteria)       │
+│  If task spans 3+ subsystems → split via SOP-ORCH               │
+├─────────────────────────────────────────────────────────────────┤
+│ STEP 3B — DIAGNOSE (bug fix)                                    │
+│  Apply: SOP-DEBUG below                                         │
+│  Read:  Docs/bugtracker/bug_tracker.md (or project index)       │
+│  Apply: SOP-BUG before coding in risky areas                    │
+├─────────────────────────────────────────────────────────────────┤
+│ STEP 3C — ORCHESTRATE (multi-area work)                         │
+│  Apply: SOP-ORCH below (lead → sub-agents → reviewer)           │
+│  Worktree per sub-agent if files overlap (SOP-WORKTREE)         │
+├─────────────────────────────────────────────────────────────────┤
+│ STEP 3D — DOCUMENT                                              │
+│  Apply: SOP-DOC below                                           │
+│  Update: Docs/CONFIGURATION_MANAGEMENT.md inventory + change-log│
+├─────────────────────────────────────────────────────────────────┤
+│ STEP 3E — AUDIT (security)                                      │
+│  Read:  Docs/SECURITY_CHECKLIST.md                              │
+│  Read:  Docs/OWASP_AST10_COMPLIANCE.md                          │
+│  Read:  Docs/PRISM.md (privacy enforcement)                     │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 4 — IMPLEMENT                                              │
+│  Read every file before modifying it. Never edit blind.         │
+│  Resolve spec ambiguities before writing code, not after.       │
+│  Check Key Invariants below while coding.                       │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 5 — REVIEW                                                 │
+│  Functions:  cd functions && npm run build   (zero new TS errors)│
+│  Workers:    npx tsc --noEmit                (per worker dir)   │
+│  Reviewing external agent output? Score against SOP-REVIEW.     │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 6 — CLOSE SESSION (always, before stopping)                │
+│  Write:  Docs/context.md → prepend session block (newest first) │
+│  Update: planner.md → cross off completed; wipe if feature done │
+│  Update: backlog.md → mark shipped items ✅                     │
+│  Update: Docs/CONFIGURATION_MANAGEMENT.md → if any docs changed │
+│  Update: Docs/CHANGELOG.md → if a release-worthy change shipped │
+│  Mirror: any of {backlog.md, context.md, planner.md, CLAUDE.md} │
+│           that changed this session → unified dir as            │
+│           SWARMSPACE_<Title>.md (see Cross-Repo Coordination    │
+│           below for cp commands)                                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Key Invariants — Never Violate
+
+These are SwarmSpace-specific non-negotiables. Code that breaks any of these is a regression.
+
+- **Gemini model = `gemini-3-flash-preview` only.** 2.0 / 2.5 family return 404. Verify against `proxyGemini.ts` before adding a new Gemini caller.
+- **LUMARA dependency declaration is mandatory.** Every feature must explicitly state `LUMARA dependency: <what LUMARA needs to do>` or `No LUMARA dependency — self-contained.` See `Docs/Agents.md` §0.
+- **Admin emails auto-promoted to Pro.** `ADMIN_EMAILS` in `functions/src/authGuard.ts` (currently `marcyap@orbitalai.net`, `marcyap@fastmail.com`) — `enforceAuth` writes `plan: "pro"` automatically. Any new tier-gating code must respect this; never block the founder behind a quota wall.
+- **Never commit secrets.** Cloud Function secrets via `defineSecret`. Worker secrets via `wrangler secret put`. `.gitignore` covers `node_modules/`, `.env`, `.wrangler/`, `scripts/get-test-token.js`.
+- **Lowercase `planner.md` only.** Uppercase `Planner.md` was deleted 2026-05-01 because of macOS-vs-Linux case collision.
+- **`swarmspaceRouter.ts` ownership: SwarmSpace repo.** It does NOT exist in the LUMARA repo (verified 2026-05-02 by LUMARA Claude pre-flight). Any registry edits happen here, not there.
+- **Service-token bypass is internal-only.** `_service_token` + `_run_as_uid` in `request.data` is for DO-initiated calls (e.g. News Briefing DO firing on alarm). Never expose to LUMARA-app callers.
+
+---
+
+## Cross-Repo Coordination
+
+Shared mailbox at `/Volumes/Marc Working Drive/Development/Startup Onboard/` — **not git-tracked**, mirror-on-update from each repo's canonical files. Naming: `<REPO>_<Topic>.md` in Title Case.
+
+**Workflow rule (codified 2026-05-03):** I am free to edit any `.md` in this repo as the canonical source. After editing, I MUST mirror the changed files to the unified dir at STEP 6 close-session. The unified dir is read-only — never edit a mirror directly. Both sides do this; that's how a third-party agent or LUMARA Claude knows what's current without traversing this repo.
+
+| File | Owner | Source of truth (canonical) | Mirror when |
+|---|---|---|---|
+| `SWARMSPACE_Backlog.md` | SwarmSpace Claude | `backlog.md` | backlog edited |
+| `SWARMSPACE_Context.md` | SwarmSpace Claude | `Docs/context.md` | session block prepended |
+| `SWARMSPACE_Planner.md` | SwarmSpace Claude | `planner.md` | tasks edited |
+| `SWARMSPACE_Claude.md` | SwarmSpace Claude | `Docs/CLAUDE.md` | SOPs / convention edited |
+| `SWARMSPACE_Spec_*.md` | SwarmSpace Claude | (none currently — Meeting Prep lives inline in §22) | active cross-repo spec edited; archive after merge |
+| `LUMARA_*.md` | LUMARA Claude | LUMARA repo's canonical files | their session-close |
+| `prompts/*.md` | User | n/a | overrides in-repo planner when present |
+| `README.md` | Either side | unified dir | convention edited |
+
+**Concrete commands for STEP 6 mirror (run only for files that changed this session):**
+
+```bash
+UNIFIED="/Volumes/Marc Working Drive/Development/Startup Onboard"
+SRC="/Volumes/Marc Working Drive/Development/swarmspace"
+
+cp "$SRC/backlog.md"       "$UNIFIED/SWARMSPACE_Backlog.md"
+cp "$SRC/Docs/context.md"  "$UNIFIED/SWARMSPACE_Context.md"
+cp "$SRC/planner.md"       "$UNIFIED/SWARMSPACE_Planner.md"
+cp "$SRC/Docs/CLAUDE.md"   "$UNIFIED/SWARMSPACE_Claude.md"
+chmod 644 "$UNIFIED/SWARMSPACE_Context.md"   # source is 600; mirror should be readable
+```
+
+**STEP 1 ORIENT addition (when work touches cross-repo):** before planning, read `LUMARA_Context.md` in the unified dir (LUMARA's last session) plus relevant entries from `LUMARA_Backlog.md`. Convention notes live in the unified dir's `README.md`.
 
 ---
 
 ## Standard Operating Procedures (SOPs)
 
-SOPs are the **repeatable procedures** for consistent, high-quality work. Refer to these before starting any task.
+The procedures below are SwarmSpace-specific implementations of the Starter Repo SOPs. Steps 3A-3E above point to these.
 
 ---
 
@@ -158,12 +302,50 @@ These two files keep work organized across sessions and prevent losing track of 
 
 #### Workflow
 
-1. At session start, read `Planner.md` — if it has active tasks, resume them.
-2. When starting a new feature, write the plan into `Planner.md` before coding.
-3. As you complete tasks, cross them off in `Planner.md`.
-4. When a feature is fully done, cross it off and wipe `Planner.md` clean.
+1. At session start, read `planner.md` — if it has active tasks, resume them.
+2. When starting a new feature, write the plan into `planner.md` before coding.
+3. As you complete tasks, cross them off in `planner.md`.
+4. When a feature is fully done, cross it off and wipe `planner.md` clean.
 5. When discussing future work with the user, add agreed features to `backlog.md`.
 6. When picking up new work, check `backlog.md` for the next priority item.
+
+---
+
+### SOP-WORKTREE — Branch isolation for risky / parallel / external-agent work
+
+Use a git worktree to keep `main` clean while non-trivial changes are in flight. The worktree is the working copy; the branch (`wt/<id>`) is the change set; `main` only receives reviewed merges.
+
+**Use a worktree when:**
+- Work spans multiple sessions and the unmerged state needs to survive
+- Changes touch shared/critical paths (`swarmspaceRouter.ts`, `workers/orchestrator/src/index.js`, anything other Workers depend on)
+- Two competing approaches need to be tried in parallel
+- A sub-agent (Track 1/2/3 in SOP-ORCH) is doing the work — keeps their commits isolated until reviewed
+- The change is experimental and may not merge
+
+**Stay on `main` for:** single-file fixes, doc-only edits, refactors confidently merging with no review, work under ~30 minutes, trivially reversible edits.
+
+**Naming + layout:**
+- Branch: `wt/<feature-or-bug-id>` — e.g. `wt/news-briefing-do`, `wt/bug-auth-002`
+- Worktree path: `../<repo-name>-<id>` — sibling to main checkout, never nested. Cloudflare/Firebase per-tree caches (`node_modules`, `.wrangler/`, `functions/lib/`) re-bootstrap per worktree.
+
+**Lifecycle:**
+1. Plan via SOP-TASK / SOP-PLAN; check Key Invariants
+2. Decide isolation per criteria above
+3. `git worktree add ../<repo-name>-<id> -b wt/<id>` from `main`
+4. Bootstrap deps in the new tree (e.g. `cd functions && npm install`)
+5. Implement in worktree, commit only to `wt/<id>`, never touch `main` directly
+6. Run STEP 5 review (linter clean) before each commit
+7. User reviews diff: `git -C ../<repo-name>-<id> log main..HEAD` and `git -C ../<repo-name>-<id> diff main..HEAD`
+8. Merge with `--no-ff` from main checkout: `git checkout main && git pull --ff-only && git merge --no-ff wt/<id> -m "merge: <summary> (wt/<id>)" && git push origin main`
+9. Teardown: verify `git -C ../<repo-name>-<id> status --short` is empty, then `git worktree remove ../<repo-name>-<id> && git branch -d wt/<id>`
+
+**Safety guards:**
+- Never `git worktree remove --force` unless the user has explicitly confirmed the dirty state is disposable.
+- Never `git branch -D` to skip the merged-check; investigate before discarding.
+- Resolve conflicts in the worktree (rebase against `origin/main`), not on `main`.
+- Per-tree caches and gitignored config (`.env`, secrets) must be bootstrapped manually in each worktree.
+
+This was the pattern used in v1.5.2 sprint (2026-05-02) — three sub-agents in `.claude/worktrees/agent-*`, each on its own `wt/<id>` branch, integrated by lead via cherry-pick into main.
 
 ---
 

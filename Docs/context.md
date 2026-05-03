@@ -8,7 +8,7 @@
 - **Last commit:** `3d4777c` — docs: backlog drift sweep (match repo state, clean stale items)
 - **Deployed:** All 23 Firebase functions, calendar-reader Worker, orchestrator (with `/meeting-prep`), News Briefing DO Worker, and gemini-flash Worker secret rotation — all live as of 2026-05-02
 - **planner.md:** Cleaned — no active tasks
-- **Cross-repo mirror:** Active. SwarmSpace → `/Volumes/Marc Working Drive/Development/Unified LUMARA + Swarmspace Backlog/SWARMSPACE_*.md`. Sync rule codified in `Docs/CLAUDE.md` STEP 6.
+- **Cross-repo mirror:** Active. SwarmSpace → `/Volumes/Marc Working Drive/Development/Startup Onboard/SWARMSPACE_*.md`. Sync rule codified in `Docs/CLAUDE.md` STEP 6.
 - **Next action:** Pull from `backlog.md`. Top open items: §3.3 Stripe Connect wiring, §5.3 Orchestrator Execution Modes, §3.4 earnings backend. LUMARA-side §22 work (L-1 MeetingPrepWorkflow, L-2 UI, L-3 e2e, L-4 v1RouteSet) and §5.2 News Briefing DO UI wiring still open in LUMARA repo.
 
 ---
@@ -56,7 +56,7 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 ## SESSION — 2026-05-03 — Claude Opus 4.7 (Claude Code) — Cross-repo mirror set up + Starter Repo SOP adopted
 
 ### 2026-05-03 — Mirrored canonical docs to unified dir
-- **Files touched:** `/Volumes/Marc Working Drive/Development/Unified LUMARA + Swarmspace Backlog/SWARMSPACE_{Backlog,Context,Planner,Claude}.md` (created — mirrors of `backlog.md`, `Docs/context.md`, `planner.md`, `Docs/CLAUDE.md` respectively)
+- **Files touched:** `/Volumes/Marc Working Drive/Development/Startup Onboard/SWARMSPACE_{Backlog,Context,Planner,Claude}.md` (created — mirrors of `backlog.md`, `Docs/context.md`, `planner.md`, `Docs/CLAUDE.md` respectively)
 - **Decisions:** Matched LUMARA's actual file-naming convention (`<REPO>_<Title>.md`, Title Case, not the ALL_CAPS the README documents). Fixed `SWARMSPACE_Context.md` permission from 600 → 644 since the source is user-only but mirrors should be readable. Did NOT mirror `Docs/Agents.md` — convention only mirrors the SOP entry-point doc (CLAUDE.md), not the broader project reference.
 - **Outcome:** Unified dir now has parallel `LUMARA_*` and `SWARMSPACE_*` mirrors. A third-party agent can onboard from this single directory without traversing either repo.
 
