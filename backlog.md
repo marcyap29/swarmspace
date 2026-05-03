@@ -252,6 +252,9 @@ Depends on: live orchestrator routes ✅. **Does NOT depend on §5.3** for curat
 - [ ] Prototype Competitor Research delta variant (wraps `/competitor` route, weekly diff) — pattern established by News Briefing DO; replicate
 - [ ] Prototype Trend Spotter delta variant (wraps `/tech-scout` route, sentiment baseline alerts)
 - [ ] Prototype Market Intelligence delta variant (wraps `/market-scan` route, weekly market movement summary with currency, news, and sector signals)
+- [ ] **Prototype Meeting Prep DO variant** — auto-fire on calendar event proximity. On alarm fire (configurable lookahead, e.g. 30 min before meeting), DO calls `calendar-reader` for the upcoming event, then `/meeting-prep` for that attendee, stores the brief, surfaces via `GET /latest`. Same Pro/Premium gate. Surfaced by LUMARA Phase 2 question 2 in `Startup Onboard/Coordinate.md` 2026-05-03; LUMARA dependency: yes (UI to enable + display upcoming briefs). ~1-1.5 days of work.
+- [ ] **🐛 News Briefing DO: alarm-fire tier re-check** — `alarm()` in `workers/durable-objects/news-briefing/src/index.ts` doesn't currently re-check tier; tier gate only runs at `POST /create`. Result: a downgraded Pro→Free user keeps getting the paid feature until manual cancel. Fix: read `users/{uid}.plan` at start of `alarm()`; if `!isPaidTier` then `setState("auto_paused_at", now)` and skip the orchestrator call; resume on next alarm if tier restored. Surfaced by LUMARA §5.2 question 1 in `Coordinate.md` 2026-05-03. LUMARA UI: show auto-paused state + "upgrade to resume" CTA.
+- [ ] **News Briefing DO: server-side caps** — currently no per-DO topic limit (any non-empty array passes) and no per-user active-DO count limit (each `/create` mints fresh `newUniqueId()`). Add: max 10 topics per DO, max 5 active DOs per user (Firestore counter at create time). LUMARA carrying the cap client-side until then. Surfaced by LUMARA §5.2 question 4 in `Coordinate.md` 2026-05-03.
 - [ ] CHRONICLE context injection at execution time (request fresh context, never persist in DO)
 - [ ] DO catalogue check: on scheduled fire, query `/catalogue/updates` for agent's category, flag new relevant plugins in delta output
 - [ ] Extend `swarmspaceDiscoveryAgent` response with `recurringVariant` field so the homepage chat (`index.html`) can surface "also runs as a recurring agent" for matching workflows (moved from §12 Phase 2 — frontend wiring is otherwise complete)
@@ -2199,7 +2202,11 @@ The Safe Room does not replace any existing control. It closes the output-side g
 
 ## 22. MEETING PREP AGENT — SwarmSpace half ✅ DEPLOYED 2026-05-02 · LUMARA half open
 
-> **Status (2026-05-03):** All five SwarmSpace tasks (SS-1 through SS-5) shipped and verified live in production. The `/meeting-prep` orchestrator route is reachable, `calendar-reader` Worker auth + body validation pass smoke-tests, and the calendar-reader entry is in PLUGIN_REGISTRY. **Four LUMARA tasks remain open** (L-1 MeetingPrepWorkflow, L-2 UI screen, L-3 e2e verify, L-4 v1RouteSet allowlist).
+> **Status (2026-05-03):** All five SwarmSpace tasks (SS-1 through SS-5) shipped and verified live in production. The `/meeting-prep` orchestrator route is reachable, `calendar-reader` Worker auth + body validation pass smoke-tests, and the calendar-reader entry is in PLUGIN_REGISTRY. **LUMARA L-1/L-2/L-3 code complete** (`wt/meeting-prep@a5fe59c`, `dart analyze` clean, awaiting L-4 e2e iOS smoke test before merge per `Startup Onboard/Coordinate.md`).
+>
+> **Phase 2 follow-ups (post-merge, surfaced 2026-05-03):**
+> - [ ] Multi-attendee briefs — refactor `/meeting-prep` to accept `attendees: [{name, company, title?}]` array param; loop chain per attendee; return `briefs: [{attendee, brief}]`. Same route, no `/meeting-prep-multi`. LUMARA Phase 2 Q1 in `Coordinate.md`.
+> - [ ] Meeting Prep DO variant — see §5.2 (auto-fire on calendar event proximity).
 >
 > **Specced 2026-05-01.** Standard-tier on-demand agent that prepares a structured brief before a meeting. Pulls personal context from LUMARA (CHRONICLE + documents + optional calendar) and fuses it with external intel (web search + LinkedIn) via the SwarmSpace orchestrator.
 >

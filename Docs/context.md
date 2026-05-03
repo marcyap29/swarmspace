@@ -4,8 +4,8 @@
 > **Overwrite this section at session start. Ground truth only — no prose. Verify against `git status` before writing.**
 
 - **Branch:** `main`
-- **Working tree:** Modified: `Docs/CLAUDE.md`, `Docs/context.md`, `workers/plugins/REGISTRY_ENTRIES.ts`. Untracked: `.claude/`, `swarmspace.code-workspace`. Verified 2026-05-03.
-- **Last commit:** `43cb137` — docs: repoint cross-repo mirror to renamed "Startup Onboard" dir
+- **Working tree:** Modified: `backlog.md`, `Docs/context.md`. Untracked: `.claude/`, `swarmspace.code-workspace`. Verified 2026-05-03.
+- **Last commit:** `6b6e4ca` — docs: adopt Coordinate.md SOP + cross-repo Meeting Prep confirmation
 - **Deployed:** All 23 Firebase functions, calendar-reader Worker, orchestrator (with `/meeting-prep`), News Briefing DO Worker, and gemini-flash Worker secret rotation — all live as of 2026-05-02
 - **planner.md:** Cleaned — no active tasks
 - **Cross-repo mirror:** Active. SwarmSpace → `/Volumes/Marc Working Drive/Development/Startup Onboard/SWARMSPACE_*.md`. Sync rule codified in `Docs/CLAUDE.md` STEP 6.
@@ -50,6 +50,28 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 - When a session ends, leave a final "Open items / handoff" line on the most recent entry so the next agent knows where to pick up.
 - **At session start:** Run `git status` and update the Current State section at the top before doing anything else. Never trust prior session notes about uncommitted work without verifying.
 - **Close the loop:** When work that was logged as "not yet committed" gets committed, append `→ committed [hash]` inline to the original outcome line. Do not delete it.
+
+---
+
+## SESSION — 2026-05-03 — Claude Opus 4.7 (Claude Code) — Answered LUMARA's 10 cross-repo questions
+
+### 2026-05-03 — Answered all 10 LUMARA questions in `Startup Onboard/Coordinate.md`
+- **Files touched:** `Startup Onboard/Coordinate.md` (3 inline answer blocks: Meeting Prep Phase 2, §4.4 Catalog Delta Sync, §5.2 News Briefing DO)
+- **Decisions:** LUMARA opened tracking entries 2026-05-03 with 10 specific questions across the three cross-repo features. Answered each with source-cited specifics:
+  - **Meeting Prep Phase 2 (3):** (1) single-attendee only today; recommend `attendees: []` array param on same route, not `/meeting-prep-multi`. (2) Auto-fire — recommend server-side DO variant (replicate News Briefing pattern with calendar-reader input). (3) OAuth refresh contract locked — entirely LUMARA's responsibility on `calendar_auth_expired` 401.
+  - **§4.4 Catalog Delta Sync (3):** (1) Use `YYYY-MM-DDTHH:MM:SSZ` (`Z` suffix, no `+00:00` — lexicographic compare against `deployed_at` fields would misorder same-second timestamps). (2) Rate limit returns HTTP 429 + standard Firebase callable error envelope (`{"error":{"message":"...","status":"RESOURCE_EXHAUSTED"}}`); no retry-after header. (3) Cache-bust = omit `since` or send `since: null`; never `since: ""` (empty fails validation).
+  - **§5.2 News Briefing DO (4):** (1) ⚠️ Downgrade leak today — `alarm()` doesn't re-check tier; downgraded users keep getting paid feature. Will fix to auto-pause on tier re-check. (2) `latest_delta` is most recent run only, not cumulative; LUMARA owns "last viewed" client-side. (3) No push/webhook; LUMARA polls (suggested: on app foreground after 5+ min background). (4) No server-side topic/count caps today; LUMARA enforces client-side; will add server caps as follow-up.
+- **Outcome:** LUMARA has authoritative answers to all 10 questions, all source-cited to files+lines.
+
+### 2026-05-03 — Added 4 follow-up items to backlog
+- **Files touched:** `backlog.md`
+- **Decisions:** Promised LUMARA in Coordinate.md that I'd track these — added to make sure they don't fall off:
+  - **§5.2: Meeting Prep DO variant** — auto-fire on calendar event proximity (LUMARA Phase 2 Q2, ~1-1.5 days)
+  - **§5.2 🐛: News Briefing DO alarm-fire tier re-check** — fix the downgrade leak (LUMARA §5.2 Q1)
+  - **§5.2: News Briefing DO server-side caps** — max topics per DO + max DOs per user (LUMARA §5.2 Q4)
+  - **§22 Phase 2: multi-attendee briefs** — refactor `/meeting-prep` to accept `attendees: []` array (LUMARA Phase 2 Q1)
+  - Plus updated §22 header to reflect LUMARA L-1/L-2/L-3 code-complete status from Coordinate.md.
+- **Outcome:** All four items tracked in SwarmSpace backlog with cross-references back to Coordinate.md.
 
 ---
 
