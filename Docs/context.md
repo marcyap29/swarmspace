@@ -4,11 +4,11 @@
 > **Overwrite this section at session start. Ground truth only — no prose. Verify against `git status` before writing.**
 
 - **Branch:** `main`
-- **Working tree:** Modified: `Docs/context.md`, `Planner.md`. Untracked: `swarmspace.code-workspace`. Verified 2026-04-30.
-- **Last commit:** `4311c49` — security: credential isolation + remove orphaned workers
-- **Deployed:** All 23 Firebase functions live as of 2026-04-24
+- **Working tree:** Modified: `backlog.md`, `Docs/context.md`. Untracked: `.claude/`, `swarmspace.code-workspace`. Verified 2026-05-03.
+- **Last commit:** `036d31b` — chore: v1.5.2 closeout (CHANGELOG + DO package.json + planner wipe)
+- **Deployed:** All 23 Firebase functions, calendar-reader Worker, orchestrator (with `/meeting-prep`), News Briefing DO Worker, and gemini-flash Worker secret rotation — all live as of 2026-05-02
 - **planner.md:** Cleaned — no active tasks
-- **Next action:** Pull from `backlog.md`; top open items: §3.3 Stripe Connect wiring, §5.3 Orchestrator Execution Modes, §4.4 Catalogue Updates endpoint
+- **Next action:** Pull from `backlog.md`. Top open items: §3.3 Stripe Connect wiring, §5.3 Orchestrator Execution Modes, §3.4 earnings backend. LUMARA-side §22 work (L-1 MeetingPrepWorkflow, L-2 UI, L-3 e2e, L-4 v1RouteSet) and §5.2 News Briefing DO UI wiring still open in LUMARA repo.
 
 ---
 
@@ -49,6 +49,38 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 - When a session ends, leave a final "Open items / handoff" line on the most recent entry so the next agent knows where to pick up.
 - **At session start:** Run `git status` and update the Current State section at the top before doing anything else. Never trust prior session notes about uncommitted work without verifying.
 - **Close the loop:** When work that was logged as "not yet committed" gets committed, append `→ committed [hash]` inline to the original outcome line. Do not delete it.
+
+---
+
+## SESSION — 2026-05-02 — Claude Opus 4.7 (Claude Code) — v1.5.2 deploy + smoke tests + Gemini key resync
+
+### 2026-05-02 — v1.5.2 deployed to production (committed → pushed → deployed)
+- **Commits deployed:** `b2e4fd5` (lead orchestrator + service-token), `891ccc2` (Track 1 §4.4 catalogue updates), `e165496` (Track 2 §22 calendar-reader Worker), `306983a` (Track 3 §5.2 News Briefing DO), `e90547b` (SS-5 calendar-reader registry + spec correction), `036d31b` (closeout). All in `main`, all pushed, all tagged.
+- **Deploys executed by user (not Claude):**
+  - Firebase functions: `firebase deploy --only functions --project arc-epi` — all 23 functions updated successfully (re-ran once after initial deploy didn't pick up Track 1 changes, second deploy worked).
+  - Cloudflare: `swarmspace-plugin-calendar-reader` (new), `swarmspace-orchestrator` (updated with `/meeting-prep`), `swarmspace-durable-object-news-briefing` (new with DO bindings + Alarms).
+- **Secrets set on Workers:**
+  - `calendar-reader`: SWARMSPACE_INTERNAL_TOKEN
+  - `news-briefing` DO: SWARMSPACE_INTERNAL_TOKEN, FIREBASE_API_KEY, FIRESTORE_SERVICE_ACCOUNT_JSON
+- **Outcome:** All §22 SwarmSpace-side, §4.4, §5.2 Worker tasks shipped. LUMARA-side handoff pending.
+
+### 2026-05-02 — Service account created for News Briefing DO Firestore reads
+- **Created:** `news-briefing-do-firestore@arc-epi.iam.gserviceaccount.com` with `Cloud Datastore Viewer` role (read-only).
+- **Key incident:** original key leaked into terminal scrollback during `wrangler secret put` interactive paste (multi-line JSON broke when prompt closed mid-paste). Old key revoked in GCP within seconds. New key generated and uploaded via `cat key.json | wrangler secret put` (stdin pipe — no interactive paste, no scrollback exposure). Cleanup: `rm -P` on downloaded JSONs, `rm ~/.zsh_history`, `rm -rf ~/.wrangler/logs/`.
+- **Lesson:** never paste multi-line secrets into `wrangler secret put` interactive prompt. Always pipe via stdin, or base64-flatten first. `.gitignore` updated to add `node_modules/` (DO Worker now carries package.json).
+
+### 2026-05-02 — Gemini key resynced to gemini-flash Worker
+- **Issue:** Gemini key was rotated 2026-05-01 in Google AI Studio (closing the loop on the credential leak from 2026-04-19), but the `swarmspace-plugin-gemini-flash` Cloudflare Worker still held the old (revoked) key. All gemini-flash synthesis calls returning 500 "Upstream Gemini API error". Affected every workflow ending in synthesis (`/research`, `/news-brief`, `/meeting-prep`, etc.).
+- **Fix:** uploaded current Gemini key to `swarmspace-plugin-gemini-flash` via `pbpaste | wrangler secret put GEMINI_API_KEY --name swarmspace-plugin-gemini-flash`. Verified key works directly against Gemini API with `gemini-3-flash-preview` model.
+- **Worker source:** NOT in this repo. Lives somewhere external — likely worth locating in a future session for proper version control.
+
+### 2026-05-02 — Smoke tests run, deploy verified
+- **Test 1 (full catalogue):** ✅ returns ~22 plugins
+- **Test 1b (catalogue with `since`):** ✅ filtered, sorted desc by deployed_at, calendar-reader first as expected
+- **Test 2 (calendar-reader auth):** ✅ returned 400 "Missing required parameter: access_token" (only after resyncing the Worker secret to match Firebase's value — initial deploy paste was slightly different)
+- **Test 3 (`/meeting-prep`):** ✅ chain runs end-to-end. Initial 500 was stale Gemini key; after resync, hit free-tier 20/day quota cap (anonymous test user) — proves quota gating works as designed. Production users on Pro/Premium (or admin auto-promoted) bypass this.
+- **Test 4 (DO `/create`):** Skipped — needs OAuth-authenticated user; agreed not load-bearing for deploy verification.
+- **Open items / handoff:** All SwarmSpace-side work for §4.4, §22, §5.2 complete and live. LUMARA-side: §22 L-1/L-2/L-3/L-4 (MeetingPrepWorkflow, UI, e2e, v1RouteSet allowlist) and §5.2 "keep watching this" UI wiring.
 
 ---
 

@@ -136,9 +136,16 @@ Designed, not built. One vote per user per plugin, permanent, non-revocable. Wei
 
 Manual at launch. Composite score: upvotes, call volume, retention, developer activity, update frequency, error rate.
 
-### 4.4 Catalogue Updates Endpoint
+### 4.4 Catalogue Updates Endpoint ✅ DEPLOYED (2026-05-02)
 
-Not built. `/catalogue/updates` on swarmspaceRouter. Builds on live `swarmspacePluginCatalog` function. Accepts: `since` (ISO timestamp), `interest_tags`, `user_history_categories`. Returns new/updated plugins filtered by user profile, sorted by merit score. Max once per 6 hours per user. Privacy: receives tag hashes, not raw CHRONICLE content.
+Implemented as an extension to the existing `swarmspacePluginCatalog` Cloud Function rather than a new endpoint. New optional params: `since` (ISO timestamp) → returns only plugins with `deployed_at > since`, sorted descending; `interest_tags` (string[], max 20) → SHA-256-hashed (lowercased, 16 hex chars) and matched against the same hashing applied to plugin `capabilities`. Per-UID rate limit: 1 successful call per 6 hours via Firestore `catalogue_update_rate_limits/{uid}`. Filtered responses include `{filtered: true, since, count}` top-level fields. Backwards-compatible — callers without `since` see no behavior change.
+
+Smoke-tested 2026-05-02: full catalog returns ~22 plugins; filtered (`since: "2026-04-01"`) correctly returns the smaller post-April subset with `calendar-reader` first (deployed 2026-05-01).
+
+User-history-categories (in original spec) deferred — not needed for v1; LUMARA can do client-side ordering.
+
+Commits: `891ccc2` (Track 1 of v1.5.2 sprint).
+LUMARA still open: wire session-start discovery to send `since` (last sync ISO) — see handoff in `Docs/context.md`.
 
 ### 4.5 Credit System
 
@@ -236,17 +243,20 @@ For TypeScript/npm deps: use `@cloudflare/worker-bundler` to transpile and bundl
 
 Depends on: live orchestrator routes ✅. **Does NOT depend on §5.3** for curated workflow DOs (verified 2026-05-01): the orchestrator at `workers/orchestrator/src/index.js` has zero execution-mode awareness; routes like `/news-brief` are plain POST handlers running pre-baked, read-only plugin chains. §5.3 (plan/auto/bubble/interactive) only matters for agent-assembled chains where unknown plugins might be selected at runtime — not for cron-driven curated workflows.
 
-- [ ] Define first Durable Object class extending `DurableObject` from `cloudflare:workers`
-- [ ] Add `durable_objects` bindings to wrangler config
-- [ ] Prototype News Briefing delta variant: store previous output, diff on next run, return delta (wraps live `/news-brief` route)
-- [ ] Prototype Competitor Research delta variant (wraps `/competitor` route, weekly diff)
+- [x] **Define first Durable Object class extending `DurableObject` from `cloudflare:workers`** ✅ DEPLOYED 2026-05-02 — `NewsBriefingDO` in `workers/durable-objects/news-briefing/`
+- [x] **Add `durable_objects` bindings to wrangler config** ✅ — `NEWS_BRIEFING` binding live on `swarmspace-durable-object-news-briefing`
+- [x] **Prototype News Briefing delta variant** ✅ DEPLOYED — `NewsBriefingDO` SQLite stores previous output + diff on alarm fire. Three HTTP routes (POST /create, POST /cancel, GET /{do_id}/latest). API-only v1; LUMARA wires "keep watching this" UI later.
+- [x] **Implement Alarms API scheduling (`setAlarm` / `alarm()`)** ✅ — daily/weekly cadences. v1 first-fire interval is +60s for fast testing (commented as production TODO to align to natural cadence boundary).
+- [x] **Implement tier gating: reject DO scheduling requests from free-tier mobile users** ✅ — DO Worker reads `users/{uid}.plan` from Firestore via REST + service-account JWT; rejects free with 403 `paid_tier_required`.
+- [ ] Prototype Competitor Research delta variant (wraps `/competitor` route, weekly diff) — pattern established by News Briefing DO; replicate
 - [ ] Prototype Trend Spotter delta variant (wraps `/tech-scout` route, sentiment baseline alerts)
 - [ ] Prototype Market Intelligence delta variant (wraps `/market-scan` route, weekly market movement summary with currency, news, and sector signals)
-- [ ] Implement Alarms API scheduling (`setAlarm` / `alarm()`) for cron-style recurring execution
-- [ ] Implement tier gating: reject DO scheduling requests from free-tier mobile users
 - [ ] CHRONICLE context injection at execution time (request fresh context, never persist in DO)
 - [ ] DO catalogue check: on scheduled fire, query `/catalogue/updates` for agent's category, flag new relevant plugins in delta output
 - [ ] Extend `swarmspaceDiscoveryAgent` response with `recurringVariant` field so the homepage chat (`index.html`) can surface "also runs as a recurring agent" for matching workflows (moved from §12 Phase 2 — frontend wiring is otherwise complete)
+- [ ] LUMARA: wire "keep watching this" UI to call `POST /durable-objects/news-briefing/create` (Pro/Premium gated client-side; Worker also enforces server-side)
+
+**Service-token bypass auth path** ✅ DEPLOYED — `swarmspaceRouter` now accepts `_service_token` + `_run_as_uid` in `request.data` to authenticate DO-initiated calls without a Firebase ID token. Orchestrator's `callPlugin` propagates these in the data envelope when `ctx.serviceToken` and `ctx.runAsUid` are set. Commits `b2e4fd5`, `306983a`.
 
 Cost model: Workers Paid $5/mo base. 1M requests + 400K GB-seconds included. Estimated $10-20/mo at 10K users with 5 recurring agents each.
 
@@ -2184,8 +2194,10 @@ The Safe Room does not replace any existing control. It closes the output-side g
 
 ---
 
-## 22. MEETING PREP AGENT — Priority: HIGH (on-demand v1)
+## 22. MEETING PREP AGENT — SwarmSpace half ✅ DEPLOYED 2026-05-02 · LUMARA half open
 
+> **Status (2026-05-03):** All five SwarmSpace tasks (SS-1 through SS-5) shipped and verified live in production. The `/meeting-prep` orchestrator route is reachable, `calendar-reader` Worker auth + body validation pass smoke-tests, and the calendar-reader entry is in PLUGIN_REGISTRY. **Four LUMARA tasks remain open** (L-1 MeetingPrepWorkflow, L-2 UI screen, L-3 e2e verify, L-4 v1RouteSet allowlist).
+>
 > **Specced 2026-05-01.** Standard-tier on-demand agent that prepares a structured brief before a meeting. Pulls personal context from LUMARA (CHRONICLE + documents + optional calendar) and fuses it with external intel (web search + LinkedIn) via the SwarmSpace orchestrator.
 >
 > **LUMARA dependency: YES (substantial).** LUMARA owns: CHRONICLE/document lookup, OAuth token management, `MeetingPrepWorkflow` class, UI screen, and the `calendar-reader` registry entry in `swarmspaceRouter.ts`. SwarmSpace owns: `calendar-reader` plugin Worker, `/meeting-prep` orchestrator route, registry entry in `workers/plugins/REGISTRY_ENTRIES.ts`. Cross-repo work is gated by the Integration Contract at the bottom of this section.
