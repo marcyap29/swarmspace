@@ -1,21 +1,22 @@
 # SwarmSpace — Complete Backlog for Claude Code
 
-*Compiled April 9, 2026 — updated April 14, 2026*
+*Compiled April 9, 2026 — updated 2026-05-03 (post-v1.5.2 deploy + drift sweep).*
 
 ---
 
 ## Critical Path
 
-Previous blockers (404/405 fixes, submission portal, DEVELOPER_GUIDE.md, AST10 page, founding dev programme code) are all complete. The remaining dependency chain:
+Earlier blockers (404/405 fixes, submission portal, DEVELOPER_GUIDE.md, AST10 page, founding dev programme code, useOrchestrator flag flip) are all complete and the launch gate is fully clear. The remaining dependency chain:
 
 ```
-3 LUMARA workflows live → Community launch outreach (Section 8)
-Credential isolation (2.3) → Developer outreach at scale
-Stripe Connect (3.3) + Earnings Dashboard (3.4) → Verified tier launch
-Orchestrator execution modes (5.3) → Work Chain chaining → Durable Objects (5.2)
+✅ 3 LUMARA workflows live → Community launch outreach (Section 8 — outreach not yet started)
+🟡 Credential isolation (§2.3) — in-repo workers ✅, social-publisher + ~10 external plugins still open
+🟡 Stripe Connect (§3.3) + Earnings Dashboard (§3.4) — frontend ✅; payout backend still required → Verified tier launch
+🔵 Durable Objects (§5.2) — News Briefing variant ✅ DEPLOYED 2026-05-02; 3 other variants + agent-assembled DOs still open
+🔵 Orchestrator execution modes (§5.3) — only required for agent-assembled chains, NOT for curated workflow DOs (verified 2026-05-01 against orchestrator code; was previously claimed as a §5.2 prereq, that's now corrected)
 ```
 
-Orchestrator execution modes (plan/auto/bubble/interactive) must land before Work Chain chaining and before Durable Objects dispatch.
+For a recurring agent that wraps an existing curated orchestrator route (News Briefing, Competitor Research, etc.), §5.3 modes are not required — the route is pre-baked and read-only. §5.3 only matters when an agent assembles its own chain at runtime and might pick destructive plugins.
 
 ---
 
@@ -262,7 +263,7 @@ Cost model: Workers Paid $5/mo base. 1M requests + 400K GB-seconds included. Est
 
 ### 5.3 Orchestrator Execution Modes
 
-Must land before Work Chain chaining and before DO dispatch.
+**Scope correction (2026-05-01):** does NOT block curated workflow DOs (verified against `workers/orchestrator/src/index.js` — has zero execution-mode awareness; routes are plain POST handlers running pre-baked, read-only chains). News Briefing DO shipped 2026-05-02 without this. §5.3 is required only for **agent-assembled** chains — when the agent-worker's planner picks plugins at runtime and might choose destructive ones. Required before any "agent autonomously builds and runs a chain" feature, including agent-assembled DO variants.
 
 **Prototype exists (discovered April 18, 2026):** `workers/agent-worker/` has live `POST /agent/plan` and `POST /agent/execute` routes with tier-aware execution (`workers/agent-worker/src/tiers.ts`). Start here — do not rebuild from scratch.
 
@@ -296,7 +297,7 @@ Current stack (unchanged until benchmarking):
 
 Architecture update (April 2026): Layer 3 no longer depends on LUMARA desktop. Durable Objects provide server-side persistent runtime.
 
-- [ ] Roles (end-user skin for Work Chains) — browse/deploy surface for pre-configured Work Chains presented as Roles (e.g. "Social Media Manager", "Content Strategist"). These are Roles, not Work Chains themselves — Roles are the marketing skin on top of Work Chain infrastructure.
+- [x] Roles browsing surface ✅ DONE (2026-04-19) — see §16. `roles.html` shipped with 6 Role cards. Future expansion (more Roles, deeper personalization) tracked alongside §15 Catalogue.
 - [ ] Agent Identity Token (AIT) system — autonomous agent self-registration with human-in-the-loop verification at first registration
 - [ ] `schedulable` manifest field — declares plugin supports scheduled invocation. Verified-only. Required before DO dispatch.
 - [ ] `headless` manifest field — declares plugin designed to run without user approval step. Verified-only. Required for `auto` execution mode.
@@ -318,8 +319,8 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 
 ### 7.2 SOON (dependency on current work)
 
-- **Session-Start Catalogue Discovery** — LUMARA queries `/catalogue/updates` on app open. Depends on that endpoint being built (Section 4.4).
-- **Server-Side Recurring Agents for Mobile** — depends on DO infrastructure (Section 5.2) and execution modes (Section 5.3).
+- **Session-Start Catalogue Discovery** — LUMARA queries `swarmspacePluginCatalog` with `since` (last sync ISO) on app open. SwarmSpace side ✅ DEPLOYED 2026-05-02 (§4.4); LUMARA-side wiring is the remaining work.
+- **Server-Side Recurring Agents for Mobile** — DO infrastructure shipped (§5.2 News Briefing 2026-05-02). Open work: LUMARA "keep watching this" UI to call DO endpoints; remaining DO variants (Competitor / Trend Spotter / Market Intelligence). Agent-assembled DOs require §5.3 (separate track).
 - **Intent-to-Agent Assembly** — depends on recurring agents + SwarmSpace semantic search.
 - **Saved Agent Library** — depends on Intent-to-Agent Assembly.
 - **Visual Chain Builder** — desktop-first. Depends on Saved Agent Library.
@@ -384,7 +385,7 @@ These live in the LUMARA backlog but have SwarmSpace dependencies:
 
 ---
 
-## 10. AGENT WALLET SYSTEM — Priority: MEDIUM (Phase 0 can start now, Phase 1+ after 404/405 fixes)
+## 10. AGENT WALLET SYSTEM — Priority: MEDIUM (404/405 prereq cleared; Phase 0 can start now, Phase 1+ when wallet UX is needed)
 
 ### Overview
 
@@ -652,10 +653,10 @@ Request → Resolve AIT → Check agent wallet exists?
 | Phase | External Dependency | Can Start After |
 |---|---|---|
 | Phase 0 | AIT system designed | Now |
-| Phase 1 | swarmspaceRouter functional (404/405 fixes) | After 404/405 resolution |
-| Phase 2 | Recurring agent UX (DO prototype) | After Phase 1 + DO prototype |
-| Phase 3 | Real usage data | After Phase 2 |
-| Phase 4 | DO production infrastructure | After Phase 3 + DO production |
+| Phase 1 | swarmspaceRouter functional (404/405 fixes) | ✅ Cleared (functions live since 2026-04-12) — Phase 1 unblocked |
+| Phase 2 | Recurring agent UX (DO prototype) | ✅ DO prototype shipped (News Briefing 2026-05-02) — Phase 2 unblocked |
+| Phase 3 | Real usage data | After Phase 2 launches and accumulates calls |
+| Phase 4 | DO production infrastructure | DO infrastructure exists (single Worker); production-grade hardening still pending |
 
 ### Architecture Document Impact
 
@@ -802,13 +803,13 @@ The Broker sits at the intersection of: private data access (handshake context) 
 
 | Dependency | Status | Blocks |
 |---|---|---|
-| swarmspaceRouter functional | Live (23 plugins, credit enforcement) | Phase 3 dispatch |
-| 404/405 Worker fixes | IMMEDIATE blocker | Phase 3 full chain testing |
-| swarmspacePluginCatalog | Live | Phase 3 catalogue query |
-| Orchestrator execution modes | Not started (Arch v7 §6) | Phase 3 chain assembly (can stub initially) |
-| Dynamic Worker sandbox | Not started | Phase 2 PRISM at sandbox level (Broker adds layer above) |
-| Durable Objects | Not started | Phase 1 session state (can use in-memory fallback for prototype) |
-| Plugin manifest v2 | Not started | Phase 3 chain assembly (is_destructive/headless/schedulable) |
+| swarmspaceRouter functional | ✅ Live (24 plugins after 2026-05-02 calendar-reader add) | Phase 3 dispatch |
+| 404/405 Worker fixes | ✅ Cleared 2026-04-12 | (no longer a blocker) |
+| swarmspacePluginCatalog | ✅ Live (now with /catalogue/updates filter mode 2026-05-02) | Phase 3 catalogue query |
+| Orchestrator execution modes (§5.3) | Not started | Phase 3 chain assembly (can stub initially) |
+| Dynamic Worker sandbox (§5.1) | Not started | Phase 2 PRISM at sandbox level (Broker adds layer above) |
+| Durable Objects (§5.2) | ✅ News Briefing DO live 2026-05-02 (one variant) | Phase 1 session state (DO pattern proven; Broker can adopt the same pattern) |
+| Plugin manifest v2 | Partial — `is_read_only`, `is_destructive`, `schedulable`, `headless` fields added to PluginConfig 2026-05-02 (calendar-reader uses all four); broader v2 schema still open | Phase 3 chain assembly |
 
 ### Notes
 
@@ -818,7 +819,7 @@ The Broker sits at the intersection of: private data access (handshake context) 
 
 ---
 
-## 12. FRONT-PAGE DISCOVERY AGENT — Priority: HIGH (after 404/405 fixes)
+## 12. FRONT-PAGE DISCOVERY AGENT — All 3 phases ✅ DONE
 
 ### Overview
 
@@ -833,8 +834,8 @@ A chat-style discovery agent embedded on the SwarmSpace homepage (`index.html`) 
 | 404 fixes on plugin Workers | ✅ DONE (2026-04-12) | Agent needs real plugins from catalogue. |
 | 405 fixes on orchestrator | ✅ DONE (2026-04-12) | Chain assembly references orchestrator routes. |
 | swarmspacePluginCatalog function | ✅ LIVE | Already deployed. Agent queries this for full catalogue with tier info. |
-| At least 3 workflows working | In progress (planner) | Agent credibility depends on showing chains that actually work. |
-| Gemini Flash API key | ✅ LIVE | Agent uses Gemini Flash for intent parsing and chain assembly reasoning. |
+| At least 3 workflows working | ✅ DONE 2026-04-18 (research, news-brief, competitor verified live in LUMARA) | Agent credibility depends on showing chains that actually work. |
+| Gemini Flash API key | ✅ LIVE (rotated 2026-05-01, resynced to gemini-flash Worker 2026-05-02) | Agent uses Gemini Flash for intent parsing and chain assembly reasoning. |
 
 ### Phase 1: Intent Parser Cloud Function ✅ DONE (2026-04-14)
 
@@ -926,7 +927,9 @@ All four tasks shipped — verified by code inspection 2026-05-01:
 
 ## Recurring Agent Scheduler — Durable Objects Implementation Spec
 
-*Added: April 11, 2026*
+*Added: April 11, 2026.*
+
+> **Status update (2026-05-02):** v1 ships as a per-workflow DO Worker, not the centralized `SchedulerManager` + generic `AgentSchedulerDO` model below. First variant: News Briefing DO at `workers/durable-objects/news-briefing/` (see §5.2). Spec is retained as design reference for the centralized scheduler if/when we generalize past the per-workflow approach. Concrete shipped artifacts: `workers/durable-objects/news-briefing/`, three HTTP routes (`POST /durable-objects/news-briefing/create`, `POST /cancel`, `GET /{do_id}/latest`), tier gate via Firestore `users/{uid}.plan`, alarm-based daily/weekly cadence, diff against `previous_output_json`. The generalized form below is unbuilt.
 
 ### Context
 
@@ -1146,18 +1149,18 @@ Strong candidates for DO wrapping. More value on a recurring schedule than as on
 
 | Role Name | Cadence | Value Delivered | DO Variant |
 |---|---|---|---|
-| Competitive Intelligence Analyst | Weekly | Delta report vs. prior week. Highlights only what changed. | Competitor Research DO — already in backlog (Section 5.2) |
-| News Desk | Daily | Delta briefing vs. yesterday. No repeated stories. | News Briefing DO — already in backlog (Section 5.2) |
-| Tech Scout | Weekly | Community signal shift alerts. Emerging repos, trending discussions. | Trend Spotter DO — already in backlog (Section 5.2) |
-| Market Intelligence Analyst | Weekly | Market movement summary with currency, news, and sector signals. | Market Intelligence DO — **added to Section 5.2** |
+| Competitive Intelligence Analyst | Weekly | Delta report vs. prior week. Highlights only what changed. | Competitor Research DO — open in §5.2 (replicate News Briefing DO pattern) |
+| News Desk | Daily | Delta briefing vs. yesterday. No repeated stories. | News Briefing DO ✅ DEPLOYED 2026-05-02 — `workers/durable-objects/news-briefing/` |
+| Tech Scout | Weekly | Community signal shift alerts. Emerging repos, trending discussions. | Trend Spotter DO — open in §5.2 |
+| Market Intelligence Analyst | Weekly | Market movement summary with currency, news, and sector signals. | Market Intelligence DO — open in §5.2 |
 
 ---
 
-## 16. ROLES BROWSING PAGE — New Surface Required
+## 16. ROLES BROWSING PAGE ✅ SHIPPED 2026-04-19
 
-SwarmSpace currently has no end-user browsing surface for pre-configured Work Chains. The 12 orchestrator routes exist but are not presented as deployable Roles.
+`roles.html` is the end-user browsing surface for pre-configured Work Chains. The 12 orchestrator routes are now presented as deployable Roles with tier badges and one-click deploy.
 
-A Roles page (or dedicate the homepage) should list each Role with:
+For reference, a Roles page lists each Role with:
 
 - Role name and persona framing
 - Plain-language description of what it does
@@ -2761,4 +2764,4 @@ Token refresh is LUMARA's responsibility. If the Worker returns `{ "error": "cal
 
 ---
 
-*SwarmSpace Full Backlog — Orbital AI — May 1, 2026*
+*SwarmSpace Full Backlog — Orbital AI — May 3, 2026*
