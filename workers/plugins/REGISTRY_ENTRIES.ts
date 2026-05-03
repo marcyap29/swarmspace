@@ -72,6 +72,7 @@
     privacy_data_required: ["calendar_events", "attendee_names", "attendee_emails", "access_token"],
     privacyTier: "STRUCTURED_PERSONAL",
     dataTypes: ["calendar_events", "attendee_data"],
+    rateLimits: { free: 0, standard: 500, premium: 500 },
     is_read_only: true,
     is_destructive: false,
     schedulable: true,

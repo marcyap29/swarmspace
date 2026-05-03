@@ -1,6 +1,6 @@
 # SwarmSpace — Claude Code Instructions
 
-**Version:** 1.6.0 *(2026-05-03 — adopted Starter Repo STEP 1-6 procedure + cross-repo mirror rule)*
+**Version:** 1.6.1 *(2026-05-03 — added Coordinate.md SOP: bidirectional dialog file, sign-and-date convention, 30-40s pause + retry on edit failure)*
 **Repo root:** `/Volumes/Marc Working Drive/Development/swarmspace/`
 **Stack:** Firebase Cloud Functions (TypeScript) + Cloudflare Workers (TS/JS) + static HTML on Vercel.
 **Linter:** `cd functions && npm run build` (functions side); `npx tsc --noEmit` from individual worker dirs (Workers side).
@@ -23,10 +23,12 @@ PROMPT RECEIVED
 │                                            warnings             │
 │                                                                 │
 │  If the task touches LUMARA integration (orchestrator, plugin   │
-│  registry, PRISM, OAuth, anything cross-repo) ALSO read:        │
-│  /Volumes/Marc Working Drive/Development/Unified LUMARA +       │
-│   Swarmspace Backlog/LUMARA_Context.md   ← LUMARA's last session│
-│   ...                       /LUMARA_Backlog.md (relevant items) │
+│  registry, PRISM, OAuth, anything cross-repo) ALSO read in this │
+│  order from /Volumes/Marc Working Drive/Development/Startup     │
+│  Onboard/ :                                                     │
+│    • Coordinate.md       ← bidirectional dialog, open asks      │
+│    • LUMARA_Context.md   ← LUMARA's last session                │
+│    • LUMARA_Backlog.md   ← relevant cross-repo items            │
 └─────────────────────────────────────────────────────────────────┘
       │
       ▼
@@ -96,9 +98,16 @@ PROMPT RECEIVED
 │  Update: Docs/CONFIGURATION_MANAGEMENT.md → if any docs changed │
 │  Update: Docs/CHANGELOG.md → if a release-worthy change shipped │
 │  Mirror: any of {backlog.md, context.md, planner.md, CLAUDE.md} │
-│           that changed this session → unified dir as            │
+│           that changed this session → Startup Onboard/ as       │
 │           SWARMSPACE_<Title>.md (see Cross-Repo Coordination    │
 │           below for cp commands)                                │
+│  Edit:   Startup Onboard/Coordinate.md (BIDIRECTIONAL — both    │
+│           sides edit) IF cross-repo state changed: in-flight    │
+│           feature status, new blocker, request for LUMARA,      │
+│           answer to LUMARA's open question, joint decision.     │
+│           Sign every entry [SWARMSPACE YYYY-MM-DD]. Move        │
+│           resolved items to Archive section, never delete       │
+│           LUMARA's entries.                                     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -124,16 +133,25 @@ Shared mailbox at `/Volumes/Marc Working Drive/Development/Startup Onboard/` —
 
 **Workflow rule (codified 2026-05-03):** I am free to edit any `.md` in this repo as the canonical source. After editing, I MUST mirror the changed files to the unified dir at STEP 6 close-session. The unified dir is read-only — never edit a mirror directly. Both sides do this; that's how a third-party agent or LUMARA Claude knows what's current without traversing this repo.
 
-| File | Owner | Source of truth (canonical) | Mirror when |
-|---|---|---|---|
-| `SWARMSPACE_Backlog.md` | SwarmSpace Claude | `backlog.md` | backlog edited |
-| `SWARMSPACE_Context.md` | SwarmSpace Claude | `Docs/context.md` | session block prepended |
-| `SWARMSPACE_Planner.md` | SwarmSpace Claude | `planner.md` | tasks edited |
-| `SWARMSPACE_Claude.md` | SwarmSpace Claude | `Docs/CLAUDE.md` | SOPs / convention edited |
-| `SWARMSPACE_Spec_*.md` | SwarmSpace Claude | (none currently — Meeting Prep lives inline in §22) | active cross-repo spec edited; archive after merge |
-| `LUMARA_*.md` | LUMARA Claude | LUMARA repo's canonical files | their session-close |
-| `prompts/*.md` | User | n/a | overrides in-repo planner when present |
-| `README.md` | Either side | unified dir | convention edited |
+| File | Direction | Owner | Source of truth | Touch when |
+|---|---|---|---|---|
+| `SWARMSPACE_Backlog.md` | mirror (one-way) | SwarmSpace Claude | `backlog.md` | backlog edited |
+| `SWARMSPACE_Context.md` | mirror (one-way) | SwarmSpace Claude | `Docs/context.md` | session block prepended |
+| `SWARMSPACE_Planner.md` | mirror (one-way) | SwarmSpace Claude | `planner.md` | tasks edited |
+| `SWARMSPACE_Claude.md` | mirror (one-way) | SwarmSpace Claude | `Docs/CLAUDE.md` | SOPs / convention edited |
+| `SWARMSPACE_Spec_*.md` | mirror (one-way) | SwarmSpace Claude | (none currently — Meeting Prep lives inline in §22) | active cross-repo spec edited; archive after merge |
+| `LUMARA_*.md` | mirror (one-way) | LUMARA Claude | LUMARA repo's canonical files | their session-close — read-only for me |
+| **`Coordinate.md`** | **BIDIRECTIONAL — both sides edit** | both | n/a (this IS the canonical) | cross-repo state changed: in-flight feature status, blocker, request, answer, joint decision |
+| `prompts/*.md` | one-way (user → both) | User | n/a | overrides in-repo planner when present |
+| `README.md` | one-way | LUMARA Claude (currently) | unified dir | convention edited |
+
+**`Coordinate.md` rules of the road** (per `Startup Onboard/Coordinate.md` itself):
+- Sign every contribution `[SWARMSPACE YYYY-MM-DD]` so LUMARA knows what came from me and when
+- Never delete LUMARA's entries — move resolved items to the Archive section instead
+- Never edit LUMARA's status claims — if I disagree, add my own entry rebutting
+- Be specific: cite commit hashes, file paths, exact next actions. Vague status wastes LUMARA's session.
+- Use Edit (not Write/cp) — preserve LUMARA's contributions
+- **Concurrency: pause + retry on edit failure.** If an Edit on `Coordinate.md` fails with "File has been modified since read" or similar, LUMARA Claude is likely writing to it concurrently. Wait 30-40 seconds, re-read the file (to pick up their changes), then retry the edit on the fresh contents. Three retries max; if still failing, log it as an unfinished open item and surface to the user.
 
 **Concrete commands for STEP 6 mirror (run only for files that changed this session):**
 

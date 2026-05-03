@@ -4,8 +4,8 @@
 > **Overwrite this section at session start. Ground truth only — no prose. Verify against `git status` before writing.**
 
 - **Branch:** `main`
-- **Working tree:** Modified: `Docs/CLAUDE.md`, `Docs/context.md`. Untracked: `.claude/`, `swarmspace.code-workspace`. Verified 2026-05-03.
-- **Last commit:** `3d4777c` — docs: backlog drift sweep (match repo state, clean stale items)
+- **Working tree:** Modified: `Docs/CLAUDE.md`, `Docs/context.md`, `workers/plugins/REGISTRY_ENTRIES.ts`. Untracked: `.claude/`, `swarmspace.code-workspace`. Verified 2026-05-03.
+- **Last commit:** `43cb137` — docs: repoint cross-repo mirror to renamed "Startup Onboard" dir
 - **Deployed:** All 23 Firebase functions, calendar-reader Worker, orchestrator (with `/meeting-prep`), News Briefing DO Worker, and gemini-flash Worker secret rotation — all live as of 2026-05-02
 - **planner.md:** Cleaned — no active tasks
 - **Cross-repo mirror:** Active. SwarmSpace → `/Volumes/Marc Working Drive/Development/Startup Onboard/SWARMSPACE_*.md`. Sync rule codified in `Docs/CLAUDE.md` STEP 6.
@@ -50,6 +50,30 @@ Skip any field that doesn't apply. Keep prose tight. Link to commits, PRs, or ex
 - When a session ends, leave a final "Open items / handoff" line on the most recent entry so the next agent knows where to pick up.
 - **At session start:** Run `git status` and update the Current State section at the top before doing anything else. Never trust prior session notes about uncommitted work without verifying.
 - **Close the loop:** When work that was logged as "not yet committed" gets committed, append `→ committed [hash]` inline to the original outcome line. Do not delete it.
+
+---
+
+## SESSION — 2026-05-03 — Claude Opus 4.7 (Claude Code) — Coordinate.md SOP adoption + Meeting Prep cross-repo confirmation
+
+### 2026-05-03 — Adopted Coordinate.md bidirectional SOP in `Docs/CLAUDE.md` (v1.6.0 → v1.6.1)
+- **Files touched:** `Docs/CLAUDE.md`
+- **Decisions:** LUMARA Claude introduced `Startup Onboard/Coordinate.md` 2026-05-03 as the bidirectional dialog file (both sides edit, sign `[<REPO> <date>]`). Updated my STEP 1 ORIENT to read it for cross-repo work. Updated my STEP 6 CLOSE SESSION to edit it when cross-repo state changes. Cross-Repo Coordination table now distinguishes one-way mirrors (`SWARMSPACE_*` / `LUMARA_*`) from BIDIRECTIONAL `Coordinate.md`. Added rules of the road: `Edit` not `Write`/`cp`, sign every entry, never delete LUMARA entries, never edit LUMARA status claims (rebut with new entry). Per user instruction: 30-40s pause + retry on edit failure (sleep 35, re-read, retry; max 3 attempts before surfacing) — both sides may write concurrently.
+- **Outcome:** SwarmSpace fully participates in the Coordinate.md dialog. CLAUDE.md mirrored to Startup Onboard.
+
+### 2026-05-03 — Confirmed Meeting Prep status to LUMARA via Coordinate.md
+- **Files touched:** `/Volumes/Marc Working Drive/Development/Startup Onboard/Coordinate.md`
+- **Decisions:** LUMARA Claude asked for SwarmSpace's confirmation on SS-1 through SS-5 status (they had verified via 4 parallel Explore agents and wanted my own confirmation). Added `[SWARMSPACE 2026-05-03]` confirmation entry citing exact commits: `e165496` (Worker + REGISTRY_ENTRIES.ts), `b2e4fd5` (orchestrator route + service-token), `e90547b` (PLUGIN_REGISTRY entry). All v1.5.2-tagged, deployed to arc-epi 2026-05-02, smoke-tested.
+- **Outcome:** LUMARA verification corroborated; cleanup item closed in same edit (see next entry).
+
+### 2026-05-03 — Resolved REGISTRY_ENTRIES.ts cleanup flagged by LUMARA
+- **Files touched:** `workers/plugins/REGISTRY_ENTRIES.ts` (added `rateLimits: { free: 0, standard: 500, premium: 500 }` to `calendar-reader` entry, line 75)
+- **Decisions:** LUMARA flagged that REGISTRY_ENTRIES.ts was missing the `rateLimits` field that the §22 spec lists. Fixed it. Note: REGISTRY_ENTRIES.ts is documentation-only (the live enforcement is SS-4's PLUGIN_REGISTRY in `swarmspaceRouter.ts`, which already had the field), so no redeploy needed. Reported resolution back to LUMARA in `Coordinate.md` under the Meeting Prep section.
+- **Outcome:** REGISTRY_ENTRIES.ts now matches the spec.
+
+### 2026-05-03 — Raised two open requests to LUMARA in Coordinate.md
+- **Files touched:** `/Volumes/Marc Working Drive/Development/Startup Onboard/Coordinate.md`
+- **Decisions:** Added "Open requests across repos" entry from SwarmSpace surfacing two LUMARA-side wirings now unblocked by shipped infrastructure: (1) §4.4 catalogue updates delta sync — LUMARA can switch session-start discovery to send `since: <last sync ISO>`; backwards-compatible; (2) §5.2 News Briefing DO — LUMARA can wire "keep watching this" UI calling the three live endpoints (`/create`, `/cancel`, `/{do_id}/latest`). Both Pro/Premium gated server-side. Neither blocks LUMARA's current sprint; surfaced for visibility per Coordinate.md's "need something from the other side" trigger.
+- **Outcome:** Open requests visible in the cross-repo dialog.
 
 ---
 
