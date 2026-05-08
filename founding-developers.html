@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SwarmSpace — Founding Developer Programme</title>
-  <meta name="description" content="100 spots. Permanent 85% revenue share. Build the trust layer for AI agents." />
+  <title>SwarmSpace &mdash; Founding Developer Programme</title>
+  <meta name="description" content="100 spots. Permanent 85% revenue share. Build plugins for the agent registry &mdash; and earn more for it, forever." />
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
@@ -63,7 +63,7 @@
 
     .requirements { max-width:600px; margin:32px auto 0; }
     .requirements li { font-size:14px; color:var(--muted); padding:8px 0; border-bottom:1px solid var(--border); list-style:none; }
-    .requirements li::before { content:"→ "; color:var(--accent2); }
+    .requirements li::before { content:"\2192 "; color:var(--accent2); }
     .requirements li:last-child { border-bottom:none; }
 
     .cta-section { text-align:center; padding:64px 40px; }
@@ -101,14 +101,14 @@
     <a href="/developer-guide.html">Docs</a>
     <a href="/upgrade.html">Pricing</a>
   </div>
-  <a href="/signup.html" class="btn-primary">Get API access →</a>
+  <a href="/signup.html" class="btn-primary">Get API access &rarr;</a>
 </nav>
 
 <div class="hero">
   <h1>Founding Developer Programme</h1>
-  <p>100 spots. Permanent 85% revenue share. Help build the trust layer for AI agents — and earn more for it, forever.</p>
+  <p>Build your plugin. We handle the standards, the discovery, and the payments. The first 100 developers earn 85% on every call &mdash; and that rate never changes.</p>
   <div class="counter-badge">
-    <span class="counter-num" id="spots-remaining">—</span>
+    <span class="counter-num" id="spots-remaining">&mdash;</span>
     <span class="counter-label">of 100 spots<br>remaining</span>
   </div>
 </div>
@@ -117,22 +117,22 @@
   <h2>What You Get</h2>
   <div class="benefits-grid">
     <div class="benefit-card">
-      <div class="benefit-icon">💰</div>
-      <div class="benefit-title">85% Revenue Share — Permanent</div>
-      <div class="benefit-desc">Standard developers earn 80%. As a Founding Developer, you earn 85% on every API call to your plugins. This rate is locked in permanently — it never downgrades.</div>
+      <div class="benefit-icon">&#128176;</div>
+      <div class="benefit-title">85% Revenue Share &mdash; Permanent</div>
+      <div class="benefit-desc">Standard developers earn 80%. As a Founding Developer, you earn 85% on every API call to your plugins. This rate is locked in permanently &mdash; it never downgrades.</div>
     </div>
     <div class="benefit-card">
-      <div class="benefit-icon">🏅</div>
+      <div class="benefit-icon">&#127885;</div>
       <div class="benefit-title">Founding Developer Badge</div>
-      <div class="benefit-desc">A permanent badge on your profile and all your plugins. It signals to users that you were here from the beginning — a trust signal that can't be bought later.</div>
+      <div class="benefit-desc">A permanent badge on your profile and all your plugins. It signals to users that you were here from the beginning &mdash; a trust signal that can't be bought later.</div>
     </div>
     <div class="benefit-card">
-      <div class="benefit-icon">🚀</div>
+      <div class="benefit-icon">&#128640;</div>
       <div class="benefit-title">Early Access</div>
-      <div class="benefit-desc">First to test new platform features: Durable Objects scheduling, Work Chains & Roles, the Discovery Agent. Your feedback shapes what ships.</div>
+      <div class="benefit-desc">First to test new platform features: Durable Objects scheduling, Work Chains &amp; Roles, the Discovery Agent. Your feedback shapes what ships.</div>
     </div>
     <div class="benefit-card">
-      <div class="benefit-icon">🔗</div>
+      <div class="benefit-icon">&#128279;</div>
       <div class="benefit-title">Direct Channel</div>
       <div class="benefit-desc">Direct access to the SwarmSpace team. Priority plugin review. Your issues get looked at first.</div>
     </div>
@@ -167,34 +167,34 @@
     <li>Submit at least 1 plugin within 90 days of claiming your spot</li>
     <li>Plugin must pass review (Community or Verified tier)</li>
     <li>Comply with the <a href="/developer-guide.html">Developer Guide</a> and Developer Agreement</li>
-    <li>Free to join — no fees, ever</li>
+    <li>Free to join &mdash; no fees, ever</li>
   </ul>
 </section>
 
 <div class="cta-section" id="cta-section">
   <div id="cta-loading" style="color:var(--muted);">Loading...</div>
   <div id="cta-unauthenticated" style="display:none;">
-    <a href="/signup.html?founding=true" class="cta-btn">Sign up and claim your spot →</a>
+    <a href="/signup.html?founding=true" class="cta-btn">Sign up and claim your spot &rarr;</a>
     <div class="cta-status">Already have an account? <a href="/signup.html?founding=true">Sign in</a></div>
   </div>
   <div id="cta-claim" style="display:none;">
-    <button class="cta-btn" id="claim-btn" onclick="claimSpot()">Claim your founding spot →</button>
+    <button class="cta-btn" id="claim-btn" onclick="claimSpot()">Claim your founding spot &rarr;</button>
     <div class="cta-status" id="claim-status"></div>
   </div>
   <div id="cta-already" style="display:none;">
-    <div class="founding-badge">🏅 Founding Developer</div>
+    <div class="founding-badge">&#127885; Founding Developer</div>
     <div class="cta-success" id="already-msg" style="margin-top:16px;"></div>
-    <a href="/submit-plugin.html" class="cta-btn" style="margin-top:16px;">Submit your first plugin →</a>
+    <a href="/submit-plugin.html" class="cta-btn" style="margin-top:16px;">Submit your first plugin &rarr;</a>
   </div>
   <div id="cta-full" style="display:none;">
     <div style="font-size:18px;font-weight:700;margin-bottom:8px;">All 100 spots have been claimed</div>
     <div class="cta-status">You can still join as a standard developer with 80% revenue share.</div>
-    <a href="/signup.html" class="cta-btn" style="margin-top:16px;">Join as a developer →</a>
+    <a href="/signup.html" class="cta-btn" style="margin-top:16px;">Join as a developer &rarr;</a>
   </div>
 </div>
 
 <footer>
-  <p>SwarmSpace by Orbital AI — 2026</p>
+  <p>SwarmSpace by Orbital AI &mdash; 2026</p>
   <div class="footer-links">
     <a href="/">Home</a>
     <a href="/dashboard.html">Dashboard</a>
