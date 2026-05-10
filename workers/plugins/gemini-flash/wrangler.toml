@@ -1,0 +1,7 @@
+name = "swarmspace-plugin-gemini-flash"
+main = "src/index.ts"
+compatibility_date = "2026-03-01"
+
+# Secrets (set via `wrangler secret put`):
+#   SWARMSPACE_INTERNAL_TOKEN
+#   GEMINI_API_KEY

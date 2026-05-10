@@ -352,14 +352,14 @@ async function runMeetingPrepWorkflow(ctx) {
   const webEnabled       = ctx.params.web_search_enabled !== false;
 
   if (!webEnabled) {
-    const brief = await callPlugin(ctx, 'gemini-flash', {
+    const briefResult = await callPlugin(ctx, 'gemini-flash', {
       prompt: buildMeetingPrepPrompt({
         attendeeName, attendeeCompany, meetingTitle, meetingTime,
         durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
         generalSearchResults: '', linkedInPageContent: '',
       }),
     });
-    return { brief };
+    return { brief: briefResult?.text || briefResult || '' };
   }
 
   // Two sequential brave-search calls — parallel() keys results by plugin_id,
@@ -387,7 +387,7 @@ async function runMeetingPrepWorkflow(ctx) {
     }
   } catch (_) { /* non-fatal */ }
 
-  const brief = await callPlugin(ctx, 'gemini-flash', {
+  const briefResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: buildMeetingPrepPrompt({
       attendeeName, attendeeCompany, meetingTitle, meetingTime,
       durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
@@ -396,7 +396,7 @@ async function runMeetingPrepWorkflow(ctx) {
     }),
   });
 
-  return { brief };
+  return { brief: briefResult?.text || briefResult || '' };
 }
 
 function extractLinkedInUrl(searchResult) {
