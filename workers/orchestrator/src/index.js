@@ -350,13 +350,16 @@ async function runMeetingPrepWorkflow(ctx) {
   const chronicleCtx     = ctx.params.chronicle_context    || '';
   const documentSnippets = ctx.params.document_snippets    || '';
   const webEnabled       = ctx.params.web_search_enabled !== false;
+  const deliverables     = Array.isArray(ctx.params.deliverables) && ctx.params.deliverables.length > 0
+    ? ctx.params.deliverables
+    : ['brief'];
 
   if (!webEnabled) {
     const briefResult = await callPlugin(ctx, 'gemini-flash', {
       prompt: buildMeetingPrepPrompt({
         attendeeName, attendeeCompany, meetingTitle, meetingTime,
         durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
-        generalSearchResults: '', linkedInPageContent: '',
+        generalSearchResults: '', linkedInPageContent: '', deliverables,
       }),
     });
     return { brief: briefResult?.text || briefResult || '' };
@@ -392,7 +395,7 @@ async function runMeetingPrepWorkflow(ctx) {
       attendeeName, attendeeCompany, meetingTitle, meetingTime,
       durationMinutes, meetingLocation, chronicleCtx, documentSnippets,
       generalSearchResults: JSON.stringify(generalResults).slice(0, 2000),
-      linkedInPageContent,
+      linkedInPageContent, deliverables,
     }),
   });
 
@@ -408,10 +411,58 @@ function extractLinkedInUrl(searchResult) {
 }
 
 function buildMeetingPrepPrompt(p) {
-  return `You are preparing a meeting brief. Use only the information provided. Do not invent facts. If a section has no data, omit it entirely.
+  const deliverables = p.deliverables || ['brief'];
+
+  const DELIVERABLE_INSTRUCTIONS = {
+    brief: `## MEETING BRIEF
+─────────────────────────────────
+${p.meetingTitle || 'Upcoming meeting'}${p.meetingTime ? ' · ' + p.meetingTime : ''}${p.durationMinutes ? ' · ' + p.durationMinutes + ' min' : ''}${p.meetingLocation ? ' · ' + p.meetingLocation : ''}
+
+**ATTENDEE:** ${p.attendeeName}${p.attendeeCompany ? ' at ' + p.attendeeCompany : ''}
+
+**FROM YOUR NOTES**
+[Bullet points from personal context only; omit this block entirely if personal context is empty]
+
+**PERSON INTEL**
+[3–5 factual bullet points from web research; omit if no web data]
+
+**SUGGESTED TALKING POINTS**
+[2–3 synthesis bullets connecting personal context with web intel; omit if insufficient data]`,
+
+    talking_points: `## TALKING POINTS
+─────────────────────────────────
+[A structured list of 5–8 specific discussion points for this meeting. Each point should be actionable and grounded in the provided context. Group into: Opening, Core Discussion, and Close.]`,
+
+    follow_up_email: `## FOLLOW-UP EMAIL DRAFT
+─────────────────────────────────
+Subject: [concise subject line]
+
+[Draft a professional follow-up email from the user to ${p.attendeeName}. Reference the meeting context and any relevant notes. Keep it under 150 words. Leave [ACTION ITEM] placeholders where specifics are unknown.]`,
+
+    one_pager: `## ONE-PAGER
+─────────────────────────────────
+**Who they are:** [1–2 sentence summary of ${p.attendeeName} and their role]
+
+**Their company:** [2–3 sentences on ${p.attendeeCompany || 'their company'}: what they do, size/stage if known, recent news]
+
+**Why this meeting matters:** [1–2 sentences on the strategic relevance based on user's notes]
+
+**Key facts to remember:** [3–4 bullet points; most memorable or useful facts from web research]`,
+
+    questions: `## QUESTIONS TO ASK
+─────────────────────────────────
+[8–10 thoughtful questions tailored to this specific meeting. Mix of: understanding their situation, uncovering needs, exploring fit, and building rapport. Base questions on the provided context — do not invent details.]`,
+  };
+
+  const sections = deliverables
+    .filter(d => DELIVERABLE_INSTRUCTIONS[d])
+    .map(d => DELIVERABLE_INSTRUCTIONS[d])
+    .join('\n\n');
+
+  return `You are preparing meeting documents. Use only the information provided below. Do not invent facts. Omit any field or block that has no supporting data.
 
 MEETING: ${p.meetingTitle || 'Upcoming meeting'} · ${p.meetingTime || ''} · ${p.durationMinutes ? p.durationMinutes + ' min' : ''} · ${p.meetingLocation || ''}
-ATTENDEE: ${p.attendeeName} at ${p.attendeeCompany}
+ATTENDEE: ${p.attendeeName}${p.attendeeCompany ? ' at ' + p.attendeeCompany : ''}
 
 PERSONAL CONTEXT (user's own notes and documents — highest priority):
 ${p.chronicleCtx || '(none)'}
@@ -424,21 +475,7 @@ LinkedIn profile content:
 ${p.linkedInPageContent || '(not available)'}
 
 ---
-Produce a brief in exactly this format. Omit any section that has no supporting data.
+Produce exactly the following deliverables in order. Use the exact headings shown. Omit any sub-section that has no data.
 
-MEETING BRIEF
-─────────────────────────────────
-[meeting title] · [date and time] · [duration] minutes
-[location or video link if available]
-
-ATTENDEE: [full name], [title if found] at [company]
-
-FROM YOUR NOTES
-[bullet points from personal context only; omit this section if personal context is empty]
-
-PERSON INTEL
-[3–5 factual bullet points from web research; omit if no web data]
-
-SUGGESTED TALKING POINTS
-[2–3 bullet points synthesizing personal context with web intel; omit if insufficient data]`;
+${sections}`;
 }
