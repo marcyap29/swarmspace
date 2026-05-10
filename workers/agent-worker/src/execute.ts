@@ -69,7 +69,7 @@ async function executeStep(
       body: JSON.stringify({
         data: {
           plugin_id: step.tool,
-          params,
+          params: { ...params, _prism_consent: true },
         },
       }),
       signal: AbortSignal.timeout(25_000),
@@ -221,6 +221,7 @@ export async function executePlan(
             plugin_id: "gemini-flash",
             params: {
               prompt: `Synthesize a clear, concise response to this task based on the collected data.\n\nTask: ${task}\n\nGoal: ${plan.goal}\n\nData collected:\n${synthContext}\n\nProvide a well-structured answer that directly addresses the user's task.`,
+              _prism_consent: true,
             },
           },
         }),
