@@ -93,10 +93,34 @@ When running a doc sync or release:
 | developer-guide.html | root | 2026-04-11 | ✅ Synced | HTML developer guide (styled) |
 | functions/src/functions/swarmspaceDiscoveryAgent.ts | functions/ | 2026-04-11 | ✅ Synced | Discovery agent function |
 | functions/src/functions/swarmspaceClaimFoundingSpot.ts | functions/ | 2026-04-11 | ✅ Synced | Founding spot claim function |
+| workers/mcp-server/src/tools.ts | workers/mcp-server/ | 2026-05-14 | ✅ Synced | MCP tool definitions for 13 orchestrator chains |
+| workers/mcp-server/src/index.ts | workers/mcp-server/ | 2026-05-14 | ✅ Synced | MCP Remote Server Worker (JSON-RPC 2.0, HMAC auth) |
+| workers/mcp-server/package.json | workers/mcp-server/ | 2026-05-14 | ✅ Synced | Worker package config |
+| workers/mcp-server/wrangler.toml | workers/mcp-server/ | 2026-05-14 | ✅ Synced | Cloudflare Worker config (secrets: MCP_KEY_SECRET, SWARMSPACE_INTERNAL_TOKEN) |
+| functions/src/functions/swarmspaceMcpKeys.ts | functions/ | 2026-05-14 | ✅ Synced | generateMcpApiKey + revokeMcpApiKey (secret: MCP_KEY_SECRET) |
 
 ---
 
 ## Change Log
+
+### 2026-05-14 — MCP Remote Server build complete (branch: claude/review-swarm-agents-workflows-0BqPd)
+
+**Action:** Built Remote MCP Server for claude.ai marketplace submission. Test agent reviewed and signed off (PASS).
+
+**New files:**
+- `workers/mcp-server/src/tools.ts` — MCP tool definitions for 13 orchestrator chains
+- `workers/mcp-server/src/index.ts` — MCP Remote Server Worker (JSON-RPC 2.0, HMAC-SHA256 auth, orchestrator proxy)
+- `workers/mcp-server/package.json` — Worker package config
+- `workers/mcp-server/wrangler.toml` — Cloudflare Worker config (secrets required: MCP_KEY_SECRET, SWARMSPACE_INTERNAL_TOKEN)
+- `functions/src/functions/swarmspaceMcpKeys.ts` — generateMcpApiKey + revokeMcpApiKey (secret: MCP_KEY_SECRET; max 5 keys/user; keys never stored in Firestore)
+
+**Modified files:**
+- `functions/src/index.ts` — added exports for generateMcpApiKey + revokeMcpApiKey
+- `functions/tsconfig.json` — minor fixes (rootDir, ignoreDeprecations)
+
+**Not yet deployed.** Deployment checklist in `planner.md` Deployment Checklist section.
+
+---
 
 ### 2026-05-01 — SOP doc-drift sweep (v1.5.1)
 
