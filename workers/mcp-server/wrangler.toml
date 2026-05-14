@@ -1,0 +1,12 @@
+name = "swarmspace-mcp-server"
+main = "src/index.ts"
+compatibility_date = "2026-03-01"
+
+[vars]
+ORCHESTRATOR_URL = "https://swarmspace-orchestrator.orbitalai.workers.dev"
+MCP_SERVER_NAME = "swarmspace"
+MCP_SERVER_VERSION = "1.0.0"
+
+# Set via `wrangler secret put`:
+# MCP_KEY_SECRET              — HMAC-SHA256 signing key for API key validation
+# SWARMSPACE_INTERNAL_TOKEN   — service token forwarded to swarmspaceRouter (same value used by Durable Objects)

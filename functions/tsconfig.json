@@ -3,6 +3,7 @@
     "module": "commonjs",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "rootDir": "src",
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
@@ -11,7 +12,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "ignoreDeprecations": "5.0"
   },
   "compileOnSave": true,
   "include": [
