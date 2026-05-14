@@ -5,15 +5,15 @@
 **Goal:** Build Remote MCP Server to submit SwarmSpace to claude.ai/platform/marketplace
 
 ### Definition of Done
-- [ ] `workers/mcp-server/` Cloudflare Worker exists and TypeScript-checks clean
-- [ ] 13 MCP tools defined (one per orchestrator workflow chain)  
-- [ ] HMAC API key validation implemented in Worker
-- [ ] `functions/src/functions/swarmspaceMcpKeys.ts` — generateMcpApiKey + revokeMcpApiKey
-- [ ] `functions/src/index.ts` exports new functions
-- [ ] `cd functions && npm run build` passes zero new TS errors
-- [ ] Test agent has reviewed and signed off
-- [ ] context.md updated with session block
-- [ ] CONFIGURATION_MANAGEMENT.md updated
+- [x] `workers/mcp-server/` Cloudflare Worker exists and TypeScript-checks clean
+- [x] 13 MCP tools defined (one per orchestrator workflow chain)  
+- [x] HMAC API key validation implemented in Worker
+- [x] `functions/src/functions/swarmspaceMcpKeys.ts` — generateMcpApiKey + revokeMcpApiKey
+- [x] `functions/src/index.ts` exports new functions
+- [x] `cd functions && npm run build` passes zero new TS errors
+- [x] Test agent has reviewed and signed off
+- [x] context.md updated with session block
+- [x] CONFIGURATION_MANAGEMENT.md updated
 - [ ] Committed and pushed to branch claude/review-swarm-agents-workflows-0BqPd
 
 ### Files Being Created

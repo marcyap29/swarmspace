@@ -1,3 +1,32 @@
+## Session: 2026-05-14 — MCP Remote Server
+
+**Branch:** claude/review-swarm-agents-workflows-0BqPd  
+**Status:** Complete — test agent PASS  
+
+### What was done
+- Audited swarmspaceRouter against MCP Remote Server spec; identified 3 blocking gaps (transport, tool definitions, auth)
+- Built `workers/mcp-server/` Cloudflare Worker: MCP JSON-RPC 2.0 endpoint, 13 tools from orchestrator chains, HMAC-SHA256 API key validation, service-token bypass to orchestrator
+- Built `functions/src/functions/swarmspaceMcpKeys.ts`: generateMcpApiKey + revokeMcpApiKey (max 5 keys/user, keys never stored in Firestore)
+- TypeScript build clean; all MCP protocol checks passed
+
+### Architecture
+- Auth: `ss_mcp_{uidB64}.{tsB64}.{hmacHex}` — HMAC-SHA256, validated in Worker via Web Crypto
+- Call chain: Claude → `swarmspace-mcp-server.orbitalai.workers.dev/mcp` → Orchestrator (service-token bypass) → swarmspaceRouter → plugin workers
+- No changes to existing swarmspaceRouter, orchestrator, or plugin workers
+
+### Next steps (deployment — not done yet)
+1. `wrangler secret put MCP_KEY_SECRET` (new shared secret, same value for Worker + Firebase)
+2. `wrangler secret put SWARMSPACE_INTERNAL_TOKEN` (reuse existing DO value) from `workers/mcp-server/`
+3. `firebase functions:secrets:set MCP_KEY_SECRET`
+4. `wrangler deploy` from `workers/mcp-server/`
+5. Wire key generation UI in LUMARA settings page (LUMARA dependency)
+6. Submit to claude.ai/platform/marketplace
+
+### LUMARA dependency
+LUMARA needs to add a "MCP API Keys" section to the settings page calling `generateMcpApiKey` and `revokeMcpApiKey`. No other LUMARA changes required.
+
+---
+
 # context.md — Agent Handoff Log
 
 ## Current State
