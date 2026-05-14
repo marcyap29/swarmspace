@@ -1,0 +1,16 @@
+{
+  "name": "swarmspace-mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SwarmSpace Remote MCP Server — exposes SwarmSpace workflow chains as MCP tools",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

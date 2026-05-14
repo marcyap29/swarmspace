@@ -93,3 +93,6 @@ export { validatePluginSubmission };
 export { swarmspaceDiscoveryAgent };
 export { swarmspaceClaimFoundingSpot };
 export { onSubmissionStatusChange };
+
+import { generateMcpApiKey, revokeMcpApiKey } from "./functions/swarmspaceMcpKeys";
+export { generateMcpApiKey, revokeMcpApiKey };
