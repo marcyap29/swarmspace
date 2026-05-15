@@ -1,3 +1,87 @@
+## Session: 2026-05-15 — OAuth 2.1 + Streamable HTTP (wt/mcp-oauth)
+
+**Branch:** wt/mcp-oauth — committed `0c236b5`, NOT yet merged to main
+
+### What was done
+- Implemented full OAuth 2.1 Authorization Server in `workers/mcp-server/src/index.ts`
+- RFC 7591 Dynamic Client Registration: `POST /oauth/register`
+- RFC 8414 Authorization Server Metadata: `GET /.well-known/oauth-authorization-server`
+- RFC 9728 Protected Resource Metadata: `GET /.well-known/oauth-protected-resource`
+- RFC 8707 resource parameter enforced on `/oauth/authorize` and `/oauth/token`
+- PKCE S256 enforced; refresh token rotation (OAuth 2.1 mandatory for public clients)
+- Streamable HTTP: `tools/call` detects `Accept: text/event-stream`, returns SSE via `TransformStream`
+- Protocol version bumped `2024-11-05` → `2025-06-18`; `MCP-Protocol-Version` header on all `/mcp` responses
+- `WWW-Authenticate` header on 401 with resource_metadata pointer
+- `oauth-consent.html` — Firebase email + Google sign-in consent page (Vercel-deployed, matches site visual style)
+- Legacy HMAC `ss_mcp_` key validation preserved as fallback — existing API key users unaffected
+- Manifest `auth.type` updated from `bearer` to `oauth2`
+- `tsconfig.json` added to `workers/mcp-server/` (matches Durable Object pattern)
+- TypeScript clean: zero errors
+
+### Pending (Marc must do before deployment)
+1. `wrangler kv:namespace create OAUTH_CLIENTS` → copy id into `workers/mcp-server/wrangler.toml`
+2. `wrangler kv:namespace create OAUTH_CODES` → copy id
+3. `wrangler kv:namespace create OAUTH_TOKENS` → copy id
+4. `wrangler secret put OAUTH_ISSUER` (value: `https://swarmspace-mcp-server.orbitalai.workers.dev`)
+5. `wrangler secret put FIREBASE_PROJECT_ID` (value: `arc-epi`)
+6. Review diff: `git -C ../swarmspace-mcp-oauth diff main..HEAD`
+7. Merge: `git merge --no-ff wt/mcp-oauth -m "merge: OAuth 2.1 + DCR + Streamable HTTP (wt/mcp-oauth)"`
+8. Deploy: `cd workers/mcp-server && wrangler deploy`
+9. Push for Vercel (oauth-consent.html): `git push origin main`
+10. Submit to Anthropic: `claude.com/connectors` → "Get started"
+11. Submit to OpenAI: OpenAI App Directory developer portal
+
+### Architecture notes
+- OAuth flow: Claude → `GET /oauth/authorize` → redirect to `swarmspace.app/oauth-consent.html` → Firebase login → `POST /oauth/authorize/complete` (validates Firebase token, issues auth code) → Claude exchanges at `POST /oauth/token` (PKCE verified) → access + refresh tokens stored in OAUTH_TOKENS KV
+- Firebase token validation: fetches Google public keys, extracts SPKI from X.509 DER cert, verifies RS256 JWT signature using Web Crypto
+- KV TTLs: access tokens 1hr, refresh tokens 30 days, auth codes 10min, clients no TTL
+
+---
+
+## Session: 2026-05-14 — SMB Intelligence Layer Backlog + MCP Deployment Confirmed
+
+### What was done
+- MCP Remote Server cherry-picked to `main` and deployed (LUMARA session 50). `swarmspace-mcp-server.orbitalai.workers.dev` live. `generateMcpApiKey` + `revokeMcpApiKey` Firebase functions deployed to `arc-epi`. Both secrets set (`MCP_KEY_SECRET` in Google Secret Manager + Cloudflare; `SWARMSPACE_INTERNAL_TOKEN` in Cloudflare).
+- SMB Intelligence Layer Backlog added to `backlog.md` — 5 areas: MCP compliance audit (gates both marketplace listings), Anthropic + OpenAI marketplace applications, anchor content piece, homepage copy update, Profile D developer outreach, Roles page seeding, Decision Synthesis workflow (later).
+- **Niche decision locked:** SwarmSpace positions as a business intelligence connector in both Anthropic and OpenAI marketplace directories.
+- Resolved stale merge conflict at end of `backlog.md` (lines 2775-2778, from commit 733d5a9).
+
+### Next
+1. MCP compliance audit — OAuth 2.1 + Dynamic Client Registration (OpenAI gate); Remote MCP Server + MCP Apps (Anthropic gate). One audit clears both.
+2. Anchor content piece — solo founder use case, LinkedIn + Substack.
+3. Homepage copy update — "business intelligence layer for people running lean".
+
+---
+
+## Session: 2026-05-14 — MCP Remote Server
+
+**Branch:** claude/review-swarm-agents-workflows-0BqPd  
+**Status:** Complete — test agent PASS  
+
+### What was done
+- Audited swarmspaceRouter against MCP Remote Server spec; identified 3 blocking gaps (transport, tool definitions, auth)
+- Built `workers/mcp-server/` Cloudflare Worker: MCP JSON-RPC 2.0 endpoint, 13 tools from orchestrator chains, HMAC-SHA256 API key validation, service-token bypass to orchestrator
+- Built `functions/src/functions/swarmspaceMcpKeys.ts`: generateMcpApiKey + revokeMcpApiKey (max 5 keys/user, keys never stored in Firestore)
+- TypeScript build clean; all MCP protocol checks passed
+
+### Architecture
+- Auth: `ss_mcp_{uidB64}.{tsB64}.{hmacHex}` — HMAC-SHA256, validated in Worker via Web Crypto
+- Call chain: Claude → `swarmspace-mcp-server.orbitalai.workers.dev/mcp` → Orchestrator (service-token bypass) → swarmspaceRouter → plugin workers
+- No changes to existing swarmspaceRouter, orchestrator, or plugin workers
+
+### Next steps (deployment — not done yet)
+1. `wrangler secret put MCP_KEY_SECRET` (new shared secret, same value for Worker + Firebase)
+2. `wrangler secret put SWARMSPACE_INTERNAL_TOKEN` (reuse existing DO value) from `workers/mcp-server/`
+3. `firebase functions:secrets:set MCP_KEY_SECRET`
+4. `wrangler deploy` from `workers/mcp-server/`
+5. Wire key generation UI in LUMARA settings page (LUMARA dependency)
+6. Submit to claude.ai/platform/marketplace
+
+### LUMARA dependency
+LUMARA needs to add a "MCP API Keys" section to the settings page calling `generateMcpApiKey` and `revokeMcpApiKey`. No other LUMARA changes required.
+
+---
+
 # context.md — Agent Handoff Log
 
 ## Current State
