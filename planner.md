@@ -1,37 +1,49 @@
 # SwarmSpace — Active Plan
 
-## MCP Remote Server — claude.ai Marketplace Submission
-**Started:** 2026-05-14  
-**Goal:** Build Remote MCP Server to submit SwarmSpace to claude.ai/platform/marketplace
+## MCP OAuth 2.1 Compliance — Marketplace Submission
+**Started:** 2026-05-15
+**Branch:** wt/mcp-oauth — commit `0c236b5`
+**Goal:** Upgrade MCP server to OAuth 2.1 + DCR + Streamable HTTP, then submit to Anthropic and OpenAI marketplace directories
 
-### Definition of Done
+### Previous phase (complete)
 - [x] `workers/mcp-server/` Cloudflare Worker exists and TypeScript-checks clean
-- [x] 13 MCP tools defined (one per orchestrator workflow chain)  
-- [x] HMAC API key validation implemented in Worker
+- [x] 13 MCP tools defined (one per orchestrator workflow chain)
+- [x] HMAC API key validation implemented
 - [x] `functions/src/functions/swarmspaceMcpKeys.ts` — generateMcpApiKey + revokeMcpApiKey
-- [x] `functions/src/index.ts` exports new functions
-- [x] `cd functions && npm run build` passes zero new TS errors
-- [x] Test agent has reviewed and signed off
-- [x] context.md updated with session block
-- [x] CONFIGURATION_MANAGEMENT.md updated
-- [x] Committed and pushed to branch claude/review-swarm-agents-workflows-0BqPd
+- [x] Deployed to `swarmspace-mcp-server.orbitalai.workers.dev`
 
-### Files Being Created
-- `workers/mcp-server/package.json`
-- `workers/mcp-server/wrangler.toml`
-- `workers/mcp-server/src/tools.ts` — 13 MCP tool definitions
-- `workers/mcp-server/src/index.ts` — MCP protocol + HMAC auth + orchestrator proxy
-- `functions/src/functions/swarmspaceMcpKeys.ts` — API key generation/revocation
-- `functions/src/index.ts` — (updated: add two exports)
+### OAuth 2.1 phase (complete — pending deployment)
+- [x] OAuth Authorization Server endpoints in mcp-server Worker
+- [x] Dynamic Client Registration (RFC 7591) — `POST /oauth/register`
+- [x] RFC 8414 Authorization Server Metadata — `GET /.well-known/oauth-authorization-server`
+- [x] RFC 9728 Protected Resource Metadata — `GET /.well-known/oauth-protected-resource`
+- [x] RFC 8707 resource parameter enforced on authorize + token
+- [x] PKCE S256 enforced; refresh token rotation
+- [x] Streamable HTTP SSE on `tools/call`
+- [x] Protocol version → `2025-06-18`; `MCP-Protocol-Version` headers added
+- [x] `WWW-Authenticate` on 401 with resource_metadata pointer
+- [x] `oauth-consent.html` Firebase login/consent page
+- [x] Legacy HMAC `ss_mcp_` key fallback preserved
+- [x] Manifest updated to `oauth2` auth type
+- [x] `tsconfig.json` added
+- [x] TypeScript clean — zero errors
+- [x] Committed to `wt/mcp-oauth`
 
-### Architecture Notes
-- Auth: HMAC-SHA256 signed API keys (`ss_mcp_{uidB64}.{tsB64}.{hmacHex}`)
-- Call chain: Claude → MCP Worker → Orchestrator (service token bypass) → swarmspaceRouter → plugin workers
-- No changes to swarmspaceRouter, orchestrator, or any existing plugin worker
+### Pending — Marc to complete
+- [ ] `wrangler kv:namespace create OAUTH_CLIENTS` → fill id in `workers/mcp-server/wrangler.toml`
+- [ ] `wrangler kv:namespace create OAUTH_CODES` → fill id
+- [ ] `wrangler kv:namespace create OAUTH_TOKENS` → fill id
+- [ ] `wrangler secret put OAUTH_ISSUER` → `https://swarmspace-mcp-server.orbitalai.workers.dev`
+- [ ] `wrangler secret put FIREBASE_PROJECT_ID` → `arc-epi`
+- [ ] Review: `git -C ../swarmspace-mcp-oauth diff main..HEAD`
+- [ ] Merge: `git checkout main && git merge --no-ff wt/mcp-oauth -m "merge: OAuth 2.1 + DCR + Streamable HTTP (wt/mcp-oauth)"`
+- [ ] Deploy worker: `cd workers/mcp-server && wrangler deploy`
+- [ ] Deploy consent page: `git push origin main` (Vercel auto-deploys)
+- [ ] Submit to Anthropic: `claude.com/connectors` → "Get started"
+- [ ] Submit to OpenAI: OpenAI App Directory developer portal
 
-### Deployment Checklist (post-review)
-- [ ] `wrangler secret put MCP_KEY_SECRET` (new secret, both repos consistent)
-- [ ] `wrangler secret put SWARMSPACE_INTERNAL_TOKEN` (already set in DO, reuse same value)
-- [ ] `firebase functions:secrets:set MCP_KEY_SECRET` (same value as above)
-- [ ] `wrangler deploy` from workers/mcp-server/
-- [ ] Submit to claude.ai/platform/marketplace
+### Files changed in wt/mcp-oauth
+- `workers/mcp-server/src/index.ts` — OAuth server + Streamable HTTP + protocol upgrade
+- `workers/mcp-server/wrangler.toml` — KV namespace bindings (IDs pending)
+- `workers/mcp-server/tsconfig.json` — new file
+- `oauth-consent.html` — new file

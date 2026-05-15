@@ -1,3 +1,43 @@
+## Session: 2026-05-15 — OAuth 2.1 + Streamable HTTP (wt/mcp-oauth)
+
+**Branch:** wt/mcp-oauth — committed `0c236b5`, NOT yet merged to main
+
+### What was done
+- Implemented full OAuth 2.1 Authorization Server in `workers/mcp-server/src/index.ts`
+- RFC 7591 Dynamic Client Registration: `POST /oauth/register`
+- RFC 8414 Authorization Server Metadata: `GET /.well-known/oauth-authorization-server`
+- RFC 9728 Protected Resource Metadata: `GET /.well-known/oauth-protected-resource`
+- RFC 8707 resource parameter enforced on `/oauth/authorize` and `/oauth/token`
+- PKCE S256 enforced; refresh token rotation (OAuth 2.1 mandatory for public clients)
+- Streamable HTTP: `tools/call` detects `Accept: text/event-stream`, returns SSE via `TransformStream`
+- Protocol version bumped `2024-11-05` → `2025-06-18`; `MCP-Protocol-Version` header on all `/mcp` responses
+- `WWW-Authenticate` header on 401 with resource_metadata pointer
+- `oauth-consent.html` — Firebase email + Google sign-in consent page (Vercel-deployed, matches site visual style)
+- Legacy HMAC `ss_mcp_` key validation preserved as fallback — existing API key users unaffected
+- Manifest `auth.type` updated from `bearer` to `oauth2`
+- `tsconfig.json` added to `workers/mcp-server/` (matches Durable Object pattern)
+- TypeScript clean: zero errors
+
+### Pending (Marc must do before deployment)
+1. `wrangler kv:namespace create OAUTH_CLIENTS` → copy id into `workers/mcp-server/wrangler.toml`
+2. `wrangler kv:namespace create OAUTH_CODES` → copy id
+3. `wrangler kv:namespace create OAUTH_TOKENS` → copy id
+4. `wrangler secret put OAUTH_ISSUER` (value: `https://swarmspace-mcp-server.orbitalai.workers.dev`)
+5. `wrangler secret put FIREBASE_PROJECT_ID` (value: `arc-epi`)
+6. Review diff: `git -C ../swarmspace-mcp-oauth diff main..HEAD`
+7. Merge: `git merge --no-ff wt/mcp-oauth -m "merge: OAuth 2.1 + DCR + Streamable HTTP (wt/mcp-oauth)"`
+8. Deploy: `cd workers/mcp-server && wrangler deploy`
+9. Push for Vercel (oauth-consent.html): `git push origin main`
+10. Submit to Anthropic: `claude.com/connectors` → "Get started"
+11. Submit to OpenAI: OpenAI App Directory developer portal
+
+### Architecture notes
+- OAuth flow: Claude → `GET /oauth/authorize` → redirect to `swarmspace.app/oauth-consent.html` → Firebase login → `POST /oauth/authorize/complete` (validates Firebase token, issues auth code) → Claude exchanges at `POST /oauth/token` (PKCE verified) → access + refresh tokens stored in OAUTH_TOKENS KV
+- Firebase token validation: fetches Google public keys, extracts SPKI from X.509 DER cert, verifies RS256 JWT signature using Web Crypto
+- KV TTLs: access tokens 1hr, refresh tokens 30 days, auth codes 10min, clients no TTL
+
+---
+
 ## Session: 2026-05-14 — SMB Intelligence Layer Backlog + MCP Deployment Confirmed
 
 ### What was done
