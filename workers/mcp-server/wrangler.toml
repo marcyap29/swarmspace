@@ -7,6 +7,26 @@ ORCHESTRATOR_URL = "https://swarmspace-orchestrator.orbitalai.workers.dev"
 MCP_SERVER_NAME = "swarmspace"
 MCP_SERVER_VERSION = "1.0.0"
 
-# Set via `wrangler secret put`:
-# MCP_KEY_SECRET              — HMAC-SHA256 signing key for API key validation
-# SWARMSPACE_INTERNAL_TOKEN   — service token forwarded to swarmspaceRouter (same value used by Durable Objects)
+# Secrets — set via `wrangler secret put` (never commit values):
+# MCP_KEY_SECRET              — HMAC-SHA256 signing key for legacy API key validation
+# SWARMSPACE_INTERNAL_TOKEN   — service token forwarded to swarmspaceRouter
+# OAUTH_ISSUER                — https://swarmspace-mcp-server.orbitalai.workers.dev
+# FIREBASE_PROJECT_ID         — arc-epi
+
+# KV Namespaces
+# Before deploying, run these three commands and replace each PLACEHOLDER below:
+#   wrangler kv:namespace create OAUTH_CLIENTS  → copy the "id" value
+#   wrangler kv:namespace create OAUTH_CODES    → copy the "id" value
+#   wrangler kv:namespace create OAUTH_TOKENS   → copy the "id" value
+
+[[kv_namespaces]]
+binding = "OAUTH_CLIENTS"
+id = "7d638fbc0c3449e0a3127db8cf27db5d"
+
+[[kv_namespaces]]
+binding = "OAUTH_CODES"
+id = "b600c0991fda48b69b0ebd31f67f98b5"
+
+[[kv_namespaces]]
+binding = "OAUTH_TOKENS"
+id = "aade11e503d644c5849d75e56d15eca4"

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect to SwarmSpace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0a0a0f; --surface:#13131E; --surface2:#1A1A2C;
+      --border:#1E1E35; --border2:#2A2A3E;
+      --text:#e8e8f0; --muted:#7A7A9A; --dim:#44445A;
+      --accent:#5b5bd6; --green:#34d399; --red:#f87171;
+      --font:'Inter',-apple-system,sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-dot { color: var(--accent); }
+    .connect-heading {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .connect-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+    .client-badge {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: var(--accent); }
+    .field input::placeholder { color: var(--dim); }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-google {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-google:hover:not(:disabled) { border-color: var(--accent); }
+    .error-box {
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--red);
+      margin-bottom: 16px;
+      display: none;
+    }
+    .loading-text {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 12px;
+      display: none;
+    }
+    .footer-note {
+      font-size: 12px;
+      color: var(--dim);
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.5;
+    }
+    .footer-note a { color: var(--muted); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">SwarmSpace<span class="logo-dot">.</span></div>
+
+    <div id="connect-heading" class="connect-heading">Connect to SwarmSpace</div>
+    <p class="connect-sub" id="connect-sub">
+      Sign in to authorize <span id="client-badge" class="client-badge">this app</span> to access your SwarmSpace intelligence workflows.
+    </p>
+
+    <div id="error-box" class="error-box"></div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn btn-primary" id="btn-email" onclick="signInEmail()">Sign in &amp; Authorize</button>
+
+    <button class="btn btn-google" id="btn-google" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="loading-text" id="loading-text">Completing authorization…</div>
+
+    <p class="footer-note">
+      By signing in you authorize this connection. Your data is governed by the
+      <a href="https://swarmspace.app/privacy.html" target="_blank">Privacy Policy</a>.
+    </p>
+  </div>
+
+  <script type="module">
+    import { initializeApp }                                    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword,
+             GoogleAuthProvider, signInWithPopup }             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDL9V3qIyG4fDqnYDEazw9buUIsKO2keZo",
+      authDomain:        "arc-epi.firebaseapp.com",
+      projectId:         "arc-epi",
+      storageBucket:     "arc-epi.firebasestorage.app",
+      messagingSenderId: "563971839074",
+      appId:             "1:563971839074:web:6b919ca48fc2e84d1d2d3b",
+      measurementId:     "G-C3Q3LL6JXV"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const params      = new URLSearchParams(window.location.search);
+    const loginState  = params.get("login_state") || "";
+    const clientName  = params.get("client_name") || "this app";
+
+    // Update UI with client name
+    document.getElementById("client-badge").textContent = clientName;
+    document.getElementById("connect-heading").textContent = `Connect ${clientName} to SwarmSpace`;
+
+    const MCP_SERVER = "https://swarmspace-mcp-server.orbitalai.workers.dev";
+
+    function showError(msg) {
+      const box = document.getElementById("error-box");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function clearError() {
+      const box = document.getElementById("error-box");
+      box.style.display = "none";
+    }
+
+    function setLoading(on) {
+      const loading = document.getElementById("loading-text");
+      const btnEmail = document.getElementById("btn-email");
+      const btnGoogle = document.getElementById("btn-google");
+      loading.style.display = on ? "block" : "none";
+      btnEmail.disabled = on;
+      btnGoogle.disabled = on;
+    }
+
+    async function completeAuth(user) {
+      setLoading(true);
+      clearError();
+      try {
+        const idToken = await user.getIdToken();
+        const resp = await fetch(`${MCP_SERVER}/oauth/authorize/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firebase_id_token: idToken, login_state: loginState }),
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.redirect_to) {
+          showError(data.error_description || data.error || "Authorization failed. Please try again.");
+          setLoading(false);
+          return;
+        }
+        window.location.href = data.redirect_to;
+      } catch (err) {
+        showError("Network error. Please check your connection and try again.");
+        setLoading(false);
+      }
+    }
+
+    window.signInEmail = async function() {
+      clearError();
+      const email    = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      if (!email || !password) {
+        showError("Please enter your email and password.");
+        return;
+      }
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        await completeAuth(cred.user);
+      } catch (err) {
+        const code = err.code || "";
+        if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
+          showError("Incorrect email or password.");
+        } else if (code === "auth/too-many-requests") {
+          showError("Too many attempts. Please wait a moment and try again.");
+        } else {
+          showError(err.message || "Sign in failed.");
+        }
+      }
+    };
+
+    window.signInGoogle = async function() {
+      clearError();
+      const provider = new GoogleAuthProvider();
+      try {
+        const cred = await signInWithPopup(auth, provider);
+        await completeAuth(cred.user);
+      } catch (err) {
+        if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
+          showError(err.message || "Google sign in failed.");
+        }
+      }
+    };
+
+    // Allow Enter key on password field
+    document.getElementById("password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") window.signInEmail();
+    });
+  </script>
+</body>
+</html>
