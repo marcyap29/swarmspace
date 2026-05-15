@@ -150,11 +150,11 @@ async function runResearchWorkflow(ctx) {
   ]);
 
   // Synthesize with Gemini Flash
-  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+  const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Synthesize a research brief from these sources on "${q}":\n\nWeb results: ${JSON.stringify(results['brave-search'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nAcademic papers: ${JSON.stringify(results['semantic-scholar'])}\n\nProvide a structured summary with key findings, sources cited, and gaps in available information.`,
   });
 
-  return { sources: results, synthesis };
+  return { sources: results, synthesis: synthesisResult?.text || synthesisResult || '' };
 }
 
 // 2. /competitor — Competitive analysis: web search + news + synthesis
@@ -166,11 +166,11 @@ async function runCompetitorWorkflow(ctx) {
     ['hackernews', { query: q, count: 5 }],
   ]);
 
-  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+  const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a competitive intelligence brief for "${q}":\n\nWeb search: ${JSON.stringify(results['brave-search'])}\n\nNews: ${JSON.stringify(results['news'])}\n\nHacker News discussion: ${JSON.stringify(results['hackernews'])}\n\nStructure as: Overview, Key Players, Recent Moves, Community Sentiment, Strategic Implications.`,
   });
 
-  return { sources: results, analysis: synthesis };
+  return { sources: results, analysis: synthesisResult?.text || synthesisResult || '' };
 }
 
 // 3. /marketing — Content marketing brief: search + trends + draft
@@ -181,11 +181,11 @@ async function runMarketingWorkflow(ctx) {
     ['news', { query: q, count: 5 }],
   ]);
 
-  const brief = await callPlugin(ctx, 'gemini-flash', {
+  const briefResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a content marketing brief for "${q}":\n\nTrending content: ${JSON.stringify(results['brave-search'])}\n\nRecent news: ${JSON.stringify(results['news'])}\n\nOutput: 1) Key themes and angles, 2) Content calendar suggestions (3 post ideas with hooks), 3) SEO keywords to target, 4) Audience pain points to address.`,
   });
 
-  return { research: results, brief };
+  return { research: results, brief: briefResult?.text || briefResult || '' };
 }
 
 // 4. /plugins — Plugin discovery: search existing ecosystem + gaps
@@ -196,11 +196,11 @@ async function runPluginsWorkflow(ctx) {
     ['github-public', { query: q }],
   ]);
 
-  const analysis = await callPlugin(ctx, 'gemini-flash', {
+  const analysisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Analyze the plugin/API ecosystem for "${q}":\n\nWeb results: ${JSON.stringify(results['brave-search'])}\n\nGitHub repos: ${JSON.stringify(results['github-public'])}\n\nOutput: 1) Existing APIs/plugins available, 2) Integration patterns, 3) Gaps and opportunities for new SwarmSpace plugins, 4) Recommended manifest structure for this capability.`,
   });
 
-  return { sources: results, analysis };
+  return { sources: results, analysis: analysisResult?.text || analysisResult || '' };
 }
 
 // 5. /academic — Deep academic research: arXiv + PubMed + Semantic Scholar
@@ -212,11 +212,11 @@ async function runAcademicWorkflow(ctx) {
     ['pubmed', { query: q, limit: 5 }],
   ]);
 
-  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+  const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create an academic literature review on "${q}":\n\nSemantic Scholar: ${JSON.stringify(results['semantic-scholar'])}\n\narXiv preprints: ${JSON.stringify(results['arxiv'])}\n\nPubMed: ${JSON.stringify(results['pubmed'])}\n\nStructure as: Research Landscape, Key Papers, Methodological Trends, Open Questions, Suggested Reading Order.`,
   });
 
-  return { papers: results, review: synthesis };
+  return { papers: results, review: synthesisResult?.text || synthesisResult || '' };
 }
 
 // 6. /news-brief — Multi-source news briefing
@@ -228,11 +228,11 @@ async function runNewsBriefWorkflow(ctx) {
     ['brave-search', { query: `${q} latest news today`, count: 5 }],
   ]);
 
-  const brief = await callPlugin(ctx, 'gemini-flash', {
+  const briefResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a news intelligence brief for "${q}":\n\nMainstream news: ${JSON.stringify(results['news'])}\n\nTech community: ${JSON.stringify(results['hackernews'])}\n\nWeb: ${JSON.stringify(results['brave-search'])}\n\nStructure as: Headlines Summary (3 bullets), Detailed Analysis, Community Reaction, What To Watch.`,
   });
 
-  return { sources: results, brief };
+  return { sources: results, brief: briefResult?.text || briefResult || '' };
 }
 
 // 7. /market-scan — Financial/market overview
@@ -244,11 +244,11 @@ async function runMarketScanWorkflow(ctx) {
     ['currency', { base: ctx.params.currency || 'USD' }],
   ]);
 
-  const scan = await callPlugin(ctx, 'gemini-flash', {
+  const scanResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a market scan for "${q}":\n\nMarket research: ${JSON.stringify(results['brave-search'])}\n\nFinancial news: ${JSON.stringify(results['news'])}\n\nExchange rates context: ${JSON.stringify(results['currency'])}\n\nStructure as: Market Overview, Key Metrics, Recent Developments, Risk Factors, Outlook.`,
   });
 
-  return { data: results, scan };
+  return { data: results, scan: scanResult?.text || scanResult || '' };
 }
 
 // 8. /location-brief — Geographic intelligence
@@ -261,11 +261,11 @@ async function runLocationBriefWorkflow(ctx) {
     ['wikipedia', { query: q, mode: 'search', limit: 2 }],
   ]);
 
-  const brief = await callPlugin(ctx, 'gemini-flash', {
+  const briefResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a location intelligence brief for "${q}":\n\nGeocoding: ${JSON.stringify(results['nominatim'])}\n\nWeather: ${JSON.stringify(results['weather'])}\n\nCountry data: ${JSON.stringify(results['rest-countries'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nStructure as: Location Overview, Current Conditions, Key Facts, Context.`,
   });
 
-  return { data: results, brief };
+  return { data: results, brief: briefResult?.text || briefResult || '' };
 }
 
 // 9. /health-research — Health and biomedical research
@@ -277,11 +277,11 @@ async function runHealthResearchWorkflow(ctx) {
     ['wikipedia', { query: q, mode: 'search', limit: 2 }],
   ]);
 
-  const synthesis = await callPlugin(ctx, 'gemini-flash', {
+  const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a health research summary on "${q}":\n\nPubMed studies: ${JSON.stringify(results['pubmed'])}\n\nAcademic papers: ${JSON.stringify(results['semantic-scholar'])}\n\nWikipedia context: ${JSON.stringify(results['wikipedia'])}\n\nStructure as: Clinical Overview, Key Studies, Evidence Strength, Practical Implications. Add disclaimer that this is not medical advice.`,
   });
 
-  return { papers: results, summary: synthesis };
+  return { papers: results, summary: synthesisResult?.text || synthesisResult || '' };
 }
 
 // 10. /tech-scout — Technology scouting and evaluation
@@ -294,11 +294,11 @@ async function runTechScoutWorkflow(ctx) {
     ['arxiv', { query: q, limit: 3 }],
   ]);
 
-  const evaluation = await callPlugin(ctx, 'gemini-flash', {
+  const evaluationResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a technology evaluation for "${q}":\n\nGitHub ecosystem: ${JSON.stringify(results['github-public'])}\n\nHacker News sentiment: ${JSON.stringify(results['hackernews'])}\n\nWeb research: ${JSON.stringify(results['brave-search'])}\n\nAcademic papers: ${JSON.stringify(results['arxiv'])}\n\nStructure as: Technology Overview, Maturity Assessment, Community Adoption, Alternatives, Recommendation.`,
   });
 
-  return { sources: results, evaluation };
+  return { sources: results, evaluation: evaluationResult?.text || evaluationResult || '' };
 }
 
 // 11. /fact-check — Multi-source fact verification
@@ -311,11 +311,11 @@ async function runFactCheckWorkflow(ctx) {
     ['dictionary-api', { word: q.split(' ')[0] }],
   ]);
 
-  const verdict = await callPlugin(ctx, 'gemini-flash', {
+  const verdictResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Fact-check the following claim: "${q}"\n\nWeb sources: ${JSON.stringify(results['brave-search'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nAcademic sources: ${JSON.stringify(results['semantic-scholar'])}\n\nProvide: 1) Verdict (Supported / Partially Supported / Unsupported / Unverifiable), 2) Evidence For, 3) Evidence Against, 4) Source Quality Assessment, 5) Confidence Level.`,
   });
 
-  return { sources: results, verdict };
+  return { sources: results, verdict: verdictResult?.text || verdictResult || '' };
 }
 
 // 12. /content-brief — Content creation brief with research
@@ -328,11 +328,11 @@ async function runContentBriefWorkflow(ctx) {
     ['news', { query: q, count: 3 }],
   ]);
 
-  const brief = await callPlugin(ctx, 'gemini-flash', {
+  const briefResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a content brief for a ${format} about "${q}":\n\nResearch: ${JSON.stringify(results['brave-search'])}\n\nBackground: ${JSON.stringify(results['wikipedia'])}\n\nRecent news: ${JSON.stringify(results['news'])}\n\nOutput: 1) Title Options (3), 2) Target Audience, 3) Key Points to Cover, 4) Outline (H2/H3 structure), 5) Data Points to Include, 6) Call to Action Suggestions.`,
   });
 
-  return { research: results, brief };
+  return { research: results, brief: briefResult?.text || briefResult || '' };
 }
 
 // 13. /meeting-prep — Pre-meeting intelligence brief
