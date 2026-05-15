@@ -130,6 +130,7 @@ export async function generatePlan(
         plugin_id: "gemini-flash",
         params: {
           prompt: `${systemPrompt}\n\nUser task: ${task}`,
+          _prism_consent: true,
         },
       },
     }),
