@@ -1,7 +1,37 @@
 # SwarmSpace Changelog
 
-**Version:** 1.5.2
-**Last Updated:** 2026-05-01
+**Version:** 1.5.3
+**Last Updated:** 2026-05-15
+
+---
+
+## [1.5.3] - 2026-05-15
+
+### Added
+
+- **MCP OAuth 2.1 Authorization Server** — `workers/mcp-server/src/index.ts` upgraded from HMAC-only to a full OAuth 2.1 Authorization Server. New endpoints: `POST /oauth/register` (RFC 7591 Dynamic Client Registration), `GET /oauth/authorize`, `POST /oauth/authorize/complete` (Firebase ID token consent callback), `POST /oauth/token` (authorization code + refresh token grants). PKCE S256 enforced on all authorization code flows. Refresh token rotation mandatory per OAuth 2.1. Public client model (no `client_secret`).
+- **RFC 8414 Authorization Server Metadata** — `GET /.well-known/oauth-authorization-server` returns full metadata JSON including all endpoint URLs, supported grant types, PKCE methods, and scopes.
+- **RFC 9728 Protected Resource Metadata** — `GET /.well-known/oauth-protected-resource` returns resource + authorization server pointer. Required by current MCP spec for client discovery.
+- **RFC 8707 `resource` parameter** — enforced on both `GET /oauth/authorize` and `POST /oauth/token`. Requests without `resource` return 400.
+- **Streamable HTTP SSE** — `POST /mcp` now detects `Accept: text/event-stream` on `tools/call` requests and returns a streaming `text/event-stream` response via `TransformStream`. All other methods (`initialize`, `tools/list`, `notifications/initialized`) remain synchronous JSON.
+- **MCP protocol version `2025-06-18`** — `protocolVersion` field updated; `MCP-Protocol-Version: 2025-06-18` response header added to all `/mcp` responses.
+- **`WWW-Authenticate` header on 401** — includes `resource` and `resource_metadata` pointers per RFC 9728.
+- **`oauth-consent.html`** — new Firebase login/consent page deployed to Vercel at `swarmspace.app/oauth-consent.html`. Supports email and Google sign-in (Firebase SDK 10.12.0, project `arc-epi`). Posts `firebase_id_token` + `login_state` to `/oauth/authorize/complete` and redirects on success.
+- **Cloudflare KV namespaces** — three new KV namespaces created and bound: `OAUTH_CLIENTS` (`7d638fbc0c3449e0a3127db8cf27db5d`), `OAUTH_CODES` (`b600c0991fda48b69b0ebd31f67f98b5`), `OAUTH_TOKENS` (`aade11e503d644c5849d75e56d15eca4`).
+- **`workers/mcp-server/tsconfig.json`** — new file. `target: ES2022`, `module: ES2022`, `moduleResolution: Bundler`, `types: ["@cloudflare/workers-types"]`.
+
+### Changed
+
+- **MCP manifest `auth.type`** — changed from `hmac` to `oauth2`; `authorization_url`, `token_url`, `registration_url`, and `scopes` added to manifest at `/.well-known/mcp/manifest.json`.
+- **Token validation** — `getUid()` now checks OAuth KV token first (SHA-256 hash lookup in `OAUTH_TOKENS`), falls back to legacy HMAC `ss_mcp_` key validation. Existing API key users are unaffected.
+- **New secrets** — `OAUTH_ISSUER` and `FIREBASE_PROJECT_ID` added via `wrangler secret put`. `MCP_KEY_SECRET` and `SWARMSPACE_INTERNAL_TOKEN` unchanged.
+
+### Deployment
+
+- Worker deployed 2026-05-15, version `c5aa5f33-b20f-4a13-a87c-360285db8610`
+- `wt/mcp-oauth` worktree merged to `main` with `--no-ff`; pushed to GitHub
+
+---
 
 ---
 

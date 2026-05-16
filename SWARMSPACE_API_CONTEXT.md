@@ -561,3 +561,69 @@ These are consumed by the Cloudflare workers, not by the Firebase functions. Con
 - Others as needed for weather, currency, news, url-reader
 
 Worker URLs live under `orbitalai.workers.dev`. You deploy those separately; the router only forwards requests with `SWARMSPACE_INTERNAL_TOKEN` and user headers.
+
+---
+
+## MCP Server — OAuth 2.1 Remote MCP
+
+**Base URL:** `https://swarmspace-mcp-server.orbitalai.workers.dev`  
+**Protocol:** MCP `2025-06-18`; Streamable HTTP (SSE on `tools/call`)  
+**Auth:** OAuth 2.1 (PKCE S256, DCR) — legacy `ss_mcp_` HMAC keys still accepted as fallback  
+**Deployed:** 2026-05-15, version `c5aa5f33-b20f-4a13-a87c-360285db8610`
+
+### Discovery Endpoints (no auth required)
+
+```
+GET /.well-known/oauth-authorization-server   # RFC 8414 metadata
+GET /.well-known/oauth-protected-resource     # RFC 9728 metadata
+GET /.well-known/mcp/manifest.json            # MCP manifest
+```
+
+### OAuth Flow
+
+```
+POST /oauth/register        # Dynamic Client Registration (RFC 7591) — returns client_id, no client_secret
+GET  /oauth/authorize       # Start auth flow (requires: client_id, redirect_uri, code_challenge, code_challenge_method=S256, resource)
+POST /oauth/authorize/complete  # Consent callback with Firebase ID token → issues auth code
+POST /oauth/token           # Exchange code or refresh token → access_token + refresh_token
+```
+
+**PKCE:** S256 only. `code_challenge_method=plain` is rejected.  
+**`resource` parameter:** Required on both `/authorize` and `/token` per RFC 8707. Value: `https://swarmspace-mcp-server.orbitalai.workers.dev`  
+**Redirect URI:** `https://claude.ai/api/mcp/auth_callback` and RFC 8252 loopback (`localhost` / `127.0.0.1`, any port) are accepted.  
+**Token TTLs:** access token 1h, refresh token 30d. Refresh token rotation is mandatory (old token invalidated on use).
+
+### MCP Endpoint
+
+```http
+POST /mcp
+Authorization: Bearer <access_token>
+Content-Type: application/json
+Accept: application/json          # synchronous JSON response
+Accept: text/event-stream         # SSE stream (tools/call only)
+MCP-Protocol-Version: 2025-06-18
+```
+
+**Supported JSON-RPC methods:** `initialize`, `tools/list`, `tools/call`, `notifications/initialized`
+
+**On 401:** Response includes `WWW-Authenticate` header with `resource` and `resource_metadata` pointers for automatic client discovery.
+
+### MCP Tools
+
+13 tools, one per orchestrator workflow chain:
+
+| Tool | Orchestrator Route | Description |
+|------|--------------------|-------------|
+| `research` | `/research` | Deep research: web + Wikipedia + academic papers |
+| `competitor_analysis` | `/competitor` | Competitive intelligence |
+| `marketing_brief` | `/marketing` | Marketing brief generator |
+| `plugin_discovery` | `/plugins` | Plugin and tech discovery |
+| `academic_research` | `/academic` | Academic paper synthesis |
+| `news_brief` | `/news-brief` | News briefing with community reaction |
+| `market_scan` | `/market-scan` | Market and currency intelligence |
+| `location_brief` | `/location-brief` | Location-aware research |
+| `health_research` | `/health-research` | Biomedical literature synthesis |
+| `tech_scout` | `/tech-scout` | GitHub + HN + arXiv tech evaluation |
+| `fact_check` | `/fact-check` | Multi-source fact verification |
+| `content_brief` | `/content-brief` | Content research and framing |
+| `meeting_prep` | `/meeting-prep` | Attendee research and meeting brief |

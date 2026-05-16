@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-05-01
+**Last Updated:** 2026-05-15
 **Status:** ✅ Synced
 
 ---
@@ -94,9 +94,11 @@ When running a doc sync or release:
 | functions/src/functions/swarmspaceDiscoveryAgent.ts | functions/ | 2026-04-11 | ✅ Synced | Discovery agent function |
 | functions/src/functions/swarmspaceClaimFoundingSpot.ts | functions/ | 2026-04-11 | ✅ Synced | Founding spot claim function |
 | workers/mcp-server/src/tools.ts | workers/mcp-server/ | 2026-05-14 | ✅ Synced | MCP tool definitions for 13 orchestrator chains |
-| workers/mcp-server/src/index.ts | workers/mcp-server/ | 2026-05-14 | ✅ Synced | MCP Remote Server Worker (JSON-RPC 2.0, HMAC auth) |
+| workers/mcp-server/src/index.ts | workers/mcp-server/ | 2026-05-15 | ✅ Synced | MCP Remote Server Worker — OAuth 2.1 AS + Streamable HTTP + 13 tools; version c5aa5f33 |
 | workers/mcp-server/package.json | workers/mcp-server/ | 2026-05-14 | ✅ Synced | Worker package config |
-| workers/mcp-server/wrangler.toml | workers/mcp-server/ | 2026-05-14 | ✅ Synced | Cloudflare Worker config (secrets: MCP_KEY_SECRET, SWARMSPACE_INTERNAL_TOKEN) |
+| workers/mcp-server/wrangler.toml | workers/mcp-server/ | 2026-05-15 | ✅ Synced | KV bindings: OAUTH_CLIENTS/CODES/TOKENS; secrets: MCP_KEY_SECRET, SWARMSPACE_INTERNAL_TOKEN, OAUTH_ISSUER, FIREBASE_PROJECT_ID |
+| workers/mcp-server/tsconfig.json | workers/mcp-server/ | 2026-05-15 | ✅ Synced | New file — TypeScript config for mcp-server worker |
+| oauth-consent.html | root | 2026-05-15 | ✅ Synced | OAuth consent page (Firebase email + Google sign-in); deployed via Vercel at swarmspace.app/oauth-consent.html |
 | functions/src/functions/swarmspaceMcpKeys.ts | functions/ | 2026-05-14 | ✅ Synced | generateMcpApiKey + revokeMcpApiKey (secret: MCP_KEY_SECRET) |
 
 ---

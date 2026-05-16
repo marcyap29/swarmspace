@@ -59,6 +59,7 @@ Contains approved developer plugin manifests (PluginConfig shape). Written by th
 | Vercel | Hosting, serverless functions | Vercel |
 | API (external) | swarmspaceRouter, swarmspacePluginStatus, swarmspacePluginCatalog, swarmspaceWriteCapabilities, validatePluginSubmission, onSubmissionStatusChange | Firebase Cloud Functions |
 | Orchestrator | 12 workflow routes via Cloudflare Worker | `swarmspace-orchestrator.orbitalai.workers.dev` |
+| MCP Server | OAuth 2.1 Authorization Server + 13 MCP tools; Streamable HTTP | `swarmspace-mcp-server.orbitalai.workers.dev` |
 
 ### Firebase Cloud Functions (`functions/`)
 
@@ -72,6 +73,49 @@ Contains approved developer plugin manifests (PluginConfig shape). Written by th
 - **`onSubmissionStatusChange`** — Firestore `onDocumentUpdated` trigger on `plugin_submissions/{docId}`. On transition to `approved`: builds a PluginConfig object and writes it to `approved_plugins/{plugin_id}`. On transition from `approved` to `rejected`: deletes the corresponding document from `approved_plugins`. Idempotent.
 - **Developer plugin merging** is now active in `swarmspaceRouter`. The router merges the built-in `PLUGIN_REGISTRY` with approved developer plugins loaded from the `approved_plugins` Firestore collection (TTL-cached, 5 min). Developer plugins carry `source: "developer"`. On plugin ID collision, first-party plugins take priority (`{ ...devPlugins, ...PLUGIN_REGISTRY }`).
 - **PRISM consent enforcement** is now active in `swarmspaceRouter`. Plugins flagged with `privacy_data_required: true` that receive sensitive payloads (image, URL) without `_prism_consent` are blocked and logged.
+
+---
+
+## MCP Server (`workers/mcp-server/`)
+
+**URL:** `https://swarmspace-mcp-server.orbitalai.workers.dev`  
+**Deployed:** 2026-05-15 — version `c5aa5f33-b20f-4a13-a87c-360285db8610`  
+**Auth:** OAuth 2.1 (PKCE S256) with legacy HMAC `ss_mcp_` key fallback  
+**Protocol:** MCP `2025-06-18`; Streamable HTTP (SSE on `tools/call`)
+
+### Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/.well-known/oauth-authorization-server` | GET | RFC 8414 Authorization Server Metadata |
+| `/.well-known/oauth-protected-resource` | GET | RFC 9728 Protected Resource Metadata |
+| `/.well-known/mcp/manifest.json` | GET | MCP manifest (auth type: `oauth2`) |
+| `/oauth/register` | POST | RFC 7591 Dynamic Client Registration |
+| `/oauth/authorize` | GET | Authorization endpoint (PKCE S256, `resource` required) |
+| `/oauth/authorize/complete` | POST | Firebase ID token consent callback |
+| `/oauth/token` | POST | Token endpoint (authorization_code + refresh_token grants) |
+| `/mcp` | POST | JSON-RPC 2.0 MCP endpoint; SSE streaming on `tools/call` |
+
+### KV Namespaces
+
+| Binding | KV ID | Purpose |
+|---------|-------|---------|
+| `OAUTH_CLIENTS` | `7d638fbc0c3449e0a3127db8cf27db5d` | Registered OAuth clients (no TTL) |
+| `OAUTH_CODES` | `b600c0991fda48b69b0ebd31f67f98b5` | Authorization codes (TTL 600s) |
+| `OAUTH_TOKENS` | `aade11e503d644c5849d75e56d15eca4` | Access tokens SHA-256 hash→uid (TTL 3600s); refresh tokens `rt:` prefix (TTL 30d) |
+
+### Secrets
+
+| Secret | Value | Notes |
+|--------|-------|-------|
+| `OAUTH_ISSUER` | `https://swarmspace-mcp-server.orbitalai.workers.dev` | Set via `wrangler secret put` |
+| `FIREBASE_PROJECT_ID` | `arc-epi` | Used for Firebase ID token validation |
+| `MCP_KEY_SECRET` | — | HMAC-SHA256 signing key (legacy API key path) |
+| `SWARMSPACE_INTERNAL_TOKEN` | — | Service token forwarded to orchestrator |
+
+### MCP Tools (13)
+
+One tool per orchestrator route: `research`, `competitor_analysis`, `marketing_brief`, `plugin_discovery`, `academic_research`, `news_brief`, `market_scan`, `location_brief`, `health_research`, `tech_scout`, `fact_check`, `content_brief`, `meeting_prep`.
 
 ---
 

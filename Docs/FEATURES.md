@@ -35,6 +35,7 @@
 | Founding Developer Programme (`founding-developers.html`) | `swarmspaceClaimFoundingSpot` function, landing page, seed script; `founding_programme` Firestore collection | ✅ |
 | Developer guide (`developer-guide.html`) | HTML conversion of DEVELOPER_GUIDE.md with styled code blocks and table of contents | ✅ |
 | Chain-to-signup handoff | Discovery chain preserved through auth flow to dashboard | ✅ |
+| MCP Remote Server | `workers/mcp-server/` — 13 MCP tools wrapping orchestrator workflows; OAuth 2.1 + PKCE + DCR (RFC 7591); Streamable HTTP SSE; protocol version `2025-06-18`; deployed at `swarmspace-mcp-server.orbitalai.workers.dev` | ✅ |
 
 ### Integrations
 

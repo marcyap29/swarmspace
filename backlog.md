@@ -2780,32 +2780,33 @@ Token refresh is LUMARA's responsibility. If the Worker returns `{ "error": "cal
 
 ---
 
-### NOW — MCP Compliance Audit *(gates both listings)*
+### ✅ DONE — MCP Compliance Audit *(2026-05-15)*
 
-**What:** Audit `swarmspaceRouter` + `workers/mcp-server/` against current MCP spec for both platforms simultaneously.
-
-Specific checks:
-- OAuth 2.1 compliance (mandatory for OpenAI — Bearer tokens rejected)
-- Dynamic Client Registration support (mandatory for OpenAI)
-- Remote MCP Server endpoint qualification (Anthropic)
-- MCP Apps compatibility for UI previews (Anthropic — optional but advantageous)
-
-**Why this is the gate:** One audit clears both directories. Do not do this twice.
-
-**Output:** Internal compliance note — compliant / gaps to close / estimated effort per gap. Flag OpenAI OAuth 2.1 and Dynamic Client Registration as explicit checkboxes.
+OAuth 2.1 + DCR + Streamable HTTP fully implemented and deployed. All compliance checkboxes cleared:
+- ✅ OAuth 2.1 (PKCE S256, refresh token rotation, public client)
+- ✅ Dynamic Client Registration — RFC 7591 (`POST /oauth/register`)
+- ✅ RFC 8414 Authorization Server Metadata
+- ✅ RFC 9728 Protected Resource Metadata
+- ✅ RFC 8707 `resource` parameter enforced
+- ✅ Streamable HTTP SSE on `tools/call`
+- ✅ Protocol version `2025-06-18`
+- ✅ Legacy HMAC `ss_mcp_` key fallback preserved (migration safety)
+- ✅ Worker live: `https://swarmspace-mcp-server.orbitalai.workers.dev` (version `c5aa5f33`)
 
 ---
 
 ### NOW — Apply for Anthropic Marketplace Listing
 
-**What:** Submit SwarmSpace to `claude.com/platform/marketplace` as a Remote MCP Server, categorized as a business intelligence connector.
+**What:** Submit SwarmSpace to `claude.com/connectors` as a Remote MCP Server, categorized as a business intelligence connector.
+
+**MCP endpoint:** `https://swarmspace-mcp-server.orbitalai.workers.dev/mcp`
 
 **Listing framing:**
 > SwarmSpace is the business intelligence layer for solo founders and small teams. While Claude for Small Business handles execution (payroll, invoicing, campaigns), SwarmSpace handles understanding — competitive analysis, market scanning, meeting prep, tech evaluation, research synthesis. 13 intelligence workflows. Privacy-first architecture.
 
-**Blocked by:** MCP compliance audit.
-
 **Key differentiation:** Most listed connectors are single-purpose data pipes (Stripe, GitHub, Notion, Slack). SwarmSpace is a workflow orchestration layer — research, competitor analysis, meeting prep, decision framing. A real gap in the directory.
+
+**Unblocked as of:** 2026-05-15
 
 ---
 
@@ -2815,9 +2816,9 @@ Specific checks:
 
 **Listing framing:** Same intelligence layer niche. Emphasize structured JSON outputs and source attribution — OpenAI users skew technical. Same workflow suite + privacy architecture pitch.
 
-**Blocked by:** MCP compliance audit. OAuth 2.1 + Dynamic Client Registration must be confirmed before submission.
+**Note:** File both marketplace applications in parallel. ChatGPT added MCP support September 2025; early listings get in before named-partner relationships solidify.
 
-**Note:** File both marketplace applications in parallel after audit clears. ChatGPT added MCP support September 2025; early listings get in before named-partner relationships solidify.
+**Unblocked as of:** 2026-05-15
 
 ---
 
