@@ -641,7 +641,7 @@ async function handleMcp(request: Request, env: Env): Promise<Response> {
 
   if (method === "tools/list") {
     return mcpResponse(id, {
-      tools: MCP_TOOLS.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema })),
+      tools: MCP_TOOLS.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema, ...(t.annotations ? { annotations: t.annotations } : {}) })),
     });
   }
 
