@@ -9,11 +9,12 @@
 - **Mirrors refreshed:** SWARMSPACE_Claude.md, SWARMSPACE_Context.md, SWARMSPACE_Planner.md updated in `DOCS/Startup Onboard/`.
 - **LUMARA cross-reference:** No action needed from SwarmSpace. LUMARA items §4.4 Catalogue Delta Sync and §5.2 News Briefing UI remain open on LUMARA's side (per last LUMARA session 2026-05-16). No new blockers. LUMARA's CLAUDE.md File Directory table still references `Coordinate.md` — flagged for LUMARA Claude to fix in their next session.
 
+- **mcp-server redeployed:** `wrangler deploy` confirmed by user — 7-day access tokens now live in production.
+
 ### Next (SwarmSpace)
 1. Submit to Anthropic: `claude.com/connectors` → "Get started"
 2. Submit to OpenAI App Directory
 3. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
-4. **(Deployment decision):** `workers/mcp-server` token expiry changed to 7 days — if intentional, run `cd workers/mcp-server && wrangler deploy` to push to production
 
 ---
 
