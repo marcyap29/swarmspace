@@ -1,3 +1,22 @@
+## Session: 2026-05-16 — Doc close-out; LUMARA Mode 1 fix (cross-repo assist)
+
+**Branch:** main — doc-only updates
+
+### What was done
+- SOP-DOC close-out for both repos after LUMARA Mode 1 no-entries hallucination fix session.
+- No new SwarmSpace code shipped this session. OAuth 2.1 + DCR + Streamable HTTP work remains live from prior session (deployed `c5aa5f33`, committed `0c236b5`, merged to `main` 2026-05-15).
+- **LUMARA bug fixed (cross-repo):** LUMARA Personal mode (Mode 1) was offering to search past journal entries then retracting — hallucination from unconditional wording. Fixed in 3 source files + 3 new test files (23 tests passing). LUMARA version bumped to v1.0.22.
+- Updated `Docs/context.md` (this file), `Docs/CONFIGURATION_MANAGEMENT.md` in SwarmSpace.
+- Updated `DOCS/context.md`, `DOCS/CHANGELOG.md` (v1.0.22), `DOCS/CONFIGURATION_MANAGEMENT.md` in LUMARA.
+- Updated `Coordinate_SS.md` in Hub with LUMARA fix status.
+
+### Next (SwarmSpace)
+1. Submit to Anthropic marketplace: `claude.com/connectors` → "Get started" — MCP endpoint `https://swarmspace-mcp-server.orbitalai.workers.dev/mcp`
+2. Submit to OpenAI App Directory — same endpoint + OAuth server
+3. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+
+---
+
 ## Session: 2026-05-15 — OAuth 2.1 + Streamable HTTP (wt/mcp-oauth)
 
 **Branch:** wt/mcp-oauth — committed `0c236b5`, NOT yet merged to main
