@@ -107,15 +107,45 @@ async function validateApiKey(apiKey: string, secret: string): Promise<string | 
 
 // ── OAuth token validation ──────────────────────────────────────────────────
 
-async function validateOAuthToken(token: string, kv: KVNamespace): Promise<string | null> {
+// Self-contained signed access token: base64url(payload).hmacHex
+// No KV lookup — avoids Cloudflare KV eventual-consistency race between PoPs.
+async function issueSignedAccessToken(uid: string, clientId: string, secret: string): Promise<string> {
+  const exp = Math.floor(Date.now() / 1000) + 3600;
+  const payloadB64 = base64UrlEncode(
+    new TextEncoder().encode(JSON.stringify({ uid, cid: clientId, exp })).buffer as ArrayBuffer
+  );
+  const sig = await hmacSign(secret, payloadB64);
+  return `${payloadB64}.${sig}`;
+}
+
+async function validateSignedAccessToken(token: string, secret: string): Promise<string | null> {
+  const dot = token.lastIndexOf(".");
+  if (dot === -1) return null;
+  const payloadB64 = token.slice(0, dot);
+  const sig = token.slice(dot + 1);
+  if (!(await hmacVerify(secret, payloadB64, sig))) return null;
+  try {
+    const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64))) as {
+      uid: string; cid: string; exp: number;
+    };
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return payload.uid;
+  } catch { return null; }
+}
+
+async function validateOAuthToken(token: string, env: Env): Promise<string | null> {
+  // Signed tokens (new path — no KV needed)
+  const uid = await validateSignedAccessToken(token, env.MCP_KEY_SECRET);
+  if (uid) return uid;
+  // KV fallback for any tokens issued before this change
   const hash = await sha256Hex(token);
-  const stored = await kv.get<OAuthTokenRecord>(hash, "json");
+  const stored = await env.OAUTH_TOKENS.get<OAuthTokenRecord>(hash, "json");
   return stored?.uid ?? null;
 }
 
 async function getUid(token: string, env: Env): Promise<string | null> {
   if (!token) return null;
-  const oauthUid = await validateOAuthToken(token, env.OAUTH_TOKENS);
+  const oauthUid = await validateOAuthToken(token, env);
   if (oauthUid) return oauthUid;
   return validateApiKey(token, env.MCP_KEY_SECRET);
 }
@@ -554,11 +584,11 @@ async function handleToken(request: Request, env: Env): Promise<Response> {
     // Single-use: delete code immediately
     await env.OAUTH_CODES.delete(code);
 
-    const accessToken = toHex(crypto.getRandomValues(new Uint8Array(32)));
+    // Signed access token — validated by HMAC, no KV read on every request.
+    const accessToken = await issueSignedAccessToken(stored.uid, stored.clientId, env.MCP_KEY_SECRET);
     const refreshToken = toHex(crypto.getRandomValues(new Uint8Array(32)));
     const tokenRecord: OAuthTokenRecord = { uid: stored.uid, clientId: stored.clientId };
 
-    await env.OAUTH_TOKENS.put(await sha256Hex(accessToken), JSON.stringify(tokenRecord), { expirationTtl: 3600 });
     await env.OAUTH_TOKENS.put(`rt:${await sha256Hex(refreshToken)}`, JSON.stringify(tokenRecord), { expirationTtl: 2592000 });
 
     return jsonResponse({ access_token: accessToken, token_type: "Bearer", expires_in: 3600, refresh_token: refreshToken, scope: "mcp" });
@@ -581,11 +611,10 @@ async function handleToken(request: Request, env: Env): Promise<Response> {
 
     await env.OAUTH_TOKENS.delete(rtKey);
 
-    const newAccessToken = toHex(crypto.getRandomValues(new Uint8Array(32)));
+    const newAccessToken = await issueSignedAccessToken(stored.uid, stored.clientId, env.MCP_KEY_SECRET);
     const newRefreshToken = toHex(crypto.getRandomValues(new Uint8Array(32)));
     const tokenRecord: OAuthTokenRecord = { uid: stored.uid, clientId: stored.clientId };
 
-    await env.OAUTH_TOKENS.put(await sha256Hex(newAccessToken), JSON.stringify(tokenRecord), { expirationTtl: 3600 });
     await env.OAUTH_TOKENS.put(`rt:${await sha256Hex(newRefreshToken)}`, JSON.stringify(tokenRecord), { expirationTtl: 2592000 });
 
     return jsonResponse({ access_token: newAccessToken, token_type: "Bearer", expires_in: 3600, refresh_token: newRefreshToken, scope: "mcp" });
@@ -780,7 +809,7 @@ export default {
     if (request.method === "POST" && url.pathname === "/oauth/token") {
       return handleToken(request, env);
     }
-    if (request.method === "POST" && url.pathname === "/mcp") {
+    if (request.method === "POST" && (url.pathname === "/mcp" || url.pathname === "/")) {
       return handleMcp(request, env);
     }
 
