@@ -1,3 +1,22 @@
+## Session: 2026-05-17 — Repo + SOP housekeeping; LUMARA cross-reference
+
+**Branch:** main
+
+### What was done
+- Full repo review: identified 4 issues (git state, uncommitted mcp-server change, SOP drift, untracked package-lock)
+- **DOCS/claude.md v1.6.2 → v1.6.3:** Updated all `Coordinate.md` references to use split files (`Coordinate_SS.md` for SwarmSpace dialog, `Coordinate_LUMARA.md` read-only). Fixed STEP 1/6 path refs from `Docs/` → `DOCS/`. Fixed cp commands to use `DOCS/context.md` and `DOCS/claude.md` (not `Docs/CLAUDE.md`). Updated STEP 1 ORIENT addition and rules-of-the-road section.
+- **Git cleanup:** Committed staged deletions of `Docs/Startup Onboard/` + staged untracked `DOCS/Startup Onboard/` directory (previously untracked — files were at risk if working tree lost). Committed uncommitted `workers/mcp-server/src/index.ts` (access token expiry 1hr → 7 days) and `workers/mcp-server/package-lock.json`.
+- **Mirrors refreshed:** SWARMSPACE_Claude.md, SWARMSPACE_Context.md, SWARMSPACE_Planner.md updated in `DOCS/Startup Onboard/`.
+- **LUMARA cross-reference:** No action needed from SwarmSpace. LUMARA items §4.4 Catalogue Delta Sync and §5.2 News Briefing UI remain open on LUMARA's side (per last LUMARA session 2026-05-16). No new blockers. LUMARA's CLAUDE.md File Directory table still references `Coordinate.md` — flagged for LUMARA Claude to fix in their next session.
+
+### Next (SwarmSpace)
+1. Submit to Anthropic: `claude.com/connectors` → "Get started"
+2. Submit to OpenAI App Directory
+3. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+4. **(Deployment decision):** `workers/mcp-server` token expiry changed to 7 days — if intentional, run `cd workers/mcp-server && wrangler deploy` to push to production
+
+---
+
 ## Session: 2026-05-16 — Doc close-out; LUMARA Mode 1 fix (cross-repo assist)
 
 **Branch:** main — doc-only updates
