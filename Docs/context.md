@@ -1,3 +1,24 @@
+## Session: 2026-05-18 — Kimi K2.6 review; service binding deploy; both repos clean
+
+**Branch:** main
+
+### What was done
+- Reviewed Kimi K2.6 cross-repo analysis — scored 6/10. Confirmed findings: root CLAUDE.md drift, LUMARA uncommitted changes, Agents.md `1111#` corruption, Coordinate_LUMARA.md empty. Rejected findings: wrong path case direction (`DOCS/` IS correct), misread SwarmSpace symlink as git-tracked files (it's also a Hub symlink).
+- **SwarmSpace root CLAUDE.md synced** to v1.6.3 (was drifted since yesterday's DOCS/claude.md update).
+- **Agents.md line 1 fixed**: removed `1111#` prefix corruption.
+- **Service binding deployed by user:** `workers/mcp-server` now calls orchestrator via Cloudflare Service Binding (`env.ORCHESTRATOR: Fetcher`) instead of HTTP egress. No network hop, no egress cost. `AbortSignal.timeout(55_000)` removed (inherits platform CPU time budget).
+- **Orchestrator auth bug fixed:** service-token bypass no longer sends `Authorization` header (Firebase Functions v2 rejects non-JWT at runtime layer before handler — bypass relies on `request.data._service_token` only). `workers/orchestrator/src/index.js` updated.
+- **LUMARA uncommitted changes committed** (`0af05419`): `_skipPlanning` fallback fix, `lookbackYears→timeWindowDays` rename, context selector 2-tier fallback, `device_calendar` pod, v1.0.6→1.1.0, LUMARA Hub symlink recovered, DOCS/claude.md Coordinate split updated.
+- All committed: `79fdf05`, `f12c6d9` (yesterday) + `6caad4c` (today SwarmSpace), `0af05419` (today LUMARA).
+
+### Next (SwarmSpace)
+1. Submit to Anthropic: `claude.com/connectors` → "Get started"
+2. Submit to OpenAI App Directory
+3. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+4. LUMARA: Coordinate_LUMARA.md is empty — LUMARA Claude should migrate its dialog entries there next session
+
+---
+
 ## Session: 2026-05-17 — Repo + SOP housekeeping; LUMARA cross-reference
 
 **Branch:** main

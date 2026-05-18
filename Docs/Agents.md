@@ -1,4 +1,4 @@
-1111# Claude or Cursor implementation
+# Claude or Cursor implementation
 
 For each prompt:
 
