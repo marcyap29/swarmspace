@@ -3,9 +3,12 @@ main = "src/index.ts"
 compatibility_date = "2026-03-01"
 
 [vars]
-ORCHESTRATOR_URL = "https://swarmspace-orchestrator.orbitalai.workers.dev"
 MCP_SERVER_NAME = "swarmspace"
 MCP_SERVER_VERSION = "1.0.0"
+
+[[services]]
+binding = "ORCHESTRATOR"
+service = "swarmspace-orchestrator"
 
 # Secrets — set via `wrangler secret put` (never commit values):
 # MCP_KEY_SECRET              — HMAC-SHA256 signing key for legacy API key validation

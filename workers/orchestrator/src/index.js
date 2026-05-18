@@ -90,12 +90,17 @@ async function callPlugin(ctx, pluginId, params) {
     data._service_token = ctx.serviceToken;
     data._run_as_uid = ctx.runAsUid;
   }
+  // When using the service-token bypass, omit the Authorization header.
+  // Firebase Functions v2 rejects non-JWT Bearer tokens at the runtime level
+  // before the function handler runs. The bypass relies on request.data._service_token
+  // only — no Authorization header needed.
+  const headers = { 'Content-Type': 'application/json' };
+  if (!ctx.serviceToken) {
+    headers['Authorization'] = ctx.token;
+  }
   const res = await fetch(ctx.routerUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': ctx.token,
-    },
+    headers,
     body: JSON.stringify({ data }),
   });
 

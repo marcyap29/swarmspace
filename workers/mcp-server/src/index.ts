@@ -1,7 +1,7 @@
 import { MCP_TOOLS, toolByName } from "./tools";
 
 interface Env {
-  ORCHESTRATOR_URL: string;
+  ORCHESTRATOR: Fetcher;
   MCP_SERVER_NAME: string;
   MCP_SERVER_VERSION: string;
   MCP_KEY_SECRET: string;
@@ -698,15 +698,16 @@ async function handleMcp(request: Request, env: Env): Promise<Response> {
 
       (async () => {
         try {
-          const resp = await fetch(`${env.ORCHESTRATOR_URL}${tool.orchestratorRoute}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`,
-            },
-            body: JSON.stringify(body),
-            signal: AbortSignal.timeout(55_000),
-          });
+          const resp = await env.ORCHESTRATOR.fetch(
+            new Request(`https://worker${tool.orchestratorRoute}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`,
+              },
+              body: JSON.stringify(body),
+            })
+          );
           if (!resp.ok) {
             const text = await resp.text();
             await writer.write(
@@ -746,15 +747,16 @@ async function handleMcp(request: Request, env: Env): Promise<Response> {
     // Synchronous path
     let resp: Response;
     try {
-      resp = await fetch(`${env.ORCHESTRATOR_URL}${tool.orchestratorRoute}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`,
-        },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(55_000),
-      });
+      resp = await env.ORCHESTRATOR.fetch(
+        new Request(`https://worker${tool.orchestratorRoute}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`,
+          },
+          body: JSON.stringify(body),
+        })
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       return mcpError(id, -32603, `Orchestrator request failed: ${msg}`);

@@ -1,6 +1,6 @@
 # SwarmSpace — Claude Code Instructions
 
-**Version:** 1.6.2 *(2026-05-03 — Startup Onboard moved into git-tracked DOCS/Startup Onboard/ inside SwarmSpace repo; all path references updated)*
+**Version:** 1.6.3 *(2026-05-17 — Coordinate.md split into Coordinate_SS.md + Coordinate_LUMARA.md; DOCS/ path corrections in STEP 1/6 and cp commands)*
 **Repo root:** `/Volumes/Marc Working Drive/Development/swarmspace/`
 **Stack:** Firebase Cloud Functions (TypeScript) + Cloudflare Workers (TS/JS) + static HTML on Vercel.
 **Linter:** `cd functions && npm run build` (functions side); `npx tsc --noEmit` from individual worker dirs (Workers side).
@@ -16,17 +16,18 @@ PROMPT RECEIVED
 ┌─────────────────────────────────────────────────────────────────┐
 │ STEP 1 — ORIENT (always, before anything else)                  │
 │                                                                 │
-│  Read: Docs/CLAUDE.md (this file)        ← entry point          │
-│  Read: Docs/Agents.md                    ← codebase reference   │
+│  Read: DOCS/claude.md (this file)        ← entry point          │
+│  Read: DOCS/Agents.md                    ← codebase reference   │
 │        + cross-repo dependency rules                            │
-│  Read: Docs/context.md                   ← last session, next,  │
+│  Read: DOCS/context.md                   ← last session, next,  │
 │                                            warnings             │
 │                                                                 │
 │  If the task touches LUMARA integration (orchestrator, plugin   │
 │  registry, PRISM, OAuth, anything cross-repo) ALSO read in this │
 │  order from DOCS/Startup Onboard/ (git-tracked, SwarmSpace      │
 │  repo) :                                                        │
-│    • Coordinate.md       ← bidirectional dialog, open asks      │
+│    • Coordinate_SS.md    ← our dialog (SwarmSpace writes here)  │
+│    • Coordinate_LUMARA.md ← LUMARA dialog (read-only)          │
 │    • LUMARA_Context.md   ← LUMARA's last session                │
 │    • LUMARA_Backlog.md   ← relevant cross-repo items            │
 └─────────────────────────────────────────────────────────────────┘
@@ -92,22 +93,22 @@ PROMPT RECEIVED
       ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ STEP 6 — CLOSE SESSION (always, before stopping)                │
-│  Write:  Docs/context.md → prepend session block (newest first) │
+│  Write:  DOCS/context.md → prepend session block (newest first) │
 │  Update: planner.md → cross off completed; wipe if feature done │
 │  Update: backlog.md → mark shipped items ✅                     │
-│  Update: Docs/CONFIGURATION_MANAGEMENT.md → if any docs changed │
-│  Update: Docs/CHANGELOG.md → if a release-worthy change shipped │
+│  Update: DOCS/CONFIGURATION_MANAGEMENT.md → if any docs changed │
+│  Update: DOCS/CHANGELOG.md → if a release-worthy change shipped │
 │  Mirror: any of {backlog.md, context.md, planner.md, CLAUDE.md} │
 │           that changed this session → Startup Onboard/ as       │
 │           SWARMSPACE_<Title>.md (see Cross-Repo Coordination    │
 │           below for cp commands)                                │
-│  Edit:   Startup Onboard/Coordinate.md (BIDIRECTIONAL — both    │
-│           sides edit) IF cross-repo state changed: in-flight    │
-│           feature status, new blocker, request for LUMARA,      │
-│           answer to LUMARA's open question, joint decision.     │
+│  Edit:   DOCS/Startup Onboard/Coordinate_SS.md IF cross-repo    │
+│           state changed: in-flight status, new blocker,         │
+│           request for LUMARA, answer to open question, decision.│
 │           Sign every entry [SWARMSPACE YYYY-MM-DD]. Move        │
-│           resolved items to Archive section, never delete       │
-│           LUMARA's entries.                                     │
+│           resolved items to Archive section.                    │
+│  Read:   DOCS/Startup Onboard/Coordinate_LUMARA.md for LUMARA's │
+│           entries — never edit that file.                       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -136,22 +137,22 @@ Shared mailbox at `DOCS/Startup Onboard/` (git-tracked inside SwarmSpace repo, a
 | File | Direction | Owner | Source of truth | Touch when |
 |---|---|---|---|---|
 | `SWARMSPACE_Backlog.md` | mirror (one-way) | SwarmSpace Claude | `backlog.md` | backlog edited |
-| `SWARMSPACE_Context.md` | mirror (one-way) | SwarmSpace Claude | `Docs/context.md` | session block prepended |
+| `SWARMSPACE_Context.md` | mirror (one-way) | SwarmSpace Claude | `DOCS/context.md` | session block prepended |
 | `SWARMSPACE_Planner.md` | mirror (one-way) | SwarmSpace Claude | `planner.md` | tasks edited |
-| `SWARMSPACE_Claude.md` | mirror (one-way) | SwarmSpace Claude | `Docs/CLAUDE.md` | SOPs / convention edited |
+| `SWARMSPACE_Claude.md` | mirror (one-way) | SwarmSpace Claude | `DOCS/claude.md` | SOPs / convention edited |
 | `SWARMSPACE_Spec_*.md` | mirror (one-way) | SwarmSpace Claude | (none currently — Meeting Prep lives inline in §22) | active cross-repo spec edited; archive after merge |
 | `LUMARA_*.md` | mirror (one-way) | LUMARA Claude | LUMARA repo's canonical files | their session-close — read-only for me |
-| **`Coordinate.md`** | **BIDIRECTIONAL — both sides edit** | both | n/a (this IS the canonical) | cross-repo state changed: in-flight feature status, blocker, request, answer, joint decision |
+| **`Coordinate_SS.md`** | **write** | SwarmSpace Claude | n/a (canonical) | cross-repo state changed — sign `[SWARMSPACE YYYY-MM-DD]` |
+| **`Coordinate_LUMARA.md`** | **read-only** | LUMARA Claude | n/a (canonical) | read at STEP 1 for cross-repo work — never edit |
 | `prompts/*.md` | one-way (user → both) | User | n/a | overrides in-repo planner when present |
 | `README.md` | one-way | LUMARA Claude (currently) | unified dir | convention edited |
 
-**`Coordinate.md` rules of the road** (per `Startup Onboard/Coordinate.md` itself):
+**`Coordinate_SS.md` rules of the road:**
 - Sign every contribution `[SWARMSPACE YYYY-MM-DD]` so LUMARA knows what came from me and when
-- Never delete LUMARA's entries — move resolved items to the Archive section instead
-- Never edit LUMARA's status claims — if I disagree, add my own entry rebutting
+- `Coordinate_SS.md` is SwarmSpace's dialog — write and own it freely
+- `Coordinate_LUMARA.md` is LUMARA's dialog — read-only; never edit it
 - Be specific: cite commit hashes, file paths, exact next actions. Vague status wastes LUMARA's session.
-- Use Edit (not Write/cp) — preserve LUMARA's contributions
-- **Concurrency: pause + retry on edit failure.** If an Edit on `Coordinate.md` fails with "File has been modified since read" or similar, LUMARA Claude is likely writing to it concurrently. Wait 30-40 seconds, re-read the file (to pick up their changes), then retry the edit on the fresh contents. Three retries max; if still failing, log it as an unfinished open item and surface to the user.
+- Use Edit (not Write) — preserves file structure
 
 **Concrete commands for STEP 6 mirror (run only for files that changed this session):**
 
@@ -159,14 +160,14 @@ Shared mailbox at `DOCS/Startup Onboard/` (git-tracked inside SwarmSpace repo, a
 UNIFIED="/Volumes/Marc Working Drive/Development/swarmspace/DOCS/Startup Onboard"
 SRC="/Volumes/Marc Working Drive/Development/swarmspace"
 
-cp "$SRC/backlog.md"       "$UNIFIED/SWARMSPACE_Backlog.md"
-cp "$SRC/Docs/context.md"  "$UNIFIED/SWARMSPACE_Context.md"
-cp "$SRC/planner.md"       "$UNIFIED/SWARMSPACE_Planner.md"
-cp "$SRC/Docs/CLAUDE.md"   "$UNIFIED/SWARMSPACE_Claude.md"
+cp "$SRC/backlog.md"        "$UNIFIED/SWARMSPACE_Backlog.md"
+cp "$SRC/DOCS/context.md"   "$UNIFIED/SWARMSPACE_Context.md"
+cp "$SRC/planner.md"        "$UNIFIED/SWARMSPACE_Planner.md"
+cp "$SRC/DOCS/claude.md"    "$UNIFIED/SWARMSPACE_Claude.md"
 chmod 644 "$UNIFIED/SWARMSPACE_Context.md"   # source is 600; mirror should be readable
 ```
 
-**STEP 1 ORIENT addition (when work touches cross-repo):** before planning, read `LUMARA_Context.md` in `DOCS/Startup Onboard/` (LUMARA's last session) plus relevant entries from `LUMARA_Backlog.md`. Convention notes live in `DOCS/Startup Onboard/README.md`.
+**STEP 1 ORIENT addition (when work touches cross-repo):** read `Coordinate_SS.md` (our dialog) and `Coordinate_LUMARA.md` (LUMARA's dialog) in `DOCS/Startup Onboard/`. Then read `LUMARA_Context.md` (LUMARA's last session) and relevant entries from `LUMARA_Backlog.md`. Convention notes live in `DOCS/Startup Onboard/README.md`.
 
 ---
 
