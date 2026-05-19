@@ -135,29 +135,107 @@
 
 <div class="page">
 
-  <div class="section-label">Documentation</div>
-  <h1>SwarmSpace Developer Guide</h1>
-  <p class="subtitle">Single reference for building and submitting plugins: from "what is SwarmSpace?" through a working submission. Copy the JSON and <code>curl</code> examples directly.</p>
+  <div class="section-label">Integration Guide</div>
+  <h1>Connecting SwarmSpace to Claude</h1>
+  <p class="subtitle">Step-by-step guide to integrating SwarmSpace intelligence tools into your AI agent.</p>
 
-  <!-- Table of Contents -->
   <div class="toc">
-    <h3>Contents</h3>
+    <h3>Quick Links</h3>
     <ol>
-      <li><a href="#what-swarmspace-is">What SwarmSpace Is</a></li>
-      <li><a href="#what-you-can-build">What You Can Build</a></li>
-      <li><a href="#plugin-manifest-specification">Plugin Manifest Specification</a></li>
-      <li><a href="#endpoint-requirements">Endpoint Requirements</a></li>
-      <li><a href="#submission-and-review-process">Submission and Review Process</a></li>
-      <li><a href="#trust-tiers">Trust Tiers</a></li>
-      <li><a href="#merit-algorithm">Merit Algorithm</a></li>
-      <li><a href="#revenue-share">Revenue Share</a></li>
-      <li><a href="#developer-pro-tier">Developer Pro Tier</a></li>
-      <li><a href="#prism-privacy-model">PRISM Privacy Model</a></li>
-      <li><a href="#getting-started-checklist">Getting Started Checklist</a></li>
+      <li><a href="#setup-claude-ai">Setup &mdash; Claude.ai</a></li>
+      <li><a href="#setup-claude-code">Setup &mdash; Claude Code (CLI)</a></li>
+      <li><a href="#available-tools">Available Tools</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
     </ol>
   </div>
 
-  <!-- Section 1 -->
+  <h2 id="setup-claude-ai">1. Setup &mdash; Claude.ai</h2>
+  <p class="lead">Follow these steps to add SwarmSpace tools to your browser-based Claude experience:</p>
+  <ol class="checklist">
+    <li>Open <strong>Claude.ai</strong> and go to <strong>Settings &rarr; Integrations</strong> (or MCP Servers).</li>
+    <li>Click <strong>"Add MCP Server"</strong>.</li>
+    <li>Enter the server URL: <code>https://swarmspace-mcp-server.orbitalai.workers.dev/mcp</code>.</li>
+    <li>Click <strong>Connect</strong> &mdash; you will be redirected to swarmspace.app to sign in.</li>
+    <li>Sign in with Google and approve the requested permissions.</li>
+    <li>Return to Claude &mdash; SwarmSpace tools will now appear in your tool list.</li>
+  </ol>
+
+  <h2 id="setup-claude-code">2. Setup &mdash; Claude Code (CLI)</h2>
+  <p class="lead">For the Claude Code CLI, add the server to your configuration file:</p>
+  <p>Edit your <code>claude_desktop_config.json</code> or <code>.claude/mcp.json</code> and add the following entry:</p>
+  <div class="code-block">{
+    "mcpServers": {
+      "swarmspace": {
+        "url": "https://swarmspace-mcp-server.orbitalai.workers.dev/mcp"
+      }
+    }
+  }</div>
+  <p>OAuth authentication will run automatically on first use.</p>
+
+  <h2 id="available-tools">3. Available Tools (13 total)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tool</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>deep_research</code></td><td>Comprehensive research combining web search, Wikipedia, and academic papers</td></tr>
+        <tr><td><code>competitor_analysis</code></td><td>Competitive intelligence from web search, news, and Hacker News</td></tr>
+        <tr><td><code>marketing_brief</code></td><td>Content marketing brief with trending themes, SEO keywords, and audience pain points</td></tr>
+        <tr><td><code>plugin_ecosystem_analysis</code></td><td>API and plugin ecosystem analysis &mdash; existing integrations, patterns, and gaps</td></tr>
+        <tr><td><code>academic_research</code></td><td>Deep academic literature review across Semantic Scholar, arXiv, and PubMed</td></tr>
+        <tr><td><code>news_brief</code></td><td>Multi-source news intelligence from mainstream news, Hacker News, and web search</td></tr>
+        <tr><td><code>market_scan</code></td><td>Financial and market overview including analysis, key metrics, and exchange rate context</td></tr>
+        <tr><td><code>location_brief</code></td><td>Geographic intelligence: geocoding, weather, country data, and Wikipedia context</td></tr>
+        <tr><td><code>health_research</code></td><td>Biomedical research from PubMed and academic papers &mdash; includes medical disclaimer</td></tr>
+        <tr><td><code>tech_scout</code></td><td>Technology evaluation: GitHub ecosystem, Hacker News signals, academic papers</td></tr>
+        <tr><td><code>fact_check</code></td><td>Cross-source fact verification against web, Wikipedia, and news</td></tr>
+        <tr><td><code>content_brief</code></td><td>Content strategy brief for a given topic or product</td></tr>
+        <tr><td><code>meeting_prep</code></td><td>Pre-meeting intelligence brief on attendee, company, and relevant context</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="troubleshooting">4. Troubleshooting</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>"Authorization required" / 401 on first connect</td>
+          <td>OAuth not yet completed</td>
+          <td>Click the authorization link that appears in Claude; sign in at swarmspace.app</td>
+        </tr>
+        <tr>
+          <td>"CONSENT_REQUIRED"</td>
+          <td>OAuth scope not approved</td>
+          <td>Re-authorize: disconnect the server in Claude settings and reconnect</td>
+        </tr>
+        <tr>
+          <td>403 Forbidden</td>
+          <td>Account plan doesn't include this tool, or session expired</td>
+          <td>Check your SwarmSpace plan at swarmspace.app/dashboard; re-authenticate if session is old</td>
+        </tr>
+        <tr>
+          <td>Tool returns no results</td>
+          <td>Query too broad or upstream API timeout</td>
+          <td>Rephrase the query more specifically; retry once</td>
+        </tr>
+        <tr>
+          <td>OAuth redirect loop</td>
+          <td>Browser third-party cookies blocked</td>
+           la
+          <td>Allow cookies for swarmspace-mcp-server.orbitalai.workers.dev in your browser</td>
+        </tr>
+        <tr>
+          <td>Server not appearing in Claude</td>
+          <td>URL entered incorrectly</td>
+          <td>Confirm URL is exactly: <code>https://swarmspace-mcp-server.orbitalai.workers.dev/mcp</code> (note the /mcp path)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 1 (existing) -->
+
   <h2 id="what-swarmspace-is">1. What SwarmSpace Is</h2>
   <p class="lead">SwarmSpace is a <strong>plugin marketplace where the primary consumer is the AI agent</strong>, not the end user. Humans choose clients; agents discover tools at runtime, decide relevance, and invoke them.</p>
   <ul>

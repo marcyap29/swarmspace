@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwarmSpace — Terms of Service</title>
+  <meta name="description" content="Terms of Service for the SwarmSpace MCP Server." />
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e; --border2:#2a2a3e;
+      --text:#e8e8f0; --muted:#6a6a8a; --dim:#3a3a5a;
+      --accent:#5b5bd6; --accent2:#7c9eff; --green:#34d399;
+      --orange:#fb923c; --purple:#9b6dff;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --mono:'SF Mono','JetBrains Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.65; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+    .btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px; font-size:13px; color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
+
+    .page { max-width:900px; margin:0 auto; padding:56px 40px 80px; }
+    .section-label {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
+      text-transform:uppercase; background:rgba(91,91,214,.08);
+      border:1px solid rgba(91,91,214,.2); border-radius:20px;
+      padding:4px 12px; margin-bottom:20px;
+    }
+    h1 { font-size:clamp(28px,4.5vw,44px); font-weight:800; letter-spacing:-1px; line-height:1.12; margin-bottom:14px; }
+    .subtitle { font-size:17px; color:var(--muted); max-width:720px; margin-bottom:40px; line-height:1.6; }
+    h2 { font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:48px 0 16px; }
+    h2:first-of-type { margin-top:36px; }
+    p { font-size:14px; color:var(--muted); margin-bottom:14px; max-width:720px; }
+    ul { margin:12px 0 18px 20px; color:var(--muted); font-size:14px; }
+    li { margin-bottom:8px; }
+    li strong { color:var(--text); font-weight:600; }
+
+    footer { border-top:1px solid var(--border); padding:36px 40px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; max-width:1100px; margin:0 auto; }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:20px; }
+    .footer-links a { font-size:13px; color:var(--dim); }
+
+    @media(max-width:640px){
+      nav{padding:14px 20px;}
+      .page{padding:40px 20px 64px;}
+      footer{flex-direction:column;align-items:flex-start;padding:28px 20px;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">SwarmSpace</a>
+  <div class="nav-actions">
+    <a href="/" class="btn-ghost">Home</a>
+    <a href="/upgrade.html" class="btn-ghost">Pricing</a>
+    <a href="/submit-plugin.html" class="btn-ghost">Submit plugin</a>
+    <a href="/signup.html" class="btn-primary">Get API access &rarr;</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="section-label">Legal</div>
+  <h1>Terms of Service</h1>
+  <p class="subtitle">Effective Date: May 19, 2026. These terms govern your use of the SwarmSpace MCP Server provided by Orbital AI, Inc.</p>
+
+  <h2>1. Acceptance of Terms</h2>
+  <p>By accessing or using the SwarmSpace MCP Server, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the service.</p>
+
+  <h2>2. Description of Service</h2>
+  <p>SwarmSpace provides read-only research intelligence tools via the Model Context Protocol (MCP). All tools query publicly available data sources and synthesize results for use within AI agents. No user data is written or modified as a result of these tool calls.</p>
+
+  <h2>3. Acceptable Use</h2>
+  <p>These tools are intended for research and information purposes only. You agree NOT to:</p>
+  <ul>
+    <li>Use the tools to automate financial decisions, medical diagnosis, or legal conclusions.</li>
+    <li>Attempt to extract API credentials from the service.</li>
+    <li>Reverse-engineer, scrape, or bypass rate limits.</li>
+    <li>Use the service for any illegal activity or to violate the terms of third-party data sources.</li>
+  </ul>
+
+  <h2>4. Third-Party Data Sources</h2>
+  <p>Results are synthesized from third-party sources, including but not limited to web search, Wikipedia, academic databases, and news APIs. Orbital AI makes no warranty as to the accuracy, completeness, or timeliness of this third-party data.</p>
+
+  <h2>5. No Financial or Medical Advice</h2>
+  <p>Any research output provided is informational only. Specifically:
+    <ul>
+      <li>The <strong>health_research</strong> tool explicitly disclaims medical advice.</li>
+      <li>The <strong>market_scan</strong> tool does not constitute financial advice.</li>
+    </ul>
+    Always consult a qualified professional for medical or financial decisions.</p>
+
+  <h2>6. Authentication & Account</h2>
+  <p>Users authenticate via OAuth 2.0 through their SwarmSpace account. You are solely responsible for maintaining the confidentiality of your credentials and for all activities that occur under your account.</p>
+
+  <h2>7. Rate Limits & Fair Use</h2>
+  <p>Usage is subject to per-user rate limits defined by your account tier. Automated bulk queries that exceed normal conversational use may result in temporary or permanent suspension of your access.</p>
+
+  <h2>8. Intellectual Property</h2>
+  <p>Synthesized outputs are generally considered generated content. Raw data fetched from third-party sources remains subject to the terms and licenses of those original sources.</p>
+
+  <h2>9. Limitation of Liability</h2>
+  <p>The service is provided "as is" without warranties of any kind. Orbital AI, Inc. shall not be liable for any decisions made or actions taken based on the output of SwarmSpace tools.</p>
+
+  <h2>10. Changes to Terms</h2>
+  <p>Orbital AI may update these terms from time to time. Material changes will be announced via the website. Your continued use of the service after such changes constitutes your acceptance of the updated terms.</p>
+
+  <h2>11. Contact</h2>
+  <p>For questions or concerns regarding these terms, please contact: <a href="mailto:marcyap@orbitalai.net">marcyap@orbitalai.net</a></p>
+
+</div>
+
+<footer>
+  <p>SwarmSpace by Orbital AI &mdash; 2026</p>
+  <div class="footer-links">
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/upgrade.html">Pricing</a>
+    <a href="/submit-plugin.html">Submit plugin</a>
+    <a href="/founding-developers.html">Founding Developers</a>
+    <a href="/developer-guide.html">Docs</a>
+    <a href="/security.html">Security</a>
+    <a href="/ast10.html">AST10</a>
+    <a href="/prism.html">PRISM</a>
+    <a href="/faq.html">FAQ</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms of Service</a>
+  </div>
+</footer>
+
+</body>
+</html>

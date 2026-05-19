@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwarmSpace MCP — Connect to Claude</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0a0f; --surface:#13131E; --surface2:#1A1A2C; --border:#1E1E35; --border2:#2A2A3E;
+      --text:#e8e8f0; --muted:#7A7A9A; --dim:#44445A;
+      --accent:#5b5bd6; --accent2:#5B5BD6; --green:#34d399;
+      --orange:#FB923C; --purple:#5B5BD6;
+      --font:'Inter',-apple-system,sans-serif;
+      --mono:'JetBrains Mono','Fira Code',monospace;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.6; }
+    a { color:var(--accent2); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-actions { display:flex; gap:12px; }
+    .btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px;
+  font-size:13px; color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px;
+  font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
+
+    .page { max-width:860px; margin:0 auto; padding:60px 40px 80px; }
+    .section-label {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
+      text-transform:uppercase; background:rgba(91,91,214,.08);
+      border:1px solid rgba(91,91,214,.2); border-radius:20px;
+      padding:4px 12px; margin-bottom:20px;
+    }
+    h1 { font-size:clamp(28px,4.5vw,44px); font-weight:800; letter-spacing:-1px; line-height:1.12;
+   margin-bottom:14px; }
+    .subtitle { font-size:17px; color:var(--muted); max-width:680px; margin-bottom:48px;
+  line-height:1.6; }
+    h2 { font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:52px 0 16px;
+  padding-bottom:12px; border-bottom:1px solid var(--border); }
+    h3 { font-size:15px; font-weight:700; margin:24px 0 10px; }
+    p { font-size:14px; color:var(--muted); margin-bottom:14px; max-width:680px; line-height:1.7;
+  }
+    ol, ul { margin:12px 0 18px 20px; color:var(--muted); font-size:14px; }
+    li { margin-bottom:8px; line-height:1.6; }
+    li strong { color:var(--text); font-weight:600; }
+    code { font-family:var(--mono); font-size:12px; background:rgba(91,91,214,.1);
+  color:var(--accent2); padding:2px 6px; border-radius:4px; }
+    pre { background:#0d0d14; border:1px solid var(--border); border-radius:10px; padding:20px;
+  font-family:var(--mono); font-size:12px; line-height:1.8; overflow-x:auto; margin:16px 0 24px; }
+    table { width:100%; border-collapse:collapse; margin:16px 0 28px; font-size:13px; }
+    th { text-align:left; padding:10px 14px; border-bottom:2px solid var(--border);
+  color:var(--text); font-weight:700; }
+    td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--muted);
+  vertical-align:top; }
+    td code { font-size:11px; }
+    tr:last-child td { border-bottom:none; }
+
+    .callout { background:rgba(91,91,214,.06); border:1px solid rgba(91,91,214,.2);
+  border-radius:10px; padding:16px 20px; margin:20px 0; }
+    .callout p { margin:0; font-size:13px; }
+
+    footer { border-top:1px solid var(--border); padding:40px; display:flex;
+  flex-direction:column; align-items:center; gap:16px; max-width:1100px; margin:0 auto; }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:14px 24px; justify-content:center; }
+    .footer-links a { font-size:13px; color:var(--dim); }
+
+    @media(max-width:640px){
+      nav { padding:14px 20px; }
+      .page { padding:40px 20px 64px; }
+      footer { flex-direction:column; gap:16px; padding:32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">SwarmSpace</a>
+    <div class="nav-actions">
+      <a href="/upgrade.html" class="btn-ghost">Pricing</a>
+      <a href="/signup.html" class="btn-primary">Get started &rarr;</a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <div class="section-label">Setup Guide</div>
+    <h1>Connect SwarmSpace to Claude</h1>
+    <p class="subtitle">Add 13 intelligence tools to Claude in under two minutes. SwarmSpace gives Claude the ability to research, analyze, and synthesize information from across the web.</p>
+
+    <h2>Setup: Claude.ai</h2>
+    <ol>
+      <li>Open Claude.ai and go to Settings → Integrations (or MCP Servers)</li>
+      <li>Click Add MCP Server</li>
+      <li>Enter the server URL: <code>https://swarmspace-mcp-server.orbitalai.workers.dev/mcp</code></li>
+      <li>Click Connect — you will be redirected to swarmspace.app to sign in</li>
+      <li>Sign in with your Google account and approve the permissions</li>
+      <li>Return to Claude — SwarmSpace tools will appear in your tool list</li>
+    </ol>
+
+    <h2>Setup: Claude Code (CLI)</h2>
+    <p>Add this to your <code>claude_desktop_config.json</code> or <code>.claude/mcp.json</code>. OAuth authentication runs automatically on first use.</p>
+    <pre>{
+  "mcpServers": {
+    "swarmspace": {
+      "url": "https://swarmspace-mcp-server.orbitalai.workers.dev/mcp"
+    }
+  }
+}</pre>
+
+    <h2>Available Tools</h2>
+    <p>SwarmSpace adds 13 read-only intelligence tools to Claude. All tools query public data sources — nothing is written or modified.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th>What it does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>deep_research</code></td>
+          <td>Comprehensive research combining web search, Wikipedia, and academic papers</td>
+        </tr>
+        <tr>
+          <td><code>competitor_analysis</code></td>
+          <td>Competitive intelligence from web search, news, and Hacker News</td>
+        </tr>
+        <tr>
+          <td><code>marketing_brief</code></td>
+          <td>Content marketing brief with trending themes, SEO keywords, and audience pain points</td>
+        </tr>
+        <tr>
+          <td><code>plugin_ecosystem_analysis</code></td>
+          <td>API and plugin ecosystem analysis — existing integrations, patterns, and gaps</td>
+        </tr>
+        <tr>
+          <td><code>academic_research</code></td>
+          <td>Deep academic literature review across Semantic Scholar, arXiv, and PubMed</td>
+        </tr>
+        <tr>
+          <td><code>news_brief</code></td>
+          <td>Multi-source news intelligence from mainstream news, Hacker News, and web search</td>
+        </tr>
+        <tr>
+          <td><code>market_scan</code></td>
+          <td>Financial and market overview including analysis, key metrics, and exchange rate context</td>
+        </tr>
+        <tr>
+          <td><code>location_brief</code></td>
+          <td>Geographic intelligence: geocoding, weather, country data, and Wikipedia context</td>
+        </tr>
+        <tr>
+          <td><code>health_research</code></td>
+          <td>Biomedical research from PubMed and academic papers — includes medical disclaimer</td>
+        </tr>
+        <tr>
+          <td><code>tech_scout</code></td>
+          <td>Technology evaluation: GitHub ecosystem, Hacker News signals, academic papers</td>
+        </tr>
+        <tr>
+          <td><code>fact_check</code></td>
+          <td>Cross-source fact verification against web, Wikipedia, and news</td>
+        </tr>
+        <tr>
+          <td><code>content_brief</code></td>
+          <td>Content strategy brief for a given topic or product</td>
+        </tr>
+        <tr>
+          <td><code>meeting_prep</code></td>
+          <td>Pre-meeting intelligence brief on attendee, company, and relevant context</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Troubleshooting</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Symptom</th>
+          <th>Cause</th>
+          <th>Fix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"Authorization required" or 401 on first connect</td>
+          <td>OAuth not yet completed</td>
+          <td>Click the authorization link that appears in Claude and sign in at swarmspace.app</td>
+        </tr>
+        <tr>
+          <td>"CONSENT_REQUIRED" error</td>
+          <td>OAuth scope not approved</td>
+          <td>Disconnect the server in Claude settings, then reconnect and re-approve</td>
+        </tr>
+        <tr>
+          <td>403 Forbidden</td>
+          <td>Expired session or plan mismatch</td>
+          <td>Check your plan at swarmspace.app/dashboard; disconnect and reconnect to refresh your session</td>
+        </tr>
+        <tr>
+          <td>Tool returns empty results</td>
+          <td>Query too broad or upstream timeout</td>
+          <td>Rephrase the query more specifically and retry once</td>
+        </tr>
+        <tr>
+          <td>OAuth redirect loop</td>
+          <td>Browser blocking third-party cookies</td>
+          <td>Allow cookies for swarmspace-mcp-server.orbitalai.workers.dev in your browser settings</td>
+        </tr>
+        <tr>
+          <td>Server not appearing in Claude</td>
+          <td>URL entered incorrectly</td>
+          <td>Confirm the URL ends in /mcp: <code>https://swarmspace-mcp-server.orbitalai.workers.dev/mcp</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <p>Still stuck? Email <a href="mailto:marcyap@orbitalai.net">marcyap@orbitalai.net</a> with a description of the issue and which Claude surface you're using.</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>SwarmSpace by Orbital AI &mdash; 2026</p>
+    <div class="footer-links">
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/upgrade.html">Pricing</a>
+      <a href="/submit-plugin.html">Submit plugin</a>
+      <a href="/founding-developers.html">Founding Developers</a>
+      <a href="/developer-guide.html">Docs</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="/security.html">Security</a>
+      <a href="/ast10.html">AST10</a>
+      <a href="/prism.html">PRISM</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/privacy.html">Privacy</a>
+    </div>
+  </footer>
+
+</body>
+</html>
