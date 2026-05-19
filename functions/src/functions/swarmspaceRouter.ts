@@ -755,9 +755,15 @@ export const swarmspaceRouter = onCall(
       const db = getFirestore();
       const userSnap = await db.collection("users").doc(reqRunAsUid).get();
       if (!userSnap.exists) {
-        throw new HttpsError("not-found", `user ${reqRunAsUid} not found`);
+        // Auto-provision a free-tier record for OAuth/MCP users who authenticated
+        // via the MCP server but haven't gone through the SwarmSpace web registration.
+        const now = new Date().toISOString();
+        const provisioned = { userId: reqRunAsUid, plan: "free", isPremium: false, createdAt: now, updatedAt: now, source: "mcp-oauth" };
+        await db.collection("users").doc(reqRunAsUid).set(provisioned);
+        user = provisioned as unknown as typeof user;
+      } else {
+        user = userSnap.data() as typeof user;
       }
-      user = userSnap.data() as typeof user;
       userId = reqRunAsUid;
       isPremium = (user as { isPremium?: boolean; plan?: string }).isPremium === true
         || (user as { plan?: string }).plan === "pro"
