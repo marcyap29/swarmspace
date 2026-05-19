@@ -110,7 +110,7 @@ async function validateApiKey(apiKey: string, secret: string): Promise<string | 
 // Self-contained signed access token: base64url(payload).hmacHex
 // No KV lookup — avoids Cloudflare KV eventual-consistency race between PoPs.
 async function issueSignedAccessToken(uid: string, clientId: string, secret: string): Promise<string> {
-  const exp = Math.floor(Date.now() / 1000) + 604800; // 7 days
+  const exp = Math.floor(Date.now() / 1000) + 2592000; // 30 days
   const payloadB64 = base64UrlEncode(
     new TextEncoder().encode(JSON.stringify({ uid, cid: clientId, exp })).buffer as ArrayBuffer
   );
@@ -591,7 +591,7 @@ async function handleToken(request: Request, env: Env): Promise<Response> {
 
     await env.OAUTH_TOKENS.put(`rt:${await sha256Hex(refreshToken)}`, JSON.stringify(tokenRecord), { expirationTtl: 2592000 });
 
-    return jsonResponse({ access_token: accessToken, token_type: "Bearer", expires_in: 604800, refresh_token: refreshToken, scope: "mcp" });
+    return jsonResponse({ access_token: accessToken, token_type: "Bearer", expires_in: 2592000, refresh_token: refreshToken, scope: "mcp" });
   }
 
   if (grantType === "refresh_token") {
@@ -617,7 +617,7 @@ async function handleToken(request: Request, env: Env): Promise<Response> {
 
     await env.OAUTH_TOKENS.put(`rt:${await sha256Hex(newRefreshToken)}`, JSON.stringify(tokenRecord), { expirationTtl: 2592000 });
 
-    return jsonResponse({ access_token: newAccessToken, token_type: "Bearer", expires_in: 604800, refresh_token: newRefreshToken, scope: "mcp" });
+    return jsonResponse({ access_token: newAccessToken, token_type: "Bearer", expires_in: 2592000, refresh_token: newRefreshToken, scope: "mcp" });
   }
 
   return jsonResponse({ error: "unsupported_grant_type" }, 400);
