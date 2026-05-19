@@ -1,6 +1,6 @@
 # SwarmSpace — Claude Code Instructions
 
-**Version:** 1.6.3 *(2026-05-17 — Coordinate.md split into Coordinate_SS.md + Coordinate_LUMARA.md; DOCS/ path corrections in STEP 1/6 and cp commands)*
+**Version:** 1.6.4 *(2026-05-19 — Removed duplicate sections (Task Management SOP, Core Documentation, Documentation Update Rules, Role prompt block); collapsed sub-agent prompts; fixed Planner.md→planner.md and remaining lowercase-DOCS/-→-DOCS/ path bugs; removed dangling SOP-REVIEW reference)*
 **Repo root:** `/Volumes/Marc Working Drive/Development/swarmspace/`
 **Stack:** Firebase Cloud Functions (TypeScript) + Cloudflare Workers (TS/JS) + static HTML on Vercel.
 **Linter:** `cd functions && npm run build` (functions side); `npx tsc --noEmit` from individual worker dirs (Workers side).
@@ -57,7 +57,7 @@ PROMPT RECEIVED
 ├─────────────────────────────────────────────────────────────────┤
 │ STEP 3B — DIAGNOSE (bug fix)                                    │
 │  Apply: SOP-DEBUG below                                         │
-│  Read:  Docs/bugtracker/bug_tracker.md (or project index)       │
+│  Read:  DOCS/bugtracker/bug_tracker.md (or project index)       │
 │  Apply: SOP-BUG before coding in risky areas                    │
 ├─────────────────────────────────────────────────────────────────┤
 │ STEP 3C — ORCHESTRATE (multi-area work)                         │
@@ -66,12 +66,12 @@ PROMPT RECEIVED
 ├─────────────────────────────────────────────────────────────────┤
 │ STEP 3D — DOCUMENT                                              │
 │  Apply: SOP-DOC below                                           │
-│  Update: Docs/CONFIGURATION_MANAGEMENT.md inventory + change-log│
+│  Update: DOCS/CONFIGURATION_MANAGEMENT.md inventory + change-log│
 ├─────────────────────────────────────────────────────────────────┤
 │ STEP 3E — AUDIT (security)                                      │
-│  Read:  Docs/SECURITY_CHECKLIST.md                              │
-│  Read:  Docs/OWASP_AST10_COMPLIANCE.md                          │
-│  Read:  Docs/PRISM.md (privacy enforcement)                     │
+│  Read:  DOCS/SECURITY_CHECKLIST.md                              │
+│  Read:  DOCS/OWASP_AST10_COMPLIANCE.md                          │
+│  Read:  DOCS/PRISM.md (privacy enforcement)                     │
 └─────────────────────────────────────────────────────────────────┘
       │
       ▼
@@ -87,7 +87,7 @@ PROMPT RECEIVED
 │ STEP 5 — REVIEW                                                 │
 │  Functions:  cd functions && npm run build   (zero new TS errors)│
 │  Workers:    npx tsc --noEmit                (per worker dir)   │
-│  Reviewing external agent output? Score against SOP-REVIEW.     │
+│  Reviewing external agent output? Apply SOP-ORCH reviewer step. │
 └─────────────────────────────────────────────────────────────────┘
       │
       ▼
@@ -119,7 +119,7 @@ PROMPT RECEIVED
 These are SwarmSpace-specific non-negotiables. Code that breaks any of these is a regression.
 
 - **Gemini model = `gemini-3-flash-preview` only.** 2.0 / 2.5 family return 404. Verify against `proxyGemini.ts` before adding a new Gemini caller.
-- **LUMARA dependency declaration is mandatory.** Every feature must explicitly state `LUMARA dependency: <what LUMARA needs to do>` or `No LUMARA dependency — self-contained.` See `Docs/Agents.md` §0.
+- **LUMARA dependency declaration is mandatory.** Every feature must explicitly state `LUMARA dependency: <what LUMARA needs to do>` or `No LUMARA dependency — self-contained.` See `DOCS/Agents.md` §0.
 - **Admin emails auto-promoted to Pro.** `ADMIN_EMAILS` in `functions/src/authGuard.ts` (currently `marcyap@orbitalai.net`, `marcyap@fastmail.com`) — `enforceAuth` writes `plan: "pro"` automatically. Any new tier-gating code must respect this; never block the founder behind a quota wall.
 - **Never commit secrets.** Cloud Function secrets via `defineSecret`. Worker secrets via `wrangler secret put`. `.gitignore` covers `node_modules/`, `.env`, `.wrangler/`, `scripts/get-test-token.js`.
 - **Lowercase `planner.md` only.** Uppercase `Planner.md` was deleted 2026-05-01 because of macOS-vs-Linux case collision.
@@ -208,7 +208,7 @@ Use when the task spans many files, needs parallel concerns (e.g. UI + API + doc
 
 ### SOP-BUG — Before coding in risky areas
 
-1. Open `bugtracker/bug_tracker.md` (or project index).
+1. Open `DOCS/bugtracker/bug_tracker.md` (or project index).
 2. Skim entries for the subsystem you touch.
 3. Read `records/…` when an entry matches.
 4. Do not contradict documented fixes without explicit user approval.
@@ -309,7 +309,7 @@ These two files keep work organized across sessions and prevent losing track of 
 - **Write to it** as soon as you begin planning a feature. Break the feature into concrete tasks/sub-tasks.
 - **Cross off** completed tasks (use `~~strikethrough~~` or `- [x]`).
 - **Wipe clean** when all tasks for a feature are done — the planner is for active work only, not a history log.
-- **Never skip** checking Planner.md at the start of a session — if it has content, resume from where you left off.
+- **Never skip** checking planner.md at the start of a session — if it has content, resume from where you left off.
 
 #### backlog.md — Long-term feature backlog
 
@@ -412,17 +412,17 @@ For structural changes (new functions, ownership changes), update `LUMARA_SWARMS
 | **README.md** | Setup guide (Firebase, Stripe, Vercel) | `README.md` |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | `SWARMSPACE_API_CONTEXT.md` |
 | **architecture.md** | SwarmStore architecture & hosting | `architecture.md` |
-| **Docs/CONFIGURATION_MANAGEMENT.md** | Docs inventory and change tracking | `Docs/CONFIGURATION_MANAGEMENT.md` |
-| **Docs/CHANGELOG.md** | Version history | `Docs/CHANGELOG.md` |
-| **Docs/FEATURES.md** | Feature list | `Docs/FEATURES.md` |
-| **Docs/backend.md** | Backend (API, Vercel, Firebase) | `Docs/backend.md` |
+| **DOCS/CONFIGURATION_MANAGEMENT.md** | Docs inventory and change tracking | `DOCS/CONFIGURATION_MANAGEMENT.md` |
+| **DOCS/CHANGELOG.md** | Version history | `DOCS/CHANGELOG.md` |
+| **DOCS/FEATURES.md** | Feature list | `DOCS/FEATURES.md` |
+| **DOCS/backend.md** | Backend (API, Vercel, Firebase) | `DOCS/backend.md` |
 | **DEVELOPER_GUIDE.md** | Plugin manifest & submission reference | `DEVELOPER_GUIDE.md` |
-| **Docs/PRISM.md** | PRISM / privacy logging reference | `Docs/PRISM.md` |
-| **Docs/PRIVACY.md** | Privacy policy (Markdown) | `Docs/PRIVACY.md` |
+| **DOCS/PRISM.md** | PRISM / privacy logging reference | `DOCS/PRISM.md` |
+| **DOCS/PRIVACY.md** | Privacy policy (Markdown) | `DOCS/PRIVACY.md` |
 | **prism.html** / **privacy.html** | Public PRISM and privacy pages | site root |
 | **ast10.html** | OWASP AST10 compliance page (public) | `ast10.html` |
-| **Docs/OWASP_AST10_COMPLIANCE.md** | Internal AST10 compliance doc | `Docs/OWASP_AST10_COMPLIANCE.md` |
-| **Docs/bugtracker/** | Bug tracker | `Docs/bugtracker/` |
+| **DOCS/OWASP_AST10_COMPLIANCE.md** | Internal AST10 compliance doc | `DOCS/OWASP_AST10_COMPLIANCE.md` |
+| **DOCS/bugtracker/** | Bug tracker | `DOCS/bugtracker/` |
 | **PROMPT_TRACKER.md** | Prompt change log | `PROMPT_TRACKER.md` |
 | **PROMPT_REFERENCES.md** | Prompt catalog | `PROMPT_REFERENCES.md` |
 | **LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md** | Cross-repo function ownership & sync | `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` |
@@ -452,222 +452,7 @@ Key backlog sections for orientation when picking up work:
 
 ---
 
-## Task Management SOP
-
-### `planner.md` (root)
-
-Used for planning out tasking in pursuit of developing functions taken from prompts from the user. This is a scratch pad to create a list of items that need to be achieved to meet the queries and tasks assigned by the user. You can clean this and add to this at will to help you plan out and keep track of your tasking. **At startup, always look at this file first to identify where you left off in terms of work.**
-
-### `backlog.md` (root)
-
-This is where any and all backlog items and future features are stored that you are not working on at the moment. Future items and large items are stored here, and as time goes on they may get refined further or taken off, but that will be with feedback and review of the user. **When there is no tasking in `planner.md`, pull tasking from this file.**
-
-### Workflow
-
-1. On startup: read `planner.md` to pick up where you left off.
-2. If `planner.md` is empty or all items are done: pull the next priority items from `backlog.md` into `planner.md`.
-3. As you work: update `planner.md` to reflect progress, add notes, check off completed items.
-4. When a planner item is fully done: remove it from `planner.md`. Do not move it back to `backlog.md`.
-5. New future work or large items raised during a session go into `backlog.md`, not `planner.md`.
-
----
-
-## Core Documentation
-
-### SwarmSpace Overview
-- **Swarmspace_Overview.md** — Purpose, user flow, account model, orientation for users and AI agents.
-- **README.md** — Setup, deploy, test flow. Firebase, Stripe, Vercel env vars.
-- **SWARMSPACE_API_CONTEXT.md** — Endpoints (swarmspaceRouter, swarmspacePluginStatus), tiers (Free/Standard/Premium), request schemas. Auth: Firebase ID token. Never commit API keys.
-
-### Architecture
-- **architecture.md** — SwarmStore plugin format, hosting (Cloudflare Workers/R2/D1), security protocols. Broader vision; current app is Vercel + Firebase + Stripe.
-
-### File Structure
-```
-swarmspace/
-├── planner.md          ← Active planning scratch pad (read on startup)
-├── backlog.md          ← Backlog items and future features
-├── Swarmspace_Overview.md  ← Orientation for users and agents
-├── index.html, signup.html, dashboard.html, upgrade.html, marketplace.html, thankyou.html, faq.html, submit-plugin.html, security.html, prism.html, privacy.html, ast10.html, founding-developers.html, developer-guide.html, roles.html
-├── DEVELOPER_GUIDE.md
-├── api/create-checkout.js, api/stripe-webhook.js
-├── vercel.json
-├── SWARMSPACE_API_CONTEXT.md, architecture.md
-└── Docs/
-    ├── claude.md, Agents.md, context.md, CONFIGURATION_MANAGEMENT.md, CHANGELOG.md, CHRONICLE.md, FEATURES.md
-    ├── backend.md, PRISM.md, PRIVACY.md, git.md, SECURITY_CHECKLIST.md, UI_UX.md
-    └── bugtracker/
-```
-
----
-
-## Documentation Update Rules
-
-When updating documentation:
-
-1. Update all documents listed in the Quick Reference that are affected.
-2. Version documents as necessary.
-3. Replace outdated context.
-4. Archive deprecated content to `docs/archive/` or equivalent.
-5. Update `CONFIGURATION_MANAGEMENT.md` with any significant doc changes.
-6. For releases: follow **SOP-DOC** (orchestrator order + reviewer checklist).
-
----
-
-## Role prompt block (doc-config-git-backup)
-
-Paste or attach for AI tools that use structured role metadata:
-
-```
-name: doc-config-git-backup
-description: Documentation & Configuration Manager — keeps docs accurate and consolidated, maintains single source of truth, ensures every git push is backed by up-to-date documentation; runs prompt-reference audit when applicable; uses SOP-DOC in claude.md.
-```
-
----
-
-## Documentation, Configuration Management and Git Backup
-
-### Role
-
-You act as **Documentation & Configuration Manager** for this repository. You:
-
-1. Keep documentation accurate, reduce redundancy, and help future users and AI assistants get up to speed quickly.
-2. Ensure every git push is backed by up-to-date documentation: update docs to reflect repo changes, then commit and push.
-
----
-
-### Orchestrator Agent (run first)
-
-**Purpose:** Assign work to sub-agents, monitor completion, and validate that all tasks are done before handing off to the Reviewer Agent.
-
-**Inputs:** Trigger (e.g. "doc sync after release", "full consolidation pass", "git backup sync", or on-demand request).
-
-**Workflow:**
-
-1. **Assign** — Decide which sub-agents run and in what order:
-   - **For git backup sync:** Doc Inventory & Drift Agent → Core Artifacts Agent → Git Backup Sync Agent (or run Git Backup Sync Agent alone if only sync is requested).
-   - **For consolidation/optimization:** Doc Inventory & Drift Agent → Configuration & Consolidation Agent; optionally Core Artifacts Agent if core docs need updates.
-   - **For drift check only:** Doc Inventory & Drift Agent and Core Artifacts Agent (no Git Backup Sync Agent unless commit/push is requested).
-
-2. **Monitor** — For each assigned agent, confirm completion using that agent's **Done when** criteria.
-
-3. **Validate** — Before invoking the Reviewer Agent, verify all assigned agents have completed and their outputs are present.
-
-4. **Hand off** — Pass the list of changed files, run type, and any agent summaries to the **Reviewer Agent**.
-
-**Done when:** All assigned sub-agents have completed, validation checks pass, and handoff to Reviewer Agent has been made.
-
----
-
-### Sub-Agent Prompts
-
-#### 1. Doc Inventory & Drift Agent
-
-**Scope:** Track documentation and identify what must be updated.
-
-**Tasks:**
-
-1. Maintain/update an inventory of key docs (README, SWARMSPACE_API_CONTEXT, architecture.md, Docs/*) and their sync status with the codebase.
-2. Compare current documentation to the repository: identify repo changes not yet reflected in docs.
-3. Produce a short **drift report**: list of documents that need updates and what changed.
-
-**Done when:** Inventory is current and drift report is produced (or "no drift" stated with evidence).
-
----
-
-#### 2. Core Artifacts Agent
-
-**Scope:** Keep core artifacts up to date. Use drift report from Doc Inventory & Drift Agent when available.
-
-**Tasks:**
-
-1. **README:** Reflect current setup, build/run instructions, and high-level project purpose.
-2. **SWARMSPACE_API_CONTEXT.md:** API changes when relevant.
-3. **architecture.md:** Structural or hosting changes when relevant.
-4. **Docs/FEATURES.md, Docs/backend.md:** Feature and backend changes when relevant.
-5. **Docs/CONFIGURATION_MANAGEMENT.md:** Inventory and change log.
-6. **Key documents list:** Keep entry points and purpose of each doc current.
-
-**Rules:** Only update where repo changes are relevant; preserve existing formatting; be concise and factual.
-
-**Done when:** All core artifacts that required updates have been updated and are consistent with the codebase.
-
----
-
-#### 3. Configuration & Consolidation Agent
-
-**Scope:** Single source of truth, redundancy reduction, archive/obsolete content.
-
-**Tasks:**
-
-1. Prefer one canonical location per topic; consolidate or cross-reference duplicate content.
-2. Archive superseded or deprecated docs with a brief note; when in doubt, archive.
-3. Eliminate redundant content; fix broken links. Preserve ALL critical knowledge.
-
-**Done when:** Redundancy is reduced per run scope; archive/delete actions are documented.
-
----
-
-#### 4. Git Backup Sync Agent
-
-**Scope:** Ensure every git push is backed by up-to-date documentation. Run after doc updates are done.
-
-**Step 1 — Identify what changed**
-
-- Run `git log` on the target branch for commits since the last documented update.
-- Run `git diff` between last documented state and HEAD. Summarize what was added, modified, or removed.
-
-**Step 2 — Update documentation**
-
-For each change, update the appropriate documents (only where relevant):
-
-| Document | What to update |
-|----------|----------------|
-| `README.md` | Setup, file structure, project overview |
-| `SWARMSPACE_API_CONTEXT.md` | API endpoints, tiers, schemas |
-| `architecture.md` | Structural or hosting changes |
-| `Docs/CHANGELOG.md` | Version entries |
-| `Docs/CONFIGURATION_MANAGEMENT.md` | Inventory, change log |
-| `Docs/FEATURES.md` | Feature changes |
-| `Docs/backend.md` | Backend changes |
-| `Docs/claude.md` | Context guide updates |
-
-**Step 3 — Commit and push**
-
-- Stage all updated documentation files.
-- Commit with a clear message (e.g. `docs: update README and API context for recent changes`).
-- Push to the current branch.
-
-**Done when:** Docs reflect repo changes and a single commit has been pushed with the doc updates.
-
----
-
-### Reference files (SwarmSpace)
-
-- `planner.md` — active planning scratch pad (read on startup)
-- `backlog.md` — backlog items and future features
-- `README.md` — project overview and setup
-- `SWARMSPACE_API_CONTEXT.md` — API reference for LUMARA integration
-- `architecture.md` — SwarmStore architecture and hosting
-- `Docs/claude.md` — context guide and role definitions
-- `Docs/Agents.md` — cross-repo dependency check rule (LUMARA ↔ SwarmSpace)
-- `Docs/context.md` — agent handoff log (read at session start)
-- `Docs/CONFIGURATION_MANAGEMENT.md` — docs inventory and change log
-- `Docs/CHANGELOG.md` — version history
-- `Docs/FEATURES.md` — feature catalog
-- `Docs/backend.md` — backend services
-- `DEVELOPER_GUIDE.md` — plugin manifest and submission reference
-- `Docs/PRISM.md` — PRISM reference
-- `Docs/PRIVACY.md` — privacy policy (Markdown)
-- `security.html` — security & trust architecture (public page)
-- `prism.html` — PRISM public reference page
-- `privacy.html` — privacy policy (public page)
-- `Docs/git.md` — git workflow
-- `Docs/SECURITY_CHECKLIST.md` — security checklist
-- `Docs/UI_UX.md` — UI/UX patterns
-- `Docs/bugtracker/` — bug records
-
----
+## Documentation — Principles and Reviewer
 
 ### Principles (all agents)
 
@@ -690,7 +475,7 @@ For each change, update the appropriate documents (only where relevant):
 **Checklist:**
 
 1. **Drift & inventory** — Drift report exists and matches repo state.
-2. **Core artifacts** — README, SWARMSPACE_API_CONTEXT, architecture, Docs/*: only updated where relevant; no invented content.
+2. **Core artifacts** — README, SWARMSPACE_API_CONTEXT, architecture, DOCS/*: only updated where relevant; no invented content.
 3. **Git backup sync** — If Git Backup Sync Agent ran: docs updated; commit message is clear; push completed.
 4. **Principles** — Preserve knowledge; single source of truth; traceability; accuracy over volume.
 
@@ -790,4 +575,4 @@ Work continuously and comprehensively. Provide complete technical analysis. NO A
 ---
 
 *SwarmSpace — Developer dashboard and plugin marketplace. API layer for LUMARA.*
-*Version 1.5.1 — SOPs adapted from LUMARA/ARC doc-config workflow.*
+*Version 1.6.4 — SOPs adapted from LUMARA/ARC doc-config workflow.*

@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-05-16
+**Last Updated:** 2026-05-19
 **Status:** ✅ Synced
 
 ---
@@ -19,13 +19,13 @@ Tracks changes between the repository codebase and documentation, ensuring docs 
 | **README.md** | Setup guide (Firebase, Stripe, Vercel) | Deploy instructions |
 | **SWARMSPACE_API_CONTEXT.md** | API reference for LUMARA integration | API integration |
 | **architecture.md** | SwarmStore architecture & hosting | Broader vision; plugin format |
-| **Docs/claude.md** | AI context guide; SOPs; Documentation & Config Role | Onboarding; doc workflows |
-| **Docs/Agents.md** | Cross-repo dependency check (LUMARA ↔ SwarmSpace) | Before/after every feature touching shared functions |
-| **Docs/context.md** | Session handoff log | Read at session start; append after each meaningful action |
-| **Docs/CONFIGURATION_MANAGEMENT.md** (this file) | Docs inventory and change log | Sync status; what changed |
-| **Docs/CHANGELOG.md** | Version history | What changed and when |
-| **Docs/FEATURES.md** | Feature list | Capabilities |
-| **Docs/backend.md** | Backend (API, Vercel, Firebase) | Backend structure |
+| **DOCS/claude.md** | AI context guide; SOPs; Documentation & Config Role | Onboarding; doc workflows |
+| **DOCS/Agents.md** | Cross-repo dependency check (LUMARA ↔ SwarmSpace) | Before/after every feature touching shared functions |
+| **DOCS/context.md** | Session handoff log | Read at session start; append after each meaningful action |
+| **DOCS/CONFIGURATION_MANAGEMENT.md** (this file) | Docs inventory and change log | Sync status; what changed |
+| **DOCS/CHANGELOG.md** | Version history | What changed and when |
+| **DOCS/FEATURES.md** | Feature list | Capabilities |
+| **DOCS/backend.md** | Backend (API, Vercel, Firebase) | Backend structure |
 | **DEVELOPER_GUIDE.md** | Manifest spec, schemas, submission checklist | Plugin authors |
 | **Docs/PRISM.md** | Privacy / activity logging reference | Security, compliance |
 | **Docs/PRIVACY.md** | Privacy policy (Markdown) | Legal / product |
@@ -56,28 +56,28 @@ When running a doc sync or release:
 | architecture.md | root | 2026-04-14 | ✅ Synced | v1.4.1 full rewrite — PRISM, discovery, founding dev, orchestrator, 22 plugins, 10 collections |
 | submit.html | root | 2026-04-04 | ✅ Synced | Public `/submit`; Firestore `plugin_submissions` (legacy shape + `developer_uid`) |
 | submit-plugin.html | root | 2026-04-06 | ✅ Synced | Primary submit portal; `plugin_submissions`; client-sorted history |
-| Docs/Agents.md | Docs/ | 2026-04-19 | ✅ Synced | Agent prompt rules reference |
-| Docs/CHRONICLE.md | Docs/ | 2026-04-19 | ✅ Synced | CHRONICLE summary generation reference |
+| DOCS/Agents.md | DOCS/ | 2026-04-19 | ✅ Synced | Agent prompt rules reference |
+| DOCS/CHRONICLE.md | DOCS/ | 2026-04-19 | ✅ Synced | CHRONICLE summary generation reference |
 | admin-submissions.html | root | 2026-04-04 | ✅ Synced | `/admin-submissions`; `plugin_submissions` review UI |
 | security.html | root | 2026-04-06 | ✅ Synced | Security & trust architecture (static page) |
 | prism.html | root | 2026-04-06 | ✅ Synced | Public PRISM reference |
 | privacy.html | root | 2026-04-06 | ✅ Synced | Public privacy policy |
 | Privacy.md | root | 2026-04-06 | ✅ Synced | MD privacy policy (paired with Docs/PRIVACY.md) |
-| Docs/PRIVACY.md | Docs/ | 2026-04-06 | ✅ Synced | Privacy policy (Markdown) |
+| DOCS/PRIVACY.md | DOCS/ | 2026-04-06 | ✅ Synced | Privacy policy (Markdown) |
 | DEVELOPER_GUIDE.md | root | 2026-04-04 | ✅ Synced | Developer / manifest reference |
-| Docs/PRISM.md | Docs/ | 2026-04-04 | ✅ Synced | PRISM reference |
-| Docs/claude.md | Docs/ | 2026-05-01 | ✅ Synced | v1.5.1: RULE.md/overview.md references removed, §12/§16 status updated, file structure refreshed |
-| Docs/context.md | Docs/ | 2026-05-16 | ✅ Synced | Session handoff log; updated with OAuth 2.1 session (2026-05-15) and doc close-out session (2026-05-16) |
+| DOCS/PRISM.md | DOCS/ | 2026-04-04 | ✅ Synced | PRISM reference |
+| DOCS/claude.md | DOCS/ | 2026-05-19 | ✅ Synced | v1.6.4: removed ~216 lines duplicate content; fixed Planner.md→planner.md, Docs/→DOCS/ paths; version footer corrected |
+| DOCS/context.md | DOCS/ | 2026-05-16 | ✅ Synced | Session handoff log; updated with OAuth 2.1 session (2026-05-15) and doc close-out session (2026-05-16) |
 | roles.html | root | 2026-04-19 | ✅ Synced | §16 Roles browsing page (6 cards: 5 Free, 1 Standard) |
-| Docs/CONFIGURATION_MANAGEMENT.md | Docs/ | 2026-04-06 | ✅ Synced | |
-| Docs/CHANGELOG.md | Docs/ | 2026-04-06 | ✅ Synced | |
-| Docs/FEATURES.md | Docs/ | 2026-04-06 | ✅ Synced | |
-| Docs/backend.md | Docs/ | 2026-04-06 | ✅ Synced | |
+| DOCS/CONFIGURATION_MANAGEMENT.md | DOCS/ | 2026-04-06 | ✅ Synced | |
+| DOCS/CHANGELOG.md | DOCS/ | 2026-04-06 | ✅ Synced | |
+| DOCS/FEATURES.md | DOCS/ | 2026-04-06 | ✅ Synced | |
+| DOCS/backend.md | DOCS/ | 2026-04-06 | ✅ Synced | |
 | functions/ | root | 2026-04-06 | ✅ Synced | Cloud Functions; lazy SDK loads for deploy |
-| Docs/git.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/SECURITY_CHECKLIST.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/UI_UX.md | Docs/ | 2026-03-01 | ✅ Synced | |
-| Docs/bugtracker/ | Docs/ | 2026-04-04 | ✅ Synced | |
+| DOCS/git.md | DOCS/ | 2026-03-01 | ✅ Synced | |
+| DOCS/SECURITY_CHECKLIST.md | DOCS/ | 2026-03-01 | ✅ Synced | |
+| DOCS/UI_UX.md | DOCS/ | 2026-03-01 | ✅ Synced | |
+| DOCS/bugtracker/ | DOCS/ | 2026-04-04 | ✅ Synced | |
 | ast10.html | root | 2026-04-10 | ✅ Synced | OWASP AST10 compliance page (public) |
 | LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md | root | 2026-04-10 | ✅ Synced | Cross-repo function ownership |
 | SWARMSPACE_ANSWERS_TO_LUMARA.md | root | 2026-04-10 | ✅ Synced | Responses to LUMARA integration questions |
@@ -85,9 +85,9 @@ When running a doc sync or release:
 | planner.md | root | 2026-04-19 | ✅ Synced | Active task scratchpad |
 | scripts/test-workflows.sh | scripts/ | 2026-04-19 | ✅ Synced | Live smoke-test for 3 primary workflows |
 | scripts/get-test-token.js | scripts/ | 2026-04-19 | ✅ Synced | Firebase ID token helper for manual testing |
-| Docs/OWASP_AST10_COMPLIANCE.md | Docs/ | 2026-04-10 | ✅ Synced | Internal AST10 compliance doc |
-| Docs/LAYER3_DESIGN_AND_BACKLOG.md | Docs/ | 2026-04-10 | ✅ Synced | Layer 3 design |
-| Docs/LUMARA_Overview.md | Docs/ | 2026-04-10 | ✅ Synced | LUMARA overview |
+| DOCS/OWASP_AST10_COMPLIANCE.md | DOCS/ | 2026-04-10 | ✅ Synced | Internal AST10 compliance doc |
+| DOCS/LAYER3_DESIGN_AND_BACKLOG.md | DOCS/ | 2026-04-10 | ✅ Synced | Layer 3 design |
+| DOCS/LUMARA_Overview.md | DOCS/ | 2026-04-10 | ✅ Synced | LUMARA overview |
 | functions/src/functions/validatePluginSubmission.ts | functions/ | 2026-04-10 | ✅ Synced | Plugin validation function |
 | founding-developers.html | root | 2026-04-11 | ✅ Synced | Founding Developer Programme landing page |
 | developer-guide.html | root | 2026-04-11 | ✅ Synced | HTML developer guide (styled) |
@@ -104,6 +104,27 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-05-19 — v1.6.0 milestone: SwarmSpace initially working; doc cleanup
+
+**Action:** Full doc sync for v1.6.0 milestone. DOCS/claude.md cleaned, CHANGELOG updated, inventory paths corrected.
+
+**Changes:**
+- `DOCS/CHANGELOG.md` — added v1.6.0 entry covering service binding, token pipeline fix, logo/favicon, CLAUDE.md cleanup, and milestone status table.
+- `DOCS/CONFIGURATION_MANAGEMENT.md` — fixed all `Docs/` → `DOCS/` path references in inventory table; updated DOCS/claude.md row to v1.6.4; last updated date bumped to today.
+- `DOCS/claude.md` v1.6.3 → v1.6.4 — removed ~216 lines of duplicate content; fixed Planner.md→planner.md, Docs/→DOCS/, dangling SOP-REVIEW reference; footer version corrected.
+- `CLAUDE.md` (root) — synced to DOCS/claude.md v1.6.4.
+
+**Recent code changes captured (since v1.5.3):**
+- `6caad4c` — Service binding: mcp-server → orchestrator via Cloudflare Service Binding; orchestrator service-token auth header fix.
+- `72c9d82` — MCP token pipeline: token sync + OAuth user provisioning hardened.
+- `f836e38` — SwarmSpace logo added to nav + hero section.
+- `35ba5b0` — Square SVG favicon added for directory listing.
+- `47f4ed9` — Claude Code Skill package added to LATER backlog.
+
+**Git tag:** `v1.6.0` — milestone: SwarmSpace initially working.
+
+---
 
 ### 2026-05-14 — MCP Remote Server build complete (branch: claude/review-swarm-agents-workflows-0BqPd)
 

@@ -1,7 +1,37 @@
 # SwarmSpace Changelog
 
-**Version:** 1.5.3
-**Last Updated:** 2026-05-15
+**Version:** 1.6.0
+**Last Updated:** 2026-05-19
+
+---
+
+## [1.6.0] - 2026-05-19 — Milestone: SwarmSpace Initially Working 🚀
+
+This release marks the first complete end-to-end working state of SwarmSpace: MCP Remote Server live with OAuth 2.1, all 15 plugin Workers deployed, service binding in place, and ready for marketplace submission.
+
+### Added
+
+- **Cloudflare Service Binding (mcp-server → orchestrator)** — `workers/mcp-server` now calls the orchestrator via `env.ORCHESTRATOR: Fetcher` (Cloudflare Service Binding) instead of HTTP egress. Eliminates network hop and egress cost; inherits platform CPU time budget (removed `AbortSignal.timeout`).
+- **SwarmSpace logo + favicon** — Logo added to nav and hero section on `index.html`; square SVG favicon added for directory listing.
+
+### Fixed
+
+- **Orchestrator service-token auth** — Service-token bypass path in `workers/orchestrator/src/index.js` no longer sends an `Authorization` header. Firebase Functions v2 rejects non-JWT at the runtime layer before the handler; bypass relies on `request.data._service_token` only.
+- **MCP token pipeline** — Token sync hardened; OAuth user provisioning flow corrected so newly registered OAuth clients receive properly scoped tokens.
+
+### Changed
+
+- **`DOCS/claude.md` v1.6.3 → v1.6.4** — Removed ~216 lines of duplicate content (Task Management SOP, Core Documentation, Documentation Update Rules, Role prompt block, sub-agent prompt expansions). Fixed `Planner.md` → `planner.md` invariant violation in SOP-PLAN. Fixed all remaining `Docs/` path references → `DOCS/`. Replaced dangling `SOP-REVIEW` reference with `SOP-ORCH reviewer step`. Footer version corrected from 1.5.1 to 1.6.4.
+
+### Milestone Status
+
+| Component | Status |
+|---|---|
+| MCP Remote Server (`swarmspace-mcp-server.orbitalai.workers.dev`) | ✅ Live |
+| OAuth 2.1 AS (DCR, PKCE, refresh rotation, Streamable HTTP) | ✅ Live |
+| All 15 plugin Workers | ✅ Deployed |
+| Cloudflare Service Binding (mcp→orchestrator) | ✅ Live |
+| Marketplace submission (Anthropic + OpenAI) | 🟡 Ready — pending submission |
 
 ---
 

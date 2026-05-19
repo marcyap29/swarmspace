@@ -2901,10 +2901,36 @@ OAuth 2.1 + DCR + Streamable HTTP fully implemented and deployed. All compliance
 
 ---
 
+### MCP Tool Health — Verification Needed *(added 2026-05-19)*
+
+Code audit confirmed the reliability split across all 13 MCP tools. Two action items before marketing any specific tool as reliable:
+
+**Action 1 — Live smoke test (NOW, 10 min):**
+Run one POST against `deep_research` via the MCP server. This exercises `brave-search` + `wikipedia` + `semantic-scholar` + `gemini-flash` in a single call — the four external plugins that underpin 10 of 13 tools. If it returns a populated synthesis, those plugins are healthy. If it returns `{ error: "..." }` in sources, identify which plugin(s) failed.
+
+**Action 2 — Firebase plugin registry audit (NOW, 30 min):**
+Confirm that `brave-search`, `news`, `semantic-scholar`, `currency`, `weather`, and `wikipedia` are registered in `PLUGIN_REGISTRY` in `swarmspaceRouter.ts` and that each has a valid API key in Cloudflare/Firebase secrets. §2.3 open item already calls this out — these are the ~10 catalogue plugins not in this repo.
+
+**Current reliability tiers (from code inspection 2026-05-19):**
+
+| Tier | Tools | Why |
+|---|---|---|
+| High | `tech_scout`, `academic_research`, `location_brief` | 3+ in-repo data sources confirmed deployed |
+| Medium | `health_research`, `plugin_ecosystem_analysis` | Partial in-repo coverage; degrades gracefully via `Promise.allSettled` |
+| Unknown | `deep_research`, `competitor_analysis`, `news_brief`, `fact_check`, `content_brief`, `marketing_brief`, `market_scan` | Heavy dependency on `brave-search` and/or `news` (external) |
+| Lowest | `meeting_prep` | LinkedIn scraping via jina-reader explicitly flagged in code as often blocked |
+
+**Universal caveat:** `gemini-flash` is the synthesis layer for all 13 tools. If it's down or the API key lapses, zero tools return usable output. Single point of failure — monitor separately.
+
+---
+
 ### Sequencing Summary
 
 ```
-Now:     MCP compliance audit (OAuth 2.1 + Dynamic Client Registration for OpenAI;
+Now:     MCP tool health smoke test (deep_research live call — 10 min)
+         Firebase plugin registry audit (brave-search / news / semantic-scholar
+           / currency / weather / wikipedia keys — 30 min)
+         MCP compliance audit (OAuth 2.1 + Dynamic Client Registration for OpenAI;
          Remote MCP Server + MCP Apps for Anthropic)
          Anchor content piece (LinkedIn + Substack)
          Homepage copy update
