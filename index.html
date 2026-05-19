@@ -29,7 +29,10 @@ nav {
   background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
 }
-.nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+.nav-logo { display:flex; align-items:center; gap:10px; }
+.nav-logo img { height:32px; width:32px; object-fit:contain; border-radius:6px; }
+.nav-logo span { font-size:17px; font-weight:700; color:var(--text); }
+.hero-logo { display:block; max-width:260px; margin-bottom:28px; opacity:.95; }
 .nav-links { display:flex; align-items:center; gap:28px; }
 .nav-links a { font-size:14px; color:var(--muted); }
 .nav-links a:hover { color:var(--text); text-decoration:none; }
@@ -219,7 +222,10 @@ footer p { font-size:13px; color:var(--dim); }
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">SwarmSpace</a>
+  <a href="/" class="nav-logo">
+    <img src="/favicon.svg" alt="SwarmSpace icon" />
+    <span>SwarmSpace</span>
+  </a>
   <div class="nav-links">
     <a href="#how">How it works</a>
     <a href="/roles.html">Roles</a>
@@ -238,6 +244,7 @@ footer p { font-size:13px; color:var(--dim); }
 <div class="hero">
   <div class="hero-grid">
     <div class="hero-left">
+      <img src="/logo.svg" alt="SwarmSpace" class="hero-logo" />
       <div class="section-label">&starf; Now open &mdash; free tier</div>
       <h1>The competitive intelligence layer, delivered through AI.</h1>
       <p>Research, competitor analysis, and meeting prep &mdash; 13 intelligence workflows that work with Claude and ChatGPT. No prompt engineering. No stitching together APIs. Just results.</p>
