@@ -2877,6 +2877,18 @@ OAuth 2.1 + DCR + Streamable HTTP fully implemented and deployed. All compliance
 
 ---
 
+### LATER — Claude Code Skill Package
+
+**What:** A GitHub-hosted Claude Code Skill that wraps the 13 SwarmSpace orchestrator workflows as slash commands (`/research`, `/competitor`, `/news-brief`, etc.) for Claude Code users. Submitted to Anthropic's Skills directory alongside the MCP server listing for cross-promotion.
+
+**Format:** GitHub repo with `skill.yaml` + `README.md`. Low implementation effort.
+
+**Why it matters:** Increases discoverability in the Anthropic marketplace beyond the MCP directory. Claude Code users browsing skills would surface SwarmSpace without needing to find the MCP listing separately.
+
+**Blocked by:** MCP directory listing going live first. Submit as a follow-up once the MCP listing is confirmed.
+
+---
+
 ### LATER — Decision Synthesis Workflow
 
 **What:** A workflow that takes research inputs from multiple endpoints and structures output as a recommendation frame — options, tradeoffs, recommendation, confidence level, sources. Completes the intelligence suite.
