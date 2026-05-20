@@ -6,6 +6,7 @@ export interface McpTool {
     readOnlyHint: boolean;
     destructiveHint: boolean;
     idempotentHint: boolean;
+    openWorldHint: boolean;
   };
   inputSchema: {
     type: "object";
@@ -25,6 +26,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -47,6 +49,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -69,6 +72,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -91,6 +95,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -114,6 +119,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -137,6 +143,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -159,6 +166,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -185,6 +193,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -208,6 +217,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -231,6 +241,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -253,6 +264,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -275,6 +287,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",
@@ -299,6 +312,7 @@ export const MCP_TOOLS: McpTool[] = [
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
+      openWorldHint: true,
     },
     inputSchema: {
       type: "object",

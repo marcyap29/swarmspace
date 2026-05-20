@@ -157,6 +157,7 @@ function corsHeaders(): Record<string, string> {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, MCP-Protocol-Version",
+    "Content-Security-Policy": "default-src 'none'; connect-src https://www.googleapis.com",
   };
 }
 
