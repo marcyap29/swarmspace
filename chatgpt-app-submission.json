@@ -1,0 +1,288 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "name": "SwarmSpace",
+    "subtitle": "Multi-source research intelligence",
+    "description": "SwarmSpace gives ChatGPT 13 research intelligence tools powered by live multi-source data. Each tool chains web search, academic databases (arXiv, PubMed, Semantic Scholar), news feeds, Wikipedia, GitHub, and more into a single structured output. Tools cover deep research, competitor analysis, academic literature, news briefings, market scans, health research, technology evaluation, fact-checking, location intelligence, marketing briefs, content briefs, meeting prep, and plugin ecosystem analysis. All tools are read-only and return cited, structured results.",
+    "category": "PRODUCTIVITY",
+    "developer_name": "Orbital AI, Inc.",
+    "website_url": "https://swarmspace.app",
+    "support_email": "marcyap@orbitalai.net",
+    "privacy_policy_url": "https://swarmspace.app/privacy.html",
+    "terms_of_service_url": "https://swarmspace.app/terms.html"
+  },
+  "mcp_server": {
+    "url": "https://swarmspace-mcp-server.orbitalai.workers.dev",
+    "auth_type": "oauth",
+    "oauth": {
+      "authorization_endpoint": "https://swarmspace-mcp-server.orbitalai.workers.dev/oauth/authorize",
+      "token_endpoint": "https://swarmspace-mcp-server.orbitalai.workers.dev/oauth/token",
+      "registration_endpoint": "https://swarmspace-mcp-server.orbitalai.workers.dev/oauth/register",
+      "scopes": ["mcp"],
+      "pkce_required": true,
+      "token_lifetime_days": 30
+    },
+    "csp_metadata": {
+      "connect_domains": ["https://www.googleapis.com"]
+    }
+  },
+  "tools": {
+    "deep_research": {
+      "title": "Deep Research",
+      "description": "Comprehensive research combining web search, Wikipedia, and academic papers. Use for in-depth topic research, background research, or when multiple source types are needed.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Fetches and returns research results only. No writes, deletions, or state changes of any kind.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Queries live web search, Wikipedia, and academic databases — results come from the open internet and vary by query."
+      }
+    },
+    "competitor_analysis": {
+      "title": "Competitor Analysis",
+      "description": "Competitive intelligence from web search, news, and Hacker News community. Use to analyze a company, product, or technology's competitive position and community sentiment.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Returns a competitive analysis report only. No data is written or modified.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Queries live web search, news feeds, and Hacker News — open internet sources."
+      }
+    },
+    "marketing_brief": {
+      "title": "Marketing Brief",
+      "description": "Content marketing brief with trending themes, SEO keywords, and audience pain points. Use to plan content strategy for a topic or product.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Returns a structured marketing brief only. No data is written or modified.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Fetches trending content themes and SEO signals from live web sources."
+      }
+    },
+    "plugin_ecosystem_analysis": {
+      "title": "Plugin Ecosystem Analysis",
+      "description": "API and plugin ecosystem analysis showing existing integrations, patterns, and gaps. Use to understand what tools and APIs exist in a technology space.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Returns an ecosystem analysis report only. No data is written or modified.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Searches the open web for existing APIs, plugins, and integrations in a technology space."
+      }
+    },
+    "academic_research": {
+      "title": "Academic Research",
+      "description": "Deep academic literature review across Semantic Scholar, arXiv, and PubMed. Use for scientific research, medical topics, or finding peer-reviewed evidence.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Queries public academic databases and returns paper summaries and citations. No writes.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Queries Semantic Scholar, arXiv, and PubMed — publicly accessible academic databases on the open internet."
+      }
+    },
+    "news_brief": {
+      "title": "News Brief",
+      "description": "Multi-source news intelligence briefing from mainstream news, Hacker News, and web search. Use to get a current, synthesized overview of news on any topic.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Fetches and returns a news summary only. No data is written or modified.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Fetches live news from mainstream sources, Hacker News, and web search — results vary with current events."
+      }
+    },
+    "market_scan": {
+      "title": "Market Scan",
+      "description": "Financial and market overview including analysis, key metrics, and exchange rate context. Use for market research, financial overviews, or economic analysis.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Returns market analysis only. No access to brokerage accounts, no transactions, no writes.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Fetches live financial news and exchange rate data from public internet sources."
+      }
+    },
+    "location_brief": {
+      "title": "Location Brief",
+      "description": "Geographic intelligence with geocoding, current weather, country data, and Wikipedia context. Use to get a complete picture of a location.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Fetches and returns a location report only. No data is written or modified.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Queries live geocoding, weather, and Wikipedia APIs — open internet data sources."
+      }
+    },
+    "health_research": {
+      "title": "Health Research",
+      "description": "Biomedical research summary from PubMed, academic papers, and Wikipedia with clinical evidence assessment. Includes disclaimer that this is not medical advice.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Queries public health databases and returns summaries with citations. No writes. Always includes a not-medical-advice disclaimer.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Queries PubMed, Semantic Scholar, and Wikipedia — publicly accessible databases on the open internet."
+      }
+    },
+    "tech_scout": {
+      "title": "Tech Scout",
+      "description": "Technology evaluation covering GitHub ecosystem, Hacker News adoption signals, web research, and academic papers. Use to assess a technology's maturity, community, and alternatives.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Fetches public data and returns a technology evaluation report. No writes or modifications.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Queries GitHub, Hacker News, web search, and academic databases — all open internet sources."
+      }
+    },
+    "fact_check": {
+      "title": "Fact Check",
+      "description": "Multi-source fact verification using web search, Wikipedia, academic sources, and dictionary. Returns verdict (Supported/Partially Supported/Unsupported/Unverifiable) with evidence and confidence level.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Cross-references a claim against public sources and returns a verdict with evidence. No writes.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Queries web search, Wikipedia, and academic sources — open internet verification."
+      }
+    },
+    "content_brief": {
+      "title": "Content Brief",
+      "description": "Content creation brief with research, outline, key data points, and SEO suggestions. Use to plan a blog post, article, or other content piece.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Returns a structured content brief only. No content is published or written to any system.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Fetches live web research and SEO data to inform the brief — open internet sources."
+      }
+    },
+    "meeting_prep": {
+      "title": "Meeting Prep",
+      "description": "Pre-meeting intelligence brief with attendee background and talking points from web research. Use before a meeting to prepare informed talking points.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Searches public sources and returns a briefing document. No calendar writes, no contact modifications.",
+        "destructive_justification": "Tool never modifies, deletes, or overwrites any data.",
+        "open_world_justification": "Searches the open web for publicly available information about the attendee and meeting context."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Deep research on a broad technology topic",
+      "user_prompt": "Do deep research on the current state of AI agent frameworks",
+      "tools_triggered": "deep_research",
+      "expected_output": "Structured research report covering overview, key frameworks (LangChain, AutoGen, CrewAI, etc.), recent developments, academic references, and a summary of the state of the field."
+    },
+    {
+      "description": "Competitive analysis of a well-known product",
+      "user_prompt": "Run a competitor analysis on Notion",
+      "tools_triggered": "competitor_analysis",
+      "expected_output": "Competitive intelligence brief with sections: Overview, Key Players (Obsidian, Coda, Confluence, etc.), Recent Moves, Hacker News community sentiment, and Strategic Implications."
+    },
+    {
+      "description": "Fact-checking a verifiable claim",
+      "user_prompt": "Fact check: The Eiffel Tower is taller than the Empire State Building",
+      "tools_triggered": "fact_check",
+      "expected_output": "Verdict: Unsupported. Evidence from Wikipedia and web sources confirming the Empire State Building (443m) is taller than the Eiffel Tower (330m). Confidence: High."
+    },
+    {
+      "description": "News briefing on a current topic",
+      "user_prompt": "Give me a news brief on quantum computing",
+      "tools_triggered": "news_brief",
+      "expected_output": "Synthesized news briefing with recent headlines from mainstream news, Hacker News discussion threads, and web sources. Structured overview of key developments."
+    },
+    {
+      "description": "Meeting preparation with attendee research",
+      "user_prompt": "Prep me for a meeting with Sam Altman at OpenAI, we're discussing AI safety",
+      "tools_triggered": "meeting_prep",
+      "expected_output": "Intelligence brief with attendee background (Sam Altman's role, public statements, recent news), company context (OpenAI's safety initiatives), and suggested talking points for an AI safety discussion."
+    },
+    {
+      "description": "Academic literature review",
+      "user_prompt": "Find academic research on transformer attention mechanisms",
+      "tools_triggered": "academic_research",
+      "expected_output": "Literature review citing peer-reviewed papers from arXiv and Semantic Scholar, with paper titles, authors, abstracts, and relevance to the query."
+    },
+    {
+      "description": "Technology evaluation",
+      "user_prompt": "Scout the Bun JavaScript runtime for me",
+      "tools_triggered": "tech_scout",
+      "expected_output": "Technology evaluation covering GitHub activity, community adoption signals from Hacker News, performance benchmarks from web research, alternatives comparison, and maturity assessment."
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Request to write or create files",
+      "user_prompt": "Create a research report and save it to my Google Drive",
+      "reason": "SwarmSpace tools are read-only research tools. They return structured text — they do not write to external services, file systems, or user accounts."
+    },
+    {
+      "description": "Personal data lookup",
+      "user_prompt": "Find the home address and phone number of John Smith in Austin Texas",
+      "reason": "SwarmSpace does not perform personal data lookups. Tools search public sources for topical research, not individual private information."
+    },
+    {
+      "description": "Transactional or action-taking request",
+      "user_prompt": "Buy me 10 shares of Apple stock",
+      "reason": "SwarmSpace has no transactional tools. market_scan returns financial analysis only — it has no access to brokerage accounts or trading platforms."
+    }
+  ]
+}
