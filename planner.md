@@ -24,9 +24,9 @@ OAuth 2.1 + DCR + Streamable HTTP compliance is **complete and live** (`wrangler
 - [x] `wt/mcp-oauth` merged → `main`, pushed to GitHub
 
 ### Now — Marketplace Submissions
-- [ ] Submit to Anthropic: `claude.com/connectors` → "Get started"
-  - Category: Business Intelligence / Remote MCP Server
-  - MCP endpoint: `https://swarmspace-mcp-server.orbitalai.workers.dev/mcp`
-- [ ] Submit to OpenAI: OpenAI App Directory developer portal
-  - Same endpoint, same OAuth server
+- [x] Submit to Anthropic MCP Directory ✅ (submitted 2026-05-19)
+- [x] OpenAI App Directory — code gaps fixed (CSP, openWorldHint); category, ID verification, logo done ✅
+  - [ ] Demo recording (needs developer mode activation in ChatGPT)
+  - [ ] Screenshots + test prompts (after demo)
+  - [ ] Submit
 - [ ] Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
