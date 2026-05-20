@@ -43,6 +43,7 @@ export default {
       params: body,
       serviceToken: body._service_token || null,
       runAsUid: body._run_as_uid || null,
+      viaMcp: body._via_mcp || false,
     };
 
     const routes = {
@@ -94,9 +95,10 @@ async function callPlugin(ctx, pluginId, params) {
   // Firebase Functions v2 rejects non-JWT Bearer tokens at the runtime level
   // before the function handler runs. The bypass relies on request.data._service_token
   // only — no Authorization header needed.
-  const headers = { 'Content-Type': 'application/json' };
-  if (!ctx.serviceToken) {
-    headers['Authorization'] = ctx.token;
+  if (ctx.serviceToken && ctx.runAsUid) {
+    data._service_token = ctx.serviceToken;
+    data._run_as_uid = ctx.runAsUid;
+    if (ctx.viaMcp) data._via_mcp = true;
   }
   const res = await fetch(ctx.routerUrl, {
     method: 'POST',

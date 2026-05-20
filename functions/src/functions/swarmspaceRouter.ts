@@ -637,9 +637,10 @@ interface QuotaInfo {
 async function enforceSwarmSpaceQuota(
   userId: string,
   userTier: Tier,
-  isAdmin: boolean
+  isAdmin: boolean,
+  isMcpSession = false
 ): Promise<QuotaInfo> {
-  if (isAdmin) {
+  if (isAdmin || isMcpSession) {
     return { limit: -1, used: 0, remaining: -1, resets_at: "" };
   }
 
@@ -768,13 +769,15 @@ export const swarmspaceRouter = onCall(
       isPremium = (user as { isPremium?: boolean; plan?: string }).isPremium === true
         || (user as { plan?: string }).plan === "pro"
         || (user as { plan?: string }).plan === "premium";
-      logger.info(`SwarmSpace router: SERVICE-TOKEN call for uid=${userId}`);
+      logger.info(`SwarmSpace router: SERVICE-TOKEN call for uid=${userId} viaMcp=${request.data?._via_mcp === true}`);
     } else {
       const auth = await enforceAuth(request);
       userId = auth.userId;
       isPremium = auth.isPremium;
       user = auth.user;
     }
+
+    const isMcpSession = request.data?._via_mcp === true;
 
     // Step 2: Parse the request — LUMARA sends { plugin_id, params }
     const { plugin_id, params } = request.data ?? {};
@@ -814,7 +817,7 @@ export const swarmspaceRouter = onCall(
     // Step 4a: Enforce daily call quota (atomic check-increment-or-block)
     const requestEmail = request.auth?.token?.email as string | undefined;
     const isAdminUser = isAdminEmail(requestEmail);
-    const quota = await enforceSwarmSpaceQuota(userId, userTier, isAdminUser);
+    const quota = await enforceSwarmSpaceQuota(userId, userTier, isAdminUser, isMcpSession);
 
     // Step 4b: For LLM plugins, pass user's API key if they have custom config
     let paramsToSend = params ?? {};

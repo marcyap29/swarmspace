@@ -688,6 +688,7 @@ async function handleMcp(request: Request, env: Env): Promise<Response> {
       ...args,
       _service_token: env.SWARMSPACE_INTERNAL_TOKEN,
       _run_as_uid: uid,
+      _via_mcp: true,
     };
 
     // Streamable HTTP: honour Accept: text/event-stream
