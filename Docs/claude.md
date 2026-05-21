@@ -1,6 +1,6 @@
 # SwarmSpace — Claude Code Instructions
 
-**Version:** 1.6.4 *(2026-05-19 — Removed duplicate sections (Task Management SOP, Core Documentation, Documentation Update Rules, Role prompt block); collapsed sub-agent prompts; fixed Planner.md→planner.md and remaining lowercase-DOCS/-→-DOCS/ path bugs; removed dangling SOP-REVIEW reference)*
+**Version:** 1.7.0 *(2026-05-19 — Added STEP 2.5 decisive planning gate; added Code Quality Principles (Karpathy); fixed SOP-TASK default; fixed SOP-ORCH simulation; defined risky areas in SOP-BUG; added SOP-DEBUG escalation; added SOP-SECURITY; fixed SOP-PLAN mid-session close; fixed SOP-WORKTREE dirty teardown; merged duplicate reviewer sections)*
 **Repo root:** `/Volumes/Marc Working Drive/Development/swarmspace/`
 **Stack:** Firebase Cloud Functions (TypeScript) + Cloudflare Workers (TS/JS) + static HTML on Vercel.
 **Linter:** `cd functions && npm run build` (functions side); `npx tsc --noEmit` from individual worker dirs (Workers side).
@@ -49,6 +49,31 @@ PROMPT RECEIVED
       │
       ▼
 ┌─────────────────────────────────────────────────────────────────┐
+│ STEP 2.5 — DECIDE: SCOPE · AGENTS · DEFINITION OF DONE          │
+│  (mandatory — output this block in chat before touching files)  │
+│                                                                 │
+│  1. SCOPE — Classify the task:                                  │
+│     ≤ 2 files, self-contained  → 1 agent, stay on main          │
+│     3+ files, one subsystem    → 1 agent, worktree              │
+│     3+ subsystems              → multi-agent → STEP 3C          │
+│     Parallel independent tracks→ multi-agent → STEP 3C          │
+│                                                                 │
+│  2. AGENTS (if multi-agent) — declare before acting:            │
+│     • Count: 1 lead + N workers                                 │
+│     • Types: coder / reviewer / doc / security / test           │
+│     • Ownership: one file set per agent, no overlaps            │
+│                                                                 │
+│  3. DONE — Write the definition of done (one sentence):         │
+│     "Complete when [observable outcome]."                       │
+│     Transform abstract asks into verifiable goals:             │
+│       "Fix the bug" → "test reproduces it; test passes after"  │
+│       "Add feature" → "UI shows X; API returns Y; tests pass"  │
+│                                                                 │
+│  Do not proceed until all three are stated in chat.            │
+└─────────────────────────────────────────────────────────────────┘
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────────┐
 │ STEP 3A — PLAN (feature / multi-file change)                    │
 │  Apply: SOP-TASK below                                          │
 │  Apply: SOP-PLAN below (write definition of done into planner)  │
@@ -84,10 +109,15 @@ PROMPT RECEIVED
       │
       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ STEP 5 — REVIEW                                                 │
-│  Functions:  cd functions && npm run build   (zero new TS errors)│
-│  Workers:    npx tsc --noEmit                (per worker dir)   │
-│  Reviewing external agent output? Apply SOP-ORCH reviewer step. │
+│ STEP 5 — REVIEW (do not skip any item)                          │
+│  Linter:  cd functions && npm run build    (zero new TS errors) │
+│           npx tsc --noEmit                 (per worker dir)     │
+│  Tests:   run existing test suite; fix any failures you caused  │
+│  Verify:  check each item in the STEP 2.5 definition of done    │
+│  Done?    confirm every user-requested function actually works  │
+│  External agent output:                                         │
+│    Output ### Lead Agent / ### Sub-task [N] / ### Review blocks │
+│    Score against definition of done; list gaps or approve       │
 └─────────────────────────────────────────────────────────────────┘
       │
       ▼
@@ -125,6 +155,20 @@ These are SwarmSpace-specific non-negotiables. Code that breaks any of these is 
 - **Lowercase `planner.md` only.** Uppercase `Planner.md` was deleted 2026-05-01 because of macOS-vs-Linux case collision.
 - **`swarmspaceRouter.ts` ownership: SwarmSpace repo.** It does NOT exist in the LUMARA repo (verified 2026-05-02 by LUMARA Claude pre-flight). Any registry edits happen here, not there.
 - **Service-token bypass is internal-only.** `_service_token` + `_run_as_uid` in `request.data` is for DO-initiated calls (e.g. News Briefing DO firing on alarm). Never expose to LUMARA-app callers.
+
+---
+
+## Code Quality Principles
+
+These four rules override any instinct to be clever, thorough, or anticipatory.
+
+**1. Think before coding.** State your assumptions explicitly before implementing. If multiple interpretations exist, present them — do not pick silently. If something is unclear, name what is confusing and ask. Surface tradeoffs before writing, not after.
+
+**2. Simplicity first.** Minimum code that solves the problem. No features beyond what was asked. No abstractions for single-use code. No "flexibility" or "configurability" that wasn't requested. If you write 200 lines and it could be 50, rewrite it. Ask: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+**3. Surgical changes.** Touch only what you must. Do not "improve" adjacent code, comments, or formatting that is not broken. Match existing style even if you'd do it differently. When your changes create orphans (unused imports, dead variables), remove them. Do not remove pre-existing dead code unless asked. Every changed line must trace directly to the user's request.
+
+**4. Goal-driven execution.** Transform every task into a verifiable goal before implementing. For multi-step tasks, state a brief plan: `1. [Step] → verify: [check]`. Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
 ---
 
@@ -184,7 +228,7 @@ The procedures below are SwarmSpace-specific implementations of the Starter Repo
 | 1 | **Understand** — Restate the goal, constraints, and definition of done. |
 | 2 | **Analyze** — Map components, dependencies, risks, and affected areas (code, docs, backend). |
 | 3 | **Plan** — Outline steps; flag unknowns and verification (tests, manual checks). |
-| 4 | **Align** — If the user asked to approve before execution, **present the plan and wait**. If they want you to proceed, continue. |
+| 4 | **Align** — Default: proceed autonomously for single-area changes. Pause and present the plan for explicit approval when the task touches 3+ files in shared/critical paths (`swarmspaceRouter.ts`, `authGuard.ts`, `orchestrator/src/index.js`, any auth/billing/quota path). If the user has already said "go ahead," proceed. |
 | 5 | **Execute** — Implement the smallest change that satisfies the request; match repo conventions. |
 | 6 | **Verify** — Run linters/tests or static analysis when available; fix new issues you introduced. |
 | 7 | **Summarize** — Short recap: what changed, where, and how to validate. |
@@ -202,11 +246,13 @@ Use when the task spans many files, needs parallel concerns (e.g. UI + API + doc
 | 3 | **Review agent** — After sub-tasks complete, check against the definition of done; list gaps or approve. |
 | 4 | **Close out** — Integrate results, one coherent commit or PR description, and a final **implementation review** for the user. |
 
-*Note: In single-threaded chat, simulate this sequence explicitly in your reasoning and output.*
+*Note: In single-threaded chat, make the structure visible. Output a `### Lead Agent` summary block first (definition of done + sub-task decomposition), then `### Sub-task [N]` blocks for each work unit, then a `### Review` block that checks each item in the definition of done. This makes the orchestration auditable and skippable by the user.*
 
 ---
 
 ### SOP-BUG — Before coding in risky areas
+
+**Risky areas requiring SOP-BUG:** `swarmspaceRouter.ts`, `authGuard.ts`, `workers/orchestrator/src/index.js`, any file with `auth`, `quota`, `billing`, `secret`, or `token` in its path, and any shared Worker that other Workers depend on.
 
 1. Open `DOCS/bugtracker/bug_tracker.md` (or project index).
 2. Skim entries for the subsystem you touch.
@@ -241,6 +287,10 @@ Use for **build failures, test/CI failures, missing files, environment skew, fla
 | **Runtime only** (crash, 401, wrong config) | Config files, secrets, feature flags, wrong bundle ID | Trace config loading; compare identifiers |
 | **Intermittent / flaky** | Timing, race, network, shared state | Stabilize with minimal repro; logging; shrink surface |
 | **Mass git deletions or dirty tree** | Intentional cleanup vs broken checkout | Ask: "Is this expected?" before restoring paths |
+
+#### Escalation rule
+
+If two hypotheses are ruled out and the cause is still unknown: stop. Document the investigation state in `planner.md` under `## Pending Review`. Do not apply speculative fixes. Do not retry the same fix more than once. Surface to the user with: what was tried, what was ruled out, and what information is needed to proceed.
 
 #### One-shot debug message (paste into chat)
 
@@ -327,6 +377,20 @@ These two files keep work organized across sessions and prevent losing track of 
 4. When a feature is fully done, cross it off and wipe `planner.md` clean.
 5. When discussing future work with the user, add agreed features to `backlog.md`.
 6. When picking up new work, check `backlog.md` for the next priority item.
+7. **At session close with incomplete tasks:** preserve all remaining tasks in `planner.md` exactly as-is. The wipe-clean rule applies only when a feature is fully done — never wipe partial work.
+
+---
+
+### SOP-SECURITY — Security audit (Step 3E)
+
+| Step | Action |
+|------|--------|
+| 1 | **Read** — `DOCS/SECURITY_CHECKLIST.md` and `DOCS/OWASP_AST10_COMPLIANCE.md` |
+| 2 | **Secrets scan** — check all changed files for hardcoded keys, tokens, credentials, or connection strings |
+| 3 | **Auth/authz** — every new endpoint or function must check authentication and enforce correct tier; admin emails must never be blocked (`authGuard.ts` invariant) |
+| 4 | **Input validation** — all user-controlled inputs validated at system boundaries; no SQL/command/template injection vectors |
+| 5 | **OWASP top 10** — cross-check changes against `DOCS/OWASP_AST10_COMPLIANCE.md` for relevant categories |
+| 6 | **Document** — record findings (pass or specific issues) in `DOCS/SECURITY_CHECKLIST.md` with date and commit ref |
 
 ---
 
@@ -356,7 +420,8 @@ Use a git worktree to keep `main` clean while non-trivial changes are in flight.
 6. Run STEP 5 review (linter clean) before each commit
 7. User reviews diff: `git -C ../<repo-name>-<id> log main..HEAD` and `git -C ../<repo-name>-<id> diff main..HEAD`
 8. Merge with `--no-ff` from main checkout: `git checkout main && git pull --ff-only && git merge --no-ff wt/<id> -m "merge: <summary> (wt/<id>)" && git push origin main`
-9. Teardown: verify `git -C ../<repo-name>-<id> status --short` is empty, then `git worktree remove ../<repo-name>-<id> && git branch -d wt/<id>`
+9. Verify clean: `git -C ../<repo-name>-<id> status --short` — must be empty. If NOT empty, surface to the user; do NOT force-remove. Uncommitted work in a worktree is real work.
+10. Teardown (only after Step 9 passes): `git worktree remove ../<repo-name>-<id> && git branch -d wt/<id>`
 
 **Safety guards:**
 - Never `git worktree remove --force` unless the user has explicitly confirmed the dirty state is disposable.
@@ -470,18 +535,14 @@ Key backlog sections for orientation when picking up work:
 
 ### Reviewer Agent (run last)
 
-**Purpose:** Check the work of all agents to ensure it is correct before considering the run complete.
+Use the SOP-DOC reviewer checklist above. Additionally check:
 
-**Checklist:**
+1. **Definition of done met** — every item from STEP 2.5 passes.
+2. **No scope creep** — no files changed outside the plan.
+3. **Tests pass** — no new test failures introduced.
+4. **Principles upheld** — preserve knowledge; single source of truth; accuracy over volume.
 
-1. **Drift & inventory** — Drift report exists and matches repo state.
-2. **Core artifacts** — README, SWARMSPACE_API_CONTEXT, architecture, DOCS/*: only updated where relevant; no invented content.
-3. **Git backup sync** — If Git Backup Sync Agent ran: docs updated; commit message is clear; push completed.
-4. **Principles** — Preserve knowledge; single source of truth; traceability; accuracy over volume.
-
-**Output:** Pass / fail with a short note. On fail, list which checklist item(s) failed and what to fix.
-
-**Done when:** Checklist is executed and output (pass/fail + note) is recorded.
+**Output:** Pass / fail with a short note. On fail, list which item(s) failed and what to fix.
 
 ---
 
@@ -575,4 +636,4 @@ Work continuously and comprehensively. Provide complete technical analysis. NO A
 ---
 
 *SwarmSpace — Developer dashboard and plugin marketplace. API layer for LUMARA.*
-*Version 1.6.4 — SOPs adapted from LUMARA/ARC doc-config workflow.*
+*Version 1.7.0 — SOPs adapted from LUMARA/ARC doc-config workflow. Code Quality Principles adapted from Karpathy CLAUDE.md guidelines.*

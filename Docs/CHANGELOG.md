@@ -1,7 +1,32 @@
 # SwarmSpace Changelog
 
-**Version:** 1.6.0
-**Last Updated:** 2026-05-19
+**Version:** 1.7.0
+**Last Updated:** 2026-05-20
+
+---
+
+## [1.7.0] - 2026-05-20 — OpenAI App Directory submission + MCP quota fix
+
+### Added
+
+- **`chatgpt-app-submission.json`** — Full OpenAI App Directory submission schema at repo root. Schema v1, 13 tools with `justifications` objects (snake_case keys), 7 positive test cases, 3 negative test cases. Ready to submit pending demo recording.
+- **Hero logo overhaul** — Replaced `logo.svg` with landscape `SwarmSpace_Logo.svg` (1598×1031, transparent background). Centered above hero grid at `max-width:680px`, hero padding tightened to `56px 40px 80px`.
+
+### Fixed
+
+- **BUG-ORCH-001: `headers is not defined` in orchestrator** — commit `7fadc23` accidentally deleted the `headers` variable declaration while adding `_via_mcp` data mutation. Restored in `723a20c`; also moved `if (ctx.viaMcp) data._via_mcp = true;` outside the service-token block so all MCP calls propagate the flag unconditionally.
+- **BUG-MCP-001: MCP quota bypass not propagating end-to-end** — mcp-server never included `_via_mcp: true` in outbound request body, so `isMcpSession` was always false in `swarmspaceRouter`; admin user was hitting the 20/day free-tier cap over MCP. Fixed: mcp-server SSE and sync paths now send `{ ...body, _via_mcp: true }`; orchestrator context propagates unconditionally. Admin unlimited over MCP confirmed working.
+- **SVG logo background** — Changed `fill="#020202"` → `fill="none"` so logo background matches any page background.
+
+### Changed
+
+- **mcp-server CSP header** — `Content-Security-Policy: default-src 'none'; connect-src https://www.googleapis.com` added to `corsHeaders()` for OpenAI App Directory compliance (commit `f1f0d15`).
+- **`openWorldHint: true`** — Added to all 13 tool definitions in `workers/mcp-server/src/tools.ts` per OpenAI submission requirements (commit `f1f0d15`).
+
+### Deployments
+- mcp-server: Cloudflare worker `707aec0c` (f1f0d15), `35ec6f27` (723a20c)
+- orchestrator: Cloudflare worker `ff5aa88b` (723a20c)
+- index.html: Vercel (17ea561)
 
 ---
 

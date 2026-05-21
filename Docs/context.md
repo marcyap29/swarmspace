@@ -1,3 +1,85 @@
+## Session: 2026-05-20 — OpenAI submission, hero logo, orchestrator headers bug, MCP quota fix
+
+**Branch:** main
+
+### What was done
+
+- **OpenAI App Directory submission prep:** Connected SwarmSpace to ChatGPT in developer mode via OAuth. Diagnosed and fixed 13-tool connection errors. Generated `chatgpt-app-submission.json` at repo root (schema v1, 13 tools, 7 test cases, 3 negative test cases). Iteratively fixed schema validation errors: missing `$schema`, invalid `app_info.category` (`PRODUCTIVITY`), wrong `justification` → `justifications` object, snake_case key names (`read_only_justification`, `destructive_justification`, `open_world_justification`), `prompt` → `user_prompt`, `tools_triggered` must be string not array. Submission unblocked pending demo recording.
+- **Hero logo iterations:** Replaced `logo.svg` with `SwarmSpace_Logo.svg` (landscape 1598×1031, transparent background). Fixed SVG background `fill="#020202"` → `fill="none"`. Centered logo above hero grid at full page width (`max-width:680px`, `margin:0 auto 24px`). Tightened hero padding from `120px 40px 96px` → `56px 40px 80px`. Four commits total (`5e8deff`, `e78eb80`, `1c76dca`, `17ea561`) — final deployed to Vercel.
+- **Orchestrator `headers is not defined` bug (BUG-ORCH-001):** Commit `7fadc23` accidentally deleted the `headers` variable declaration in `workers/orchestrator/src/index.js` while adding `_via_mcp` data mutation. Fixed in `723a20c`: restored `headers` declaration and moved `if (ctx.viaMcp) data._via_mcp = true;` outside the service-token block so MCP sessions always propagate the flag.
+- **MCP quota bypass end-to-end fix:** Two root causes: (1) mcp-server never sent `_via_mcp: true` in outbound body — `isMcpSession` was always false in swarmspaceRouter; (2) `isAdminUser` was false because `request.auth` is null for SWARMSPACE_INTERNAL_TOKEN calls (not a Firebase ID token). Fix: mcp-server SSE + sync paths now send `{ ...body, _via_mcp: true }`; orchestrator propagates unconditionally. Admin user (`marcyap@orbitalai.net`) over MCP no longer hits free-tier quota cap. Committed `723a20c`, deployed workers `35ec6f27` (mcp-server) + `ff5aa88b` (orchestrator).
+- **Code gap fixes for OpenAI (Kimi K2.6):** CSP header added to `corsHeaders()` in `mcp-server/index.ts`; `openWorldHint: true` added to all 13 tool definitions in `tools.ts`. Committed `f1f0d15`, deployed `707aec0c`.
+
+### Commits this session
+- `f1f0d15` — feat(mcp-server): add CSP header and openWorldHint annotations for OpenAI App Directory
+- `5e8deff` — fix(hero): transparent logo bg + centered layout; add OpenAI submission JSON
+- `e78eb80` — fix(hero): use square logo, transparent bg, larger display size
+- `1c76dca` — fix(hero): center logo above grid across full page width
+- `17ea561` — fix(hero): landscape logo, transparent bg, larger size, tighter padding
+- `723a20c` — fix(quota): propagate _via_mcp flag from mcp-server through orchestrator to router
+
+### Bugs filed this session
+- `BUG-ORCH-001` — `headers is not defined` in orchestrator (regression in `7fadc23`, fixed `723a20c`)
+
+### Next (SwarmSpace)
+1. OpenAI App Directory submission — **demo recording is the only remaining blocker** (record 5 tool calls in ChatGPT developer mode, upload to YouTube/Loom, paste URL into submission form)
+2. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+3. Session broker / orchestrator execution modes (backlog §5.3)
+
+---
+
+## Session: 2026-05-19 — CLAUDE.md v1.7.0: SOP overhaul + Karpathy principles
+
+**Branch:** main
+
+### What was done
+- **DOCS/claude.md + root CLAUDE.md v1.7.0:** Major SOP overhaul across 13 changes:
+  - Added STEP 2.5 (DECIDE: SCOPE · AGENTS · DEFINITION OF DONE) — mandatory planning gate before any implementation. Forces agents to classify scope, declare agent count/types/ownership, and write a definition of done in chat before touching files.
+  - Updated STEP 5 (REVIEW) to include: run existing test suite, verify against definition of done, confirm completeness — not just linter.
+  - Added Code Quality Principles section (4 rules from Karpathy): Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution.
+  - Fixed SOP-TASK Step 4: autonomous by default; pause only for shared/critical-path changes (authGuard, router, billing).
+  - Fixed SOP-ORCH: replaced vague "simulate" note with structured ### Lead Agent / ### Sub-task [N] / ### Review output format.
+  - Fixed SOP-BUG: defined risky areas explicitly (swarmspaceRouter.ts, authGuard.ts, orchestrator, auth/quota/billing/secret paths).
+  - Added SOP-DEBUG escalation rule: stop after 2 failed hypotheses; document and surface to user.
+  - Added SOP-SECURITY (new, was missing from Step 3E): 6-step security audit — secrets scan, auth/authz, input validation, OWASP cross-check, document findings.
+  - Fixed SOP-PLAN: added Step 7 — preserve partial work at session close; wipe-clean only on full feature completion.
+  - Fixed SOP-WORKTREE: split teardown into Step 9 (verify clean) and Step 10 (actual remove) with explicit "surface to user if dirty" guard.
+  - Merged duplicate Reviewer Agent section into pointer + 4 checks (definition of done met, no scope creep, tests pass, principles upheld).
+- **Applied to three repos simultaneously:** SwarmSpace (v1.7.0), LUMARA (STEP 2.5 + STEP 5 + Code Quality Principles added to CLAUDE.md), Starter Repo (v1.1.0 — all universal changes applied to claude.md and agents_sop.md).
+
+### Commits this session
+- None yet — CLAUDE.md update only; commit separately if needed.
+
+### Next (SwarmSpace)
+1. OpenAI App Directory submission — demo recording pending (activate developer mode first)
+2. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+3. Session broker / orchestrator execution modes (backlog §5.3)
+
+---
+
+## Session: 2026-05-19 — Anthropic submission, benchmark, MCP quota bypass
+
+**Branch:** main
+
+### What was done
+- **Anthropic MCP Directory submission:** Gap analysis against submission form. Created `terms.html` (11-section ToS, Orbital AI Inc.), added "Connecting SwarmSpace to Claude" section to `developer-guide.html` (6-step setup, 13-tool table, troubleshooting), added ToS link to `index.html` footer, created `mcp-docs.html` (standalone user setup page). Fixed OAuth access token lifetime 7 days → 30 days (`index.ts` 3 places, `2592000`). Confirmed CORS headers and safety annotations already present. Committed `1681200` + `ffef258`.
+- **6-model AI benchmark:** Ran mcp-docs.html generation task across Gemma4 (10/10), Kimi K2.6 (10/10 — selected for production, best semantic HTML), GLM 5.1 (10/10), DeepSeek V4 Pro (10/10), DeepSeek V4 Flash (10/10 — identical to Pro, use as default), GPT OSS 120B (9/10 — missing `<code>` tags). Created `DOCS/agent-profiles.md` with per-model strengths, failure modes, prompt rules. Updated memory `reference_gemma4_tendencies.md` to cover all 6 models.
+- **OpenAI App Directory gap analysis:** Identified 2 code gaps (CSP header, `openWorldHint` annotation) + non-code gaps (org verification, logo, screenshots, test prompts). Code gaps fixed by Kimi K2.6: added `Content-Security-Policy: default-src 'none'; connect-src https://www.googleapis.com` to `corsHeaders()` and `openWorldHint: true` to all 13 tools. Committed `f1f0d15`. **Submission on hold** — category, identity verification, and logo done; demo recording pending (needs developer mode activation).
+- **MCP quota bypass (Claude+SwarmSpace):** Free tier cap (20/day) preserved for standalone users; unlimited for Claude+MCP sessions. Tagged `_via_mcp: true` at mcp-server, threaded through orchestrator context, detected in `swarmspaceRouter` → `enforceSwarmSpaceQuota` bypasses when `isMcpSession`. Three files: `mcp-server/index.ts`, `orchestrator/index.js`, `swarmspaceRouter.ts`. Committed `7fadc23`, all three deployed.
+
+### Commits this session
+- `1681200` — feat(submission): add MCP docs, terms, agent profiles for Anthropic MCP Directory
+- `ffef258` — fix(mcp-server): extend OAuth access token lifetime to 30 days
+- `f1f0d15` — feat(mcp-server): add CSP header and openWorldHint annotations for OpenAI App Directory
+- `7fadc23` — feat(quota): bypass daily call limit for Claude+SwarmSpace MCP sessions
+
+### Next (SwarmSpace)
+1. OpenAI App Directory submission — demo recording pending (activate developer mode first); screenshots + test prompts still needed
+2. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+3. Session broker / orchestrator execution modes (backlog §5.3)
+
+---
+
 ## Session: 2026-05-19 — v1.6.0 doc sync + milestone tag
 
 **Branch:** main

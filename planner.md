@@ -26,7 +26,11 @@ OAuth 2.1 + DCR + Streamable HTTP compliance is **complete and live** (`wrangler
 ### Now — Marketplace Submissions
 - [x] Submit to Anthropic MCP Directory ✅ (submitted 2026-05-19)
 - [x] OpenAI App Directory — code gaps fixed (CSP, openWorldHint); category, ID verification, logo done ✅
-  - [ ] Demo recording (needs developer mode activation in ChatGPT)
+- [x] Connected SwarmSpace to ChatGPT (developer mode, OAuth); 13 tools confirmed live ✅
+- [x] `chatgpt-app-submission.json` generated and schema-validated ✅
+- [x] Orchestrator `headers is not defined` bug fixed (BUG-ORCH-001) ✅
+- [x] MCP quota bypass end-to-end (`_via_mcp` flag propagated mcp-server → orchestrator → router) ✅
+  - [ ] **Demo recording** — only remaining blocker (record 5 tool calls in ChatGPT developer mode, upload to YouTube/Loom)
   - [ ] Screenshots + test prompts (after demo)
   - [ ] Submit
 - [ ] Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"

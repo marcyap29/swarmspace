@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
 **Status:** ✅ Synced
 
 ---
@@ -104,6 +104,29 @@ When running a doc sync or release:
 ---
 
 ## Change Log
+
+### 2026-05-20 — v1.7.0: OpenAI submission, hero logo, MCP quota fix, orchestrator headers bug
+
+**Action:** Session close doc sync for v1.7.0. Bug tracker populated, CHANGELOG updated.
+
+**Changes:**
+- `DOCS/context.md` — 2026-05-20 session block prepended.
+- `DOCS/CHANGELOG.md` — v1.7.0 entry added (chatgpt-app-submission.json, hero logo, BUG-ORCH-001, BUG-MCP-001, CSP/openWorldHint).
+- `DOCS/bugtracker/bug_tracker.md` — BUG-ORCH-001 and BUG-MCP-001 added; recent code changes table updated; version bumped to 1.0.1.
+- `planner.md` — completed tasks crossed off; demo recording remains as only blocker.
+- `chatgpt-app-submission.json` — new file at repo root; OpenAI App Directory schema v1.
+- `workers/mcp-server/src/tools.ts` — `openWorldHint: true` on all 13 tools.
+- `workers/mcp-server/src/index.ts` — CSP header in `corsHeaders()`; SSE + sync paths send `{ ...body, _via_mcp: true }`.
+- `workers/orchestrator/src/index.js` — restored `headers` declaration; `_via_mcp` propagation moved outside service-token block.
+- `logo.svg` — replaced with `SwarmSpace_Logo.svg` (landscape, transparent bg).
+- `index.html` — hero logo centered above grid, `max-width:680px`, tightened padding.
+
+**Deployed:**
+- mcp-server workers: `707aec0c` (f1f0d15), `35ec6f27` (723a20c)
+- orchestrator worker: `ff5aa88b` (723a20c)
+- index.html: Vercel (17ea561)
+
+---
 
 ### 2026-05-19 — v1.6.0 milestone: SwarmSpace initially working; doc cleanup
 
