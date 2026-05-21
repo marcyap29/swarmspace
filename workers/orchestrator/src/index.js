@@ -388,32 +388,18 @@ async function runMeetingPrepWorkflow(ctx) {
 
   let linkedInPageContent = '';
   try {
-    // Primary: Proxycurl structured lookup
-    const proxycurlResult = await callPlugin(ctx, 'proxycurl', {
-      name: attendeeName,
-      company: attendeeCompany,
+    const linkedInSearch = await callPlugin(ctx, 'brave-search', {
+      query: `${attendeeName} ${attendeeCompany} LinkedIn`,
+      count: 4,
     });
-    const proxycurlContent = proxycurlResult?.results?.[0]?.content || '';
-    if (proxycurlContent.length > 100) {
-      linkedInPageContent = proxycurlContent.slice(0, 3000);
+    const linkedInUrl = extractLinkedInUrl(linkedInSearch);
+    if (linkedInUrl) {
+      const pageResult = await callPlugin(ctx, 'jina-reader', { url: linkedInUrl });
+      const content = pageResult?.results?.[0]?.content || '';
+      // Only use if substantive — LinkedIn often blocks scrapers
+      linkedInPageContent = content.length > 200 ? content.slice(0, 3000) : '';
     }
-  } catch (_) { /* non-fatal — fall through to jina-reader */ }
-
-  if (!linkedInPageContent) {
-    try {
-      // Fallback: Brave Search → jina-reader (often blocked but kept as backup)
-      const linkedInSearch = await callPlugin(ctx, 'brave-search', {
-        query: `${attendeeName} ${attendeeCompany} LinkedIn`,
-        count: 4,
-      });
-      const linkedInUrl = extractLinkedInUrl(linkedInSearch);
-      if (linkedInUrl) {
-        const pageResult = await callPlugin(ctx, 'jina-reader', { url: linkedInUrl });
-        const content = pageResult?.results?.[0]?.content || '';
-        linkedInPageContent = content.length > 200 ? content.slice(0, 3000) : '';
-      }
-    } catch (_) { /* non-fatal */ }
-  }
+  } catch (_) { /* non-fatal */ }
 
   const briefResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: buildMeetingPrepPrompt({
