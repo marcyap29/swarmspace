@@ -12,6 +12,10 @@
 // forwarded to swarmspaceRouter which validates the service token and
 // runs the call as the named uid. Used by Durable Object alarms.
 
+import { resolveIntent, getRoutingTable, ROUTING_TABLE } from './intent.js';
+import { rankCandidates, assembleChain } from './rank.js';
+import { callPlugin, parallel, executeChain } from './chain.js';
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -44,7 +48,18 @@ export default {
       serviceToken: body._service_token || null,
       runAsUid: body._run_as_uid || null,
       viaMcp: body._via_mcp || false,
+      env,
     };
+
+    if (url.pathname === '/resolve-intent') {
+      try {
+        const intent = await resolveIntent(ctx.query, env);
+        const details = getRoutingTable(intent.suggested_plugins);
+        return corsResponse(JSON.stringify({ intent, plugins: details }), 200);
+      } catch (err) {
+        return corsResponse(JSON.stringify({ error: err.message }), 400);
+      }
+    }
 
     const routes = {
       '/research':       runResearchWorkflow,
@@ -60,6 +75,7 @@ export default {
       '/fact-check':     runFactCheckWorkflow,
       '/content-brief':  runContentBriefWorkflow,
       '/meeting-prep':   runMeetingPrepWorkflow,
+      '/dynamic':        runDynamicWorkflow,
     };
 
     const handler = routes[url.pathname];
@@ -79,59 +95,6 @@ export default {
   }
 };
 
-// ── Helper: call a single plugin via swarmspaceRouter ──
-
-async function callPlugin(ctx, pluginId, params) {
-  // _prism_consent: true — user consented by initiating the workflow.
-  // This is a first-party orchestrator; consent is implicit in the trigger.
-  const data = { plugin_id: pluginId, params: { ...params, _prism_consent: true } };
-  // DO-initiated calls (alarm-fired): propagate service-token + run-as-uid.
-  // swarmspaceRouter validates the token and bypasses Firebase ID-token auth.
-  if (ctx.serviceToken && ctx.runAsUid) {
-    data._service_token = ctx.serviceToken;
-    data._run_as_uid = ctx.runAsUid;
-  }
-  // When using the service-token bypass, omit the Authorization header.
-  // Firebase Functions v2 rejects non-JWT Bearer tokens at the runtime level
-  // before the function handler runs. The bypass relies on request.data._service_token
-  // only — no Authorization header needed.
-  if (ctx.serviceToken && ctx.runAsUid) {
-    data._service_token = ctx.serviceToken;
-    data._run_as_uid = ctx.runAsUid;
-  }
-  if (ctx.viaMcp) data._via_mcp = true;
-  const headers = { 'Content-Type': 'application/json' };
-  if (!ctx.serviceToken) {
-    headers['Authorization'] = ctx.token;
-  }
-  const res = await fetch(ctx.routerUrl, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ data }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Plugin ${pluginId} failed (${res.status}): ${text}`);
-  }
-
-  const json = await res.json();
-  return json.result || json;
-}
-
-// ── Helper: run plugins in parallel ──
-
-async function parallel(ctx, calls) {
-  const results = await Promise.allSettled(
-    calls.map(([pluginId, params]) => callPlugin(ctx, pluginId, params))
-  );
-  const out = {};
-  calls.forEach(([pluginId], i) => {
-    const r = results[i];
-    out[pluginId] = r.status === 'fulfilled' ? r.value : { error: r.reason.message };
-  });
-  return out;
-}
 
 // ── CORS helper ──
 
@@ -411,6 +374,38 @@ async function runMeetingPrepWorkflow(ctx) {
   });
 
   return { brief: briefResult?.text || briefResult || '' };
+}
+
+// ── Dynamic pipeline: two-phase intent + ranking ──────────────────────────────
+
+const defaultPolicy = {
+  max_plugins: 4,
+  user_tier: 'free',
+  require_consensus: false,
+};
+
+async function runDynamicWorkflow(ctx) {
+  const policy = {
+    ...defaultPolicy,
+    ...(ctx.params.policy || {}),
+  };
+  const userTier = ctx.params.user_tier || policy.user_tier;
+  const q = ctx.query;
+
+  const intent = await resolveIntent(q, ctx.env);
+  const ranked = rankCandidates(ROUTING_TABLE, intent, userTier, {
+    maxCandidates: policy.max_plugins,
+  });
+  const chain = assembleChain(ranked, { maxLength: policy.max_plugins });
+
+  const results = await executeChain(ctx, chain, ctx.params);
+
+  return {
+    intent,
+    chain,
+    ranked: ranked.map((p) => ({ slug: p.slug, score: p.score })),
+    results,
+  };
 }
 
 function extractLinkedInUrl(searchResult) {

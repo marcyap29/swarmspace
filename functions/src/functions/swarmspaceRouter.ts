@@ -98,6 +98,12 @@ interface PluginConfig {
   schedulable?: boolean;
   /** Verified-only: declares plugin runs without user-approval step (auto execution mode). */
   headless?: boolean;
+  /** One-sentence instruction for AI agents on when to use this plugin. */
+  agent_guidance: string;
+  /** Typical latency class for routing decisions. */
+  latency_class: "fast" | "standard" | "slow";
+  /** Trust tier: verified (first-party), community (developer), experimental. */
+  trust_tier: "verified" | "community" | "experimental";
 }
 
 const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
@@ -118,6 +124,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Use as the final synthesis step after data collection. Always chain last. Does not count against max plugin count.",
+    latency_class: "standard",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "brave-search": {
@@ -134,6 +143,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Primary web search for general queries, current events, and broad research. Fast and reliable.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "semantic-scholar": {
@@ -150,6 +162,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Academic paper and citation search. Use for scholarly research, bibliographic queries, and peer-reviewed sources.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "weather": {
@@ -166,6 +181,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Current weather and forecasts. Use for location-based weather queries only.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "wikipedia": {
@@ -182,6 +200,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "General knowledge and encyclopedic lookups. Use for broad factual context and background.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "currency": {
@@ -198,6 +219,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Currency exchange rates and conversions. Use for financial rate queries only.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "news": {
@@ -214,6 +238,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Latest news and headlines. Use for real-time news briefings and trending topics.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   // ── New free tier plugins ──────────────────────────────────────────────────
@@ -231,6 +258,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-01T00:00:00Z",
+        agent_guidance: "Scientific preprints from arXiv. Use for cutting-edge research, physics, CS, and math papers.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "pubmed": {
@@ -247,6 +277,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-10T00:00:00Z",
+        agent_guidance: "Biomedical literature from PubMed/NCBI. Use for clinical, health, and life-science research.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "nominatim": {
@@ -263,6 +296,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-10T00:00:00Z",
+        agent_guidance: "Geocoding and location resolution via OpenStreetMap. Use for address/coordinate lookups.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "rest-countries": {
@@ -279,6 +315,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-10T00:00:00Z",
+        agent_guidance: "Country data and geography. Use for demographic, cultural, and geographic reference.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "github-public": {
@@ -295,6 +334,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-10T00:00:00Z",
+        agent_guidance: "Public GitHub repositories and developer data. Use for code discovery, stars, and repo metadata.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "hackernews": {
@@ -311,6 +353,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-10T00:00:00Z",
+        agent_guidance: "Tech community discussions from Hacker News. Use for tech sentiment, startup buzz, and dev opinions.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "dictionary-api": {
@@ -327,6 +372,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-10T00:00:00Z",
+        agent_guidance: "Word definitions and etymology. Use for language, spelling, and vocabulary queries.",
+    latency_class: "fast",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "jina-reader": {
@@ -343,6 +391,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-04-10T00:00:00Z",
+        agent_guidance: "Fetch and extract content from any URL. Use as fallback when a page blocks or is not in search indexes.",
+    latency_class: "standard",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   // ── Standard tier ($30/mo) ─────────────────────────────────────────────────
@@ -360,6 +411,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Extract text (OCR) or understand images. Requires image data; use only when images are provided.",
+    latency_class: "slow",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "url-reader": {
@@ -376,6 +430,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-01T00:00:00Z",
+        agent_guidance: "Fetch and extract content from URLs with higher fidelity than jina-reader. Use for detailed article extraction.",
+    latency_class: "standard",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "media-upload": {
@@ -392,6 +449,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-15T00:00:00Z",
+        agent_guidance: "Upload images and get public URLs. Use when user provides images that need hosting before processing.",
+    latency_class: "standard",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "tavily-search": {
@@ -408,6 +468,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-15T00:00:00Z",
+        agent_guidance: "AI-optimized search for deep research. Use when standard web search is insufficient for technical topics.",
+    latency_class: "standard",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "calendar-reader": {
@@ -424,6 +487,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-05-01T00:00:00Z",
+        agent_guidance: "Read upcoming calendar events and attendee details. Requires Google Calendar OAuth consent. Use for meeting prep and scheduling.",
+    latency_class: "slow",
+    trust_tier: "verified",
     rateLimits: { free: 0, standard: 500, premium: 500 },
     is_read_only: true,
     is_destructive: false,
@@ -445,6 +511,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-15T00:00:00Z",
+        agent_guidance: "Neural semantic search. Use for finding conceptually similar content and research discovery.",
+    latency_class: "standard",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   "perplexity-sonar": {
@@ -461,6 +530,9 @@ const PLUGIN_REGISTRY: Record<string, PluginConfig> = {
     pricing: { model: "included" as const, cost_per_call: null },
     version: "1.0.0",
     deployed_at: "2026-03-15T00:00:00Z",
+        agent_guidance: "Real-time answer synthesis from the web with citations. Use for complex questions requiring summarized evidence.",
+    latency_class: "standard",
+    trust_tier: "verified",
     rateLimits: { free: 20, standard: 500, premium: 500 },
   },
   // social-publisher removed from plugin registry — social publishing requires
@@ -502,6 +574,9 @@ async function loadDeveloperPlugins(): Promise<Record<string, PluginConfig>> {
         pricing: data.pricing || { model: "included" as const, cost_per_call: null },
         version: data.version || "1.0.0",
         deployed_at: data.deployed_at || data.approved_at || new Date().toISOString(),
+        agent_guidance: data.agent_guidance || "Developer plugin — review capability tags before use.",
+        latency_class: data.latency_class || "standard",
+        trust_tier: data.trust_tier || "community",
         rateLimits: data.rateLimits || { free: 20, standard: 500, premium: 500 },
         source: "developer",
       } as PluginConfig;

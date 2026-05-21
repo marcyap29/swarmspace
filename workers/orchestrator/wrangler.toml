@@ -8,3 +8,6 @@ SWARMSPACE_ROUTER_URL = "https://us-central1-arc-epi.cloudfunctions.net/swarmspa
 # Set via `wrangler secret put SWARMSPACE_INTERNAL_TOKEN`
 # [secrets]
 # SWARMSPACE_INTERNAL_TOKEN
+
+[ai]
+binding = "AI"
