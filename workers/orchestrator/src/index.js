@@ -432,13 +432,13 @@ ${p.meetingTitle || 'Upcoming meeting'}${p.meetingTime ? ' · ' + p.meetingTime 
 **ATTENDEE:** ${p.attendeeName}${p.attendeeCompany ? ' at ' + p.attendeeCompany : ''}
 
 **FROM YOUR NOTES**
-[Bullet points from personal context only; omit this block entirely if personal context is empty]
+[Bullet points drawn only from the personal context provided. Omit this section entirely if personal context is empty.]
 
-**PERSON INTEL**
-[3–5 factual bullet points from web research; omit if no web data]
+**WHAT MATTERS NOW**
+[3–5 bullet points of current intelligence: recent news, role changes, funding rounds, product launches, or anything time-sensitive about this person or their company. Each bullet must cite its source as (source: <url>). Omit if no web data.]
 
 **SUGGESTED TALKING POINTS**
-[2–3 synthesis bullets connecting personal context with web intel; omit if insufficient data]`,
+[2–3 synthesis bullets connecting personal context with current intel. Omit if insufficient data.]`,
 
     talking_points: `## TALKING POINTS
 ─────────────────────────────────
@@ -470,7 +470,7 @@ Subject: [concise subject line]
     .map(d => DELIVERABLE_INSTRUCTIONS[d])
     .join('\n\n');
 
-  return `You are preparing meeting documents. Use only the information provided below. Do not invent facts. Omit any field or block that has no supporting data.
+  return `You are preparing meeting documents. Use only the information provided below. Do not invent facts. Omit any field or block that has no supporting data. When citing web sources, use the format (source: <url>).
 
 MEETING: ${p.meetingTitle || 'Upcoming meeting'} · ${p.meetingTime || ''} · ${p.durationMinutes ? p.durationMinutes + ' min' : ''} · ${p.meetingLocation || ''}
 ATTENDEE: ${p.attendeeName}${p.attendeeCompany ? ' at ' + p.attendeeCompany : ''}

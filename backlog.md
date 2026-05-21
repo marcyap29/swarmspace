@@ -878,7 +878,16 @@ All four tasks shipped — verified by code inspection 2026-05-01:
 
 ---
 
-## 13. COMPLETED (March-April 2026)
+## 13. LinkedIn Profile Integration (Proxycurl)
+- [ ] Implement Proxycurl plugin Worker for structured LinkedIn profile fetching.
+- [ ] Integrate as primary source in `runMeetingPrepWorkflow` orchestrator route.
+- [ ] Maintain jina-reader as fallback for blocked/missing structured data.
+- [ ] Update plugin registry (`REGISTRY_ENTRIES.ts`, `swarmspaceRouter.ts`) with standard tier access and privacy metadata.
+- [ ] Normalize Profile API and Resolve API responses into human-readable summaries.
+
+---
+
+## 14. COMPLETED (March-April 2026)
 
 - [x] Supabase to Firestore migration (all collections, auth, Stripe webhook, dashboard)
 - [x] swarmspaceRouter enforceAuth migration from users to developers collection
@@ -2208,8 +2217,7 @@ The Safe Room does not replace any existing control. It closes the output-side g
 > **Phase 2 follow-ups (post-merge, surfaced 2026-05-03):**
 > - [ ] Multi-attendee briefs — refactor `/meeting-prep` to accept `attendees: [{name, company, title?}]` array param; loop chain per attendee; return `briefs: [{attendee, brief}]`. Same route, no `/meeting-prep-multi`. LUMARA Phase 2 Q1 in `Coordinate.md`.
 > - [ ] Meeting Prep DO variant — see §5.2 (auto-fire on calendar event proximity).
-> - [ ] **Gmail context threading** (surfaced 2026-05-20, inspired by Granola briefs) — before synthesizing the brief, search Gmail for recent threads with the attendee's name/company (`mcp__claude_ai_Gmail__search_threads`); inject top 2–3 thread subjects + last-message date into the Gemini synthesis prompt as a "LAST EMAIL CONTACT" section. No new plugin needed — wire into the `/meeting-prep` orchestrator route. Adds relationship history ("what you discussed last time") without requiring LUMARA CHRONICLE. SwarmSpace-only change; no LUMARA dependency.
-> - [ ] **"What matters now" brief structure** (surfaced 2026-05-20, inspired by Granola briefs) — adopt two-part brief framing: (1) "FROM YOUR NOTES / EMAILS" (relationship history — CHRONICLE + Gmail) and (2) "WHAT MATTERS NOW" (current intel — recent news, funding, job changes, from web search). Currently the brief outputs a single monolithic block. Restructure the Gemini synthesis prompt in `/meeting-prep` to produce both sections explicitly, each fact cited to its source URL. Pairs with Gmail threading above.
+> - [x] **"What matters now" brief structure** ✅ (shipped 2026-05-21) — two-part framing: (1) "FROM YOUR NOTES" (CHRONICLE/personal context) and (2) "WHAT MATTERS NOW" (current intel — recent news, funding, job changes from web search), each fact cited to source URL.
 >
 > **Specced 2026-05-01.** Standard-tier on-demand agent that prepares a structured brief before a meeting. Pulls personal context from LUMARA (CHRONICLE + documents + optional calendar) and fuses it with external intel (web search + LinkedIn) via the SwarmSpace orchestrator.
 >
