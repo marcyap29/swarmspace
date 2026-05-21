@@ -707,7 +707,7 @@ async function handleMcp(request: Request, env: Env): Promise<Response> {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`,
               },
-              body: JSON.stringify(body),
+              body: JSON.stringify({ ...body, _via_mcp: true }),
             })
           );
           if (!resp.ok) {
@@ -756,7 +756,7 @@ async function handleMcp(request: Request, env: Env): Promise<Response> {
             "Content-Type": "application/json",
             Authorization: `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`,
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ ...body, _via_mcp: true }),
         })
       );
     } catch (err) {
