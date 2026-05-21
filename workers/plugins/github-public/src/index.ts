@@ -1,5 +1,6 @@
 export interface Env {
   SWARMSPACE_INTERNAL_TOKEN: string;
+  GITHUB_TOKEN?: string;
 }
 
 const CORS_HEADERS: Record<string, string> = {
@@ -55,8 +56,9 @@ export default {
         "User-Agent": "SwarmSpace/1.0",
         Accept: "application/vnd.github.v3+json",
       };
-      if (body.github_token) {
-        headers["Authorization"] = `token ${body.github_token}`;
+      const githubToken = body.github_token || env.GITHUB_TOKEN;
+      if (githubToken) {
+        headers["Authorization"] = `token ${githubToken}`;
       }
 
       const apiResponse = await fetch(apiUrl, {

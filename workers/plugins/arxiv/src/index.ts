@@ -36,7 +36,7 @@ export default {
 
       const limit = Math.min(Math.max(body.limit ?? 5, 1), 20);
 
-      const apiUrl = new URL("http://export.arxiv.org/api/query");
+      const apiUrl = new URL("https://export.arxiv.org/api/query");
       apiUrl.searchParams.set("search_query", `all:${query}`);
       apiUrl.searchParams.set("start", "0");
       apiUrl.searchParams.set("max_results", String(limit));
