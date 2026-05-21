@@ -78,6 +78,19 @@
     schedulable: true,
     headless: true,
   },
+  "proxycurl": {
+    workerUrl: "https://swarmspace-plugin-proxycurl.orbitalai.workers.dev",
+    requiredTier: "standard",
+    capabilities: ["linkedin", "professional_profile", "person_lookup"],
+    description: "Structured LinkedIn profile data via Proxycurl API",
+    exampleQuery: "LinkedIn profile for Jane Smith at Stripe",
+    privacy_data_required: ["attendee_name", "attendee_company", "professional_profile"],
+    privacyTier: "STRUCTURED_PERSONAL",
+    dataTypes: ["professional_profile", "employment_history", "education"],
+    is_read_only: true,
+    is_destructive: false,
+    rateLimits: { free: 0, standard: 100, premium: 500 },
+  },
 
 // ── Deployment checklist ────────────────────────────────────────────────────
 //
