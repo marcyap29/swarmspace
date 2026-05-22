@@ -33,4 +33,5 @@ OAuth 2.1 + DCR + Streamable HTTP compliance is **complete and live** (`wrangler
   - [ ] **Demo recording** — only remaining blocker (record 5 tool calls in ChatGPT developer mode, upload to YouTube/Loom)
   - [ ] Screenshots + test prompts (after demo)
   - [ ] Submit
+- [x] Dynamic AI routing pipeline (intent.js + rank.js + chain.js) — committed `c6ab31d`, deployed `4c628257` ✅
 - [ ] Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
