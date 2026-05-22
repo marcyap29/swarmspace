@@ -1,3 +1,34 @@
+## Session: 2026-05-21 — Dynamic AI routing pipeline (intent.js + rank.js + chain.js), Granola meeting prep brief, Proxycurl cleanup
+
+**Branch:** main
+
+### What was done
+
+- **Granola-inspired meeting prep brief restructure:** `buildMeetingPrepPrompt` in `workers/orchestrator/src/index.js` redesigned with two named sections — "FROM YOUR NOTES" (personal context only) and "WHAT MATTERS NOW" (current web intel with source URL citations). Multi-deliverable support added: `brief`, `talking_points`, `follow_up_email`, `one_pager`, `questions`.
+- **Proxycurl plugin removed:** Proxycurl API was dead (LinkedIn lawsuit Jan 2025, settled and shut down). All proxycurl Worker code and REGISTRY_ENTRIES deleted. Orchestrator `/meeting-prep` reverted to jina-reader fallback. Commits: `400583d`, `ac1d743`.
+- **Dynamic AI routing pipeline (Kimi K2.6):** New `/dynamic` route in orchestrator using two-phase routing — Workers AI intent classifier → capability scorer → plugin chain executor.
+  - `workers/orchestrator/src/intent.js` — 22-entry ROUTING_TABLE, `resolveIntent()` via `@cf/meta/llama-3.1-8b-instruct`, keyword fallback, JSON fence stripping
+  - `workers/orchestrator/src/rank.js` — `rankCandidates()` with free/standard/premium tier gate, capability overlap scoring, latency/trust bonuses, 70% dedup threshold; `assembleChain()` always appends gemini-flash last
+  - `workers/orchestrator/src/chain.js` — `callPlugin`, `parallel`, `executeChain` moved here to break circular import; `executeChain` accumulates results for synthesis prompt
+  - `workers/orchestrator/src/rank.test.js` — 21 assertions, all pass (fixed T6 maxCandidates semantics, fixed T10 empty-chain edge case)
+  - `workers/orchestrator/src/intent.smoke.js` — 9 smoke tests with mock AI
+  - `swarmspaceRouter.ts` PLUGIN_REGISTRY extended: `agent_guidance`, `latency_class`, `trust_tier` fields on all 22 plugins
+  - `wrangler.toml`: `[ai] binding = "AI"` added
+  - Committed `c6ab31d`, deployed worker version `4c628257`
+- **MCP unlimited access confirmed:** All MCP sessions (Claude/ChatGPT) get unlimited plugin calls via `_via_mcp` flag → `enforceSwarmSpaceQuota` returns `{ limit: -1 }`.
+
+### Commits this session
+- `400583d` — fix(meeting-prep): revert orchestrator to jina-reader; remove proxycurl
+- `ac1d743` — chore: delete proxycurl worker directory and registry entries
+- `c6ab31d` — feat(orchestrator): two-phase AI routing — intent.js + rank.js + chain.js
+
+### Next (SwarmSpace)
+1. OpenAI App Directory — **demo recording is the only remaining blocker** (record 5 tool calls in ChatGPT developer mode, upload to YouTube/Loom)
+2. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+3. Session broker / orchestrator execution modes (backlog §5.3)
+
+---
+
 ## Session: 2026-05-20 — OpenAI submission, hero logo, orchestrator headers bug, MCP quota fix
 
 **Branch:** main

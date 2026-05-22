@@ -6,6 +6,7 @@ interface Env {
   MCP_SERVER_VERSION: string;
   MCP_KEY_SECRET: string;
   SWARMSPACE_INTERNAL_TOKEN: string;
+  OPENAI_CHALLENGE_TOKEN: string;
   OAUTH_ISSUER: string;
   FIREBASE_PROJECT_ID: string;
   OAUTH_CLIENTS: KVNamespace;
@@ -800,6 +801,12 @@ export default {
     }
     if (request.method === "GET" && url.pathname === "/.well-known/mcp/manifest.json") {
       return handleManifest(env);
+    }
+    if (request.method === "GET" && url.pathname === "/.well-known/openai-apps-challenge") {
+      return new Response(env.OPENAI_CHALLENGE_TOKEN, {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      });
     }
     if (request.method === "POST" && url.pathname === "/oauth/register") {
       return handleDCR(request, env);

@@ -1,7 +1,28 @@
 # SwarmSpace Changelog
 
-**Version:** 1.7.0
-**Last Updated:** 2026-05-20
+**Version:** 1.8.0
+**Last Updated:** 2026-05-21
+
+---
+
+## [1.8.0] - 2026-05-21 — Dynamic AI routing pipeline + Granola meeting prep brief
+
+### Added
+
+- **Dynamic plugin routing (`/dynamic` route)** — Two-phase orchestrator pipeline: Workers AI (`@cf/meta/llama-3.1-8b-instruct`) classifies query intent and suggests plugins; `rankCandidates` scores by capability overlap, latency, trust tier, and applies free/standard/premium gates; `assembleChain` orders plugins with gemini-flash always last. New files: `intent.js`, `rank.js`, `chain.js`.
+- **`rank.test.js`** — 21-assertion unit test suite covering free/standard/premium tier gates, capability scoring, assembleChain deduplication, edge cases.
+- **`intent.smoke.js`** — 9 smoke tests with mock AI binding covering intent resolution, keyword fallback, error cases.
+- **Workers AI binding** — `[ai]\nbinding = "AI"` added to `workers/orchestrator/wrangler.toml`. No API key required.
+- **Plugin metadata fields** — `agent_guidance`, `latency_class`, `trust_tier` added to all 22 plugins in `swarmspaceRouter.ts` PLUGIN_REGISTRY interface and entries.
+- **Granola-inspired meeting brief structure** — `buildMeetingPrepPrompt` redesigned with "FROM YOUR NOTES" (personal context) and "WHAT MATTERS NOW" (current web intel with source URL citations). Five deliverable types: `brief`, `talking_points`, `follow_up_email`, `one_pager`, `questions`.
+
+### Removed
+
+- **Proxycurl plugin** — Proxycurl API is dead (LinkedIn lawsuit Jan 2025, settled, shut down). All `workers/plugins/proxycurl/` code deleted; registry entry removed.
+
+---
+
+## [1.7.0] - 2026-05-20 — OpenAI App Directory submission + MCP quota fix
 
 ---
 
