@@ -1,3 +1,54 @@
+## Session: 2026-05-22 — News Briefing "Keep Watching This" UI (§5.2)
+
+**Branch:** main (LUMARA repo)
+
+### What was done
+- **News Briefing Service** — Created `lib/shared/swarmspace/news_briefing_service.dart` with `createSubscription()`, `cancelSubscription()`, `getLatest()`, local persistence via SharedPreferences, and "New" badge detection (`hasNewContent`/`markViewed`).
+- **Subscriptions Management** — Created `lib/shared/lumara/agents/screens/news_briefing_subscriptions_screen.dart` with list, add topic sheet, cadence picker (daily/weekly), detail view with flutter_markdown, swipe-to-cancel, and "NEW" badge.
+- **Agents Screen card** — Added `_WatchedTopicsCard` to Agents screen between Plugin Activity and Capabilities Catalog.
+- **Chat affordance** — Added `_KeepWatchingButton` inside `lumara_chat_redesign_screen.dart` message bubble, gated on `metadata['swarmspace_route'] == 'news-brief'`.
+- **Orchestrator metadata** — Modified `lumara_assistant_cubit.dart` to attach `{'swarmspace_route': 'news-brief', 'swarmspace_topic': text}` to assistant messages for the news-brief route.
+
+### Files changed (LUMARA repo)
+- `lib/shared/swarmspace/news_briefing_service.dart` (new)
+- `lib/shared/lumara/agents/screens/news_briefing_subscriptions_screen.dart` (new)
+- `lib/shared/lumara/agents/screens/agents_screen.dart` — add import + WatchedTopicsCard
+- `lib/mobile/screens/arc/chat/ui/lumara_chat_redesign_screen.dart` — add import + KeepWatchingButton
+- `lib/shared/arc/chat/bloc/lumara_assistant_cubit.dart` — metadata on assistantMsg
+
+### Verification
+- `dart analyze` on all 5 target files — zero errors ✅
+
+### LUMARA dependency
+None — all changes are LUMARA-internal. SwarmSpace endpoints already live.
+
+---
+
+## Session: 2026-05-21 — LUMARA Agents Tab: History, Background Execution, Stop Button
+
+**Branch:** main (LUMARA repo)
+
+### What was done
+- **Query History** — Wired `AgentSearchHistoryStorage` into `agents_screen.dart`. History icon (conditional) in AppBar opens bottom sheet with last 20 queries, swipe-to-dismiss, Clear all. Tapping repopulates input + `useChronicle`. Saves on every `_handleSubmit()`.
+- **Background Execution** — Added `flutter_foreground_task: ^8.16.0` to pubspec. iOS `UIBackgroundModes` (fetch, processing) and Android `FOREGROUND_SERVICE` + service declaration added. `run_screen.dart` init/stop/callback wired; task starts on run, stops on result/error/stop/dispose.
+- **Stop Button** — Replaced `SizedBox(width: 52)` in `_buildTopBar()` with red "Stop" TextButton visible only while `_phase == 'running'`. Cancels stream + stops foreground task + pops back.
+
+### Files changed (LUMARA repo)
+- `lib/shared/lumara/agents/screens/agents_screen.dart` — history load/save/sheet
+- `lib/shared/agents/run_screen.dart` — foreground task lifecycle + stop button
+- `pubspec.yaml` — `flutter_foreground_task` dependency
+- `ios/Runner/Info.plist` — `UIBackgroundModes`
+- `android/app/src/main/AndroidManifest.xml` — foreground service permissions
+
+### Verification
+- `flutter pub get` — `flutter_foreground_task 8.17.0` resolved ✅
+- `dart analyze` — zero new errors in target files; remaining warnings pre-existing ✅
+
+### LUMARA dependency
+None — all changes are LUMARA-internal.
+
+---
+
 ## Session: 2026-05-21 (continued) — OpenAI App Directory submitted
 
 **Branch:** main
