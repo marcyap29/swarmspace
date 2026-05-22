@@ -1,3 +1,23 @@
+## Session: 2026-05-21 (continued) — OpenAI App Directory submitted
+
+**Branch:** main
+
+### What was done
+
+- **Domain verification token** — Added `OPENAI_CHALLENGE_TOKEN` secret to mcp-server Worker; route `/.well-known/openai-apps-challenge` was already wired up. Deployed worker `e3744316`. Token verified live.
+- **OpenAI App Directory submitted** — All fields complete: MCP server URL, OAuth auto-discovered, 13 tool justifications filled, domain verified, policy compliance checked, release notes written (v1.0), submitted under Orbital AI. Pending OpenAI review.
+- **YouTube demo video** — Screen recording uploaded for the 5-tool demo requirement.
+
+### Status
+- Anthropic MCP Directory: submitted ✅ (2026-05-19)
+- OpenAI App Directory: submitted ✅ (2026-05-21) — pending review
+
+### Next (SwarmSpace)
+1. Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
+2. Session broker / orchestrator execution modes (backlog §5.3)
+
+---
+
 ## Session: 2026-05-21 — Dynamic AI routing pipeline (intent.js + rank.js + chain.js), Granola meeting prep brief, Proxycurl cleanup
 
 **Branch:** main

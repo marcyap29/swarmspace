@@ -30,8 +30,8 @@ OAuth 2.1 + DCR + Streamable HTTP compliance is **complete and live** (`wrangler
 - [x] `chatgpt-app-submission.json` generated and schema-validated ✅
 - [x] Orchestrator `headers is not defined` bug fixed (BUG-ORCH-001) ✅
 - [x] MCP quota bypass end-to-end (`_via_mcp` flag propagated mcp-server → orchestrator → router) ✅
-  - [ ] **Demo recording** — only remaining blocker (record 5 tool calls in ChatGPT developer mode, upload to YouTube/Loom)
-  - [ ] Screenshots + test prompts (after demo)
-  - [ ] Submit
+  - [x] **Demo recording** — uploaded to YouTube ✅
+  - [x] Screenshots + test prompts ✅
+  - [x] **Submitted to OpenAI App Directory** (2026-05-21) ✅ — pending review
 - [x] Dynamic AI routing pipeline (intent.js + rank.js + chain.js) — committed `c6ab31d`, deployed `4c628257` ✅
 - [ ] Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
