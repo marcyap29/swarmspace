@@ -659,6 +659,10 @@ const CHAIN_DEFINITIONS: ChainDefinition[] = [
     plugins: ["brave-search", "wikipedia", "news", "gemini-flash"],
     description: "Content creation brief with research, outline, and data points",
     endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/content-brief" },
+  { route: "/decision-simulation", name: "Decision Simulation",
+    plugins: ["gemini-flash"],
+    description: "Monte Carlo decision simulation using personal behavioral context as seed material",
+    endpoint: "https://swarmspace-orchestrator.orbitalai.workers.dev/decision-simulation" },
 ];
 
 // ── Tier resolution ────────────────────────────────────────────────────────────
