@@ -6,7 +6,7 @@ interface Env {
 
 const GRAPH_BASE = "https://api.semanticscholar.org/graph/v1";
 const RECS_BASE = "https://api.semanticscholar.org/recommendations/v1";
-const PAPER_FIELDS = "title,abstract,year,authors,citationCount,url,externalIds";
+const PAPER_FIELDS = "title,abstract,year,authors,citationCount,influentialCitationCount,isOpenAccess,url,externalIds";
 const RETRY_DELAYS = [1000, 2000, 4000];
 
 export default {
@@ -16,7 +16,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname.endsWith("/health")) {
-      return cors(JSON.stringify({ status: "ok", plugin: "semantic-scholar", version: "2.0.0" }), 200);
+      return cors(JSON.stringify({ status: "ok", plugin: "semantic-scholar", version: "2.1.0" }), 200);
     }
 
     if (request.method !== "POST") {
@@ -57,7 +57,7 @@ export default {
 
     const {
       query,
-      fields = ["title", "abstract", "authors", "year", "citationCount", "url"],
+      fields = ["title", "abstract", "authors", "year", "citationCount", "influentialCitationCount", "isOpenAccess", "url"],
       limit = 10,
       year_filter,
       min_citations,
@@ -148,6 +148,8 @@ interface PaperRaw {
   year?: number;
   authors?: { name: string }[];
   citationCount?: number;
+  influentialCitationCount?: number;
+  isOpenAccess?: boolean;
   url?: string;
   externalIds?: { DOI?: string; ArXiv?: string };
 }
@@ -159,6 +161,8 @@ interface NormalisedPaper {
   year: number | null;
   authors: string[];
   citation_count: number;
+  influential_citation_count: number;
+  is_open_access: boolean;
   url: string;
   doi: string | null;
   arxiv_id: string | null;
@@ -173,6 +177,8 @@ function normalisePapers(raw: PaperRaw[], resultType: "search" | "recommendation
     year: p.year ?? null,
     authors: (p.authors ?? []).map((a) => a.name),
     citation_count: p.citationCount ?? 0,
+    influential_citation_count: p.influentialCitationCount ?? 0,
+    is_open_access: p.isOpenAccess ?? false,
     url: p.url ?? (p.paperId ? `https://www.semanticscholar.org/paper/${p.paperId}` : ""),
     doi: p.externalIds?.DOI ?? null,
     arxiv_id: p.externalIds?.ArXiv ?? null,
@@ -182,7 +188,7 @@ function normalisePapers(raw: PaperRaw[], resultType: "search" | "recommendation
 
 function buildHeaders(env: Env): Record<string, string> {
   const headers: Record<string, string> = {
-    "User-Agent": "SwarmSpace/2.0 (orbital.ai; plugins@orbital.ai)",
+    "User-Agent": "SwarmSpace/2.1 (orbital.ai; plugins@orbital.ai)",
     Accept: "application/json",
   };
   // Uncomment when SEMANTIC_SCHOLAR_API_KEY secret is added:
@@ -190,10 +196,7 @@ function buildHeaders(env: Env): Record<string, string> {
   return headers;
 }
 
-async function fetchWithRetry(
-  url: string,
-  init: RequestInit,
-): Promise<Response> {
+async function fetchWithRetry(url: string, init: RequestInit): Promise<Response> {
   let response!: Response;
   for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
     try {
