@@ -1,0 +1,9 @@
+name = "swarmspace-plugin-semantic-scholar"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# No plain-text vars needed
+
+# Secrets (set via: wrangler secret put SWARMSPACE_INTERNAL_TOKEN)
+# SWARMSPACE_INTERNAL_TOKEN
