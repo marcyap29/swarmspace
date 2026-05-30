@@ -1,3 +1,38 @@
+## Session: 2026-05-22 — Orchestration: pattern-analysis-toggle (LUMARA repo)
+
+**Branch:** wt/pattern-analysis-toggle (LUMARA repo — unmerged)
+
+### What was done
+- Repo review: Read SOPs, claude.md, context.md, planner.md, backlog.md, cross-repo coordination docs, and LUMARA repo orientation.
+- Pre-existing dirty work in LUMARA worktree stashed, worktree `wt/pattern-analysis-toggle` created.
+- **7 files modified** — Pattern Analysis Improvements + History Toggle:
+  1. `api_config.dart` — Gemini model: `gemini-3-flash-preview` → `gemini-3.5-flash`
+  2. `enhanced_lumara_api.dart` — Excerpt 200→800 chars; `omitPersonalMemory` gated on `!includeHistory` (not mode); 5-point pattern injection for pattern-seeking queries
+  3. `lumara_reflection_settings_service.dart` — Added `_keyIncludeHistory` + `_keyReflectionAdvanced` keys + getter/setter pairs (shared between journal and chat)
+  4. `lumara_reflection_options.dart` — Added `includeHistory` field (default false) + toJson/fromJson
+  5. `journal_screen.dart` — 2-segment pill (Simple|Advanced) replaces 3-segment; `_buildIncludeHistoryToggle()` widget; `_computedReflectionMode` getter; all 4 `LumaraReflectionOptions` call sites updated
+  6. `lumara_chat_redesign_screen.dart` — 2-segment `_LumaraModePill` + toggle; BlocBuilder updated for `isAdvanced`/`includeHistory`
+  7. `lumara_assistant_cubit.dart` — `includeHistory` field + copyWith; `setIncludeHistory()`; `setLumaraChatMode()` persists `isAdvanced`; `effectiveMode` computation in all 3 options call sites
+
+### Internal mode mapping
+  | UI | History | LumaraChatMode sent | omitPersonalMemory |
+  |---|---|---|---|
+  | Simple | OFF | analytical | true |
+  | Simple | ON | personal | false |
+  | Advanced | OFF | deepAnalytical | true |
+  | Advanced | ON | personal | false |
+
+### Verification
+- `dart analyze` on all 7 target files — zero errors ✅
+- `grep "min(200"` → zero matches in enhanced_lumara_api.dart ✅
+- `grep "gemini-3-flash-preview"` → zero matches in api_config.dart ✅
+- Committed (`24c8a095`) and pushed to `wt/pattern-analysis-toggle` ✅
+
+### LUMARA dependency
+None — all changes are LUMARA-internal. No SwarmSpace code modified.
+
+---
+
 ## Session: 2026-05-22 — News Briefing "Keep Watching This" UI (§5.2)
 
 **Branch:** main (LUMARA repo)
