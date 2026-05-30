@@ -317,6 +317,20 @@ export const MCP_TOOLS: McpTool[] = [
     inputSchema: {
       type: "object",
       properties: {
+        attendees: {
+          type: "array",
+          description:
+            "Array of attendees (max 5). Each item: { name, company, title? }. Preferred over attendee_name/attendee_company.",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Full name of the attendee" },
+              company: { type: "string", description: "Company of the attendee" },
+              title: { type: "string", description: "Job title of the attendee" },
+            },
+            required: ["name"],
+          },
+        },
         attendee_name: {
           type: "string",
           description: "Full name of the meeting attendee",
@@ -342,7 +356,7 @@ export const MCP_TOOLS: McpTool[] = [
           description: "Location or video link for the meeting",
         },
       },
-      required: ["attendee_name", "attendee_company"],
+      required: [],
     },
     orchestratorRoute: "/meeting-prep",
   },

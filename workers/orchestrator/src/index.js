@@ -524,7 +524,7 @@ function parseAgentsFromText(text) {
   const agents = [];
   const blocks = text.split(/AGENT_ID:/i).slice(1);
   for (const block of blocks) {
-    const id     = (block.match(/^[\s]*([a-z_]+)/i) || [])[1]?.trim().toLowerCase() || `agent_${agents.length}`;
+    const id     = (block.match(/^[\s]*([\w]+)/i) || [])[1]?.trim().toLowerCase() || `agent_${agents.length}`;
     const name   = (block.match(/NAME:\s*(.+)/i)    || [])[1]?.trim() || id;
     const weight = parseFloat((block.match(/INFLUENCE_WEIGHT:\s*([\d.]+)/i) || [])[1] || '0.5');
     const desc   = (block.match(/DESCRIPTION:\s*(.+)/i) || [])[1]?.trim() || '';
