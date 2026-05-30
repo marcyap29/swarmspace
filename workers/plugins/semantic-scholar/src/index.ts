@@ -1,13 +1,12 @@
 interface Env {
   SWARMSPACE_INTERNAL_TOKEN: string;
-  SWARMSPACE_QUOTA: KVNamespace;
-  SEMANTIC_SCHOLAR_API_KEY?: string; // optional — add secret when key is obtained
+  SEMANTIC_SCHOLAR_API_KEY?: string;
 }
 
 const GRAPH_BASE = "https://api.semanticscholar.org/graph/v1";
 const RECS_BASE = "https://api.semanticscholar.org/recommendations/v1";
 const PAPER_FIELDS = "title,abstract,year,authors,citationCount,influentialCitationCount,isOpenAccess,url,externalIds";
-const RETRY_DELAYS = [1000, 2000, 4000];
+const RETRY_DELAYS = [1100, 2500, 6000];
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -30,15 +29,6 @@ export default {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || authHeader !== `Bearer ${env.SWARMSPACE_INTERNAL_TOKEN}`) {
       return cors(JSON.stringify({ error: "Unauthorized" }), 401);
-    }
-
-    const windowKey = `ratelimit:semantic-scholar:${fiveMinuteWindow()}`;
-    const windowCount = parseInt((await env.SWARMSPACE_QUOTA.get(windowKey)) || "0", 10);
-    if (windowCount >= 90) {
-      return cors(
-        JSON.stringify({ error: "Rate limit: quota window full. Retry in up to 5 minutes.", retry_after_seconds: 300 }),
-        429,
-      );
     }
 
     let body: {
@@ -93,6 +83,7 @@ export default {
 
     // --- Recommendations API: seed with top paper IDs ---
     let recPapers: NormalisedPaper[] = [];
+    if (include_recommendations && searchPapers.length >= 2) await new Promise((r) => setTimeout(r, 1100));
     if (include_recommendations && searchPapers.length >= 2) {
       const seedIds = searchPapers
         .slice(0, 3)
@@ -121,8 +112,6 @@ export default {
     const seen = new Set(searchPapers.map((p) => p.paper_id).filter(Boolean));
     const uniqueRecs = recPapers.filter((p) => !seen.has(p.paper_id));
     const combined = [...searchPapers, ...uniqueRecs];
-
-    await env.SWARMSPACE_QUOTA.put(windowKey, String(windowCount + 1), { expirationTtl: 300 });
 
     return cors(
       JSON.stringify({
@@ -191,8 +180,7 @@ function buildHeaders(env: Env): Record<string, string> {
     "User-Agent": "SwarmSpace/2.1 (orbital.ai; plugins@orbital.ai)",
     Accept: "application/json",
   };
-  // Uncomment when SEMANTIC_SCHOLAR_API_KEY secret is added:
-  // if (env.SEMANTIC_SCHOLAR_API_KEY) headers["x-api-key"] = env.SEMANTIC_SCHOLAR_API_KEY;
+  if (env.SEMANTIC_SCHOLAR_API_KEY) headers["x-api-key"] = env.SEMANTIC_SCHOLAR_API_KEY;
   return headers;
 }
 
@@ -211,10 +199,6 @@ async function fetchWithRetry(url: string, init: RequestInit): Promise<Response>
     }
   }
   return response;
-}
-
-function fiveMinuteWindow(): number {
-  return Math.floor(Date.now() / (5 * 60 * 1000));
 }
 
 function cors(body: string | null, status: number): Response {
