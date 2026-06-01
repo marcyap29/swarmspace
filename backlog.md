@@ -2948,9 +2948,18 @@ Now:     MCP tool health smoke test (deep_research live call — 10 min)
 Soon:    Anthropic Marketplace application (if audit clears)
          OpenAI App Directory application (if audit clears)
          Profile D added to outreach playbook
+         §23 Workflow Observability (WORKFLOW_LOGS KV + registry-health Worker)
+         §24 Visual Workflow Builder (n8n-like Block assembly UI)
+         §25 Engine Business Model & Positioning (three-layer model, royalty)
 
 When §16.1 ships:
          Seed Roles page with SMB-oriented labels
+
+When The Forge ships (product #1):
+         §24 Visual Builder specced via The Forge interview → build begins
+
+When §24 Builder ships (product #2):
+         Iterix built on SwarmSpace Blocks (product #3)
 
 Later:   Decision synthesis workflow design
 ```
@@ -2958,3 +2967,263 @@ Later:   Decision synthesis workflow design
 ---
 
 *SwarmSpace Full Backlog — Orbital AI — May 14, 2026*
+
+---
+
+## 24. VISUAL WORKFLOW BUILDER — Priority: HIGH *(added 2026-06-01)*
+
+### Context
+
+The SwarmSpace engine has the Block library and the workflow execution layer. What it's missing is the editor. Unreal Engine ships an editor. Unity ships an editor. The engine is what runs the product; the editor is how builders assemble it. This item is the SwarmSpace editor.
+
+The Visual Workflow Builder is a drag-and-drop canvas where agent engineers assemble Blocks into workflow chains, set execution order (sequential or parallel), wire outputs to inputs, test the chain, and publish it as a callable endpoint — without writing orchestration code.
+
+The distinction from n8n or Zapier is what the blocks are. n8n connects deterministic API calls. The SwarmSpace builder connects intelligent Blocks — each one can reason, synthesize, and adapt its output. The composition is visual. The execution is agentic.
+
+**Build order dependency:** This is product #2. The Forge is used to run the interview and produce the locked spec for this product before implementation begins.
+
+### What It Is
+
+A browser-based (or desktop) canvas for:
+- **Block palette** — sidebar listing all available Blocks with their capabilities, tier, latency class, and agent_guidance text
+- **Canvas** — drag Blocks onto a canvas; wire output ports to input ports
+- **Execution mode** — sequential (each Block's output feeds the next) or parallel (multiple Blocks run simultaneously, results merged before synthesis)
+- **gemini-flash synthesis** — optional final synthesis step; auto-appended when enabled
+- **Test panel** — run the assembled chain against a test query; view per-Block results and the synthesis output
+- **Publish** — generate a workflow manifest and callable endpoint URL; write to Firestore
+
+### What the Blocks Are (from live ROUTING_TABLE)
+
+22 Blocks currently available, spanning: web search, academic research, news, markets, geolocation, health research, developer tooling, fact verification, URL reading, vision/OCR, calendar. Full list and `agent_guidance` fields live in `workers/orchestrator/src/intent.js`.
+
+### Architecture Notes
+
+- Builder UI: separate from the orchestrator Worker; communicates via the orchestrator's `/dynamic` route for test execution
+- Block metadata for the palette: read from `ROUTING_TABLE` in `intent.js` (or a Firestore mirror of it)
+- Published workflows: stored as manifests in Firestore with a generated `workflow_steps[]` array
+- The orchestrator's existing `executeChain()` in `chain.js` is the runtime for published workflows — no new execution engine needed
+- Auth: Firebase ID token, same as all other SwarmSpace surfaces
+
+### Acceptance Tests
+
+- [ ] A user can drag `brave-search` + `semantic-scholar` + `gemini-flash` onto the canvas, wire them in order, and run a test query — result shows per-Block output and a synthesis
+- [ ] Parallel execution: user marks two Blocks as parallel; both fire simultaneously; results merge before the synthesis Block
+- [ ] Published workflow generates a callable endpoint; a POST to that endpoint returns the same result as the builder test
+- [ ] Block palette shows tier badges (free / standard / premium); premium Blocks are greyed out for Free-tier users
+- [ ] `gemini-flash` is always offered as a final synthesis step and always appears last when included
+
+### Definition of Done
+
+Complete when a user can assemble, test, and publish a 3-Block workflow chain via the visual builder and call it via the published endpoint.
+
+### Out of Scope
+
+- Version control for workflow manifests (future)
+- Multi-user / collaborative editing (future)
+- Custom Block authoring in the builder (submit-plugin.html handles that)
+
+---
+
+## 25. ENGINE BUSINESS MODEL & POSITIONING — Priority: HIGH *(added 2026-06-01)*
+
+### Context
+
+SwarmSpace's business model and positioning have been fully specified in the Obsidian strategy docs (v6.0 as of 2026-06-01). This item tracks the work needed to propagate that positioning into the live product surfaces: homepage, developer guide, pricing page, and internal docs.
+
+### The Model (from Business Model v6.0)
+
+Three independent revenue layers:
+
+**Layer 1 — Block Access (end users)**
+- Free: 20 Block calls/day across all free-tier Blocks
+- SwarmSpace Pro: $15/month · 500 calls/day · all Blocks including premium
+- LUMARA Premium: $20/month · everything in Pro + CHRONICLE personalisation
+
+**Layer 2 — First-Party Products (enterprise/professional)**
+- The Forge: $50/seat/mo (Professional) · $150/seat/mo (Enterprise) · $30/seat/mo (University, min 10)
+- Iterix: $50/seat/mo (Professional) · $150/seat/mo (Enterprise) · $30/seat/mo (University, min 10)
+
+**Layer 3 — Engine Royalty (third-party developers)**
+- Free to build until $10K MRR
+- 10% royalty on revenue above $10K MRR (up to $50K)
+- 15% royalty on revenue above $50K MRR
+- Founding Developers: permanent 85% revenue share on Block transactions
+- Standard Developers: 80% revenue share on Block transactions
+- 2% royalty discount for products distributed through the SwarmSpace marketplace
+
+### The Positioning (from Engine Positioning Brief v2.0)
+
+> "SwarmSpace is the engine that powers AI agent products. Developers build on it. Orbital AI builds on it. The engine is the business."
+
+> "Every AI agent needs to do things — search the web, pull academic papers, scan competitors, verify facts, analyze markets, check code repositories. SwarmSpace provides those capabilities as composable Blocks. Developers assemble Blocks into workflows. Workflows become products. The engine handles everything underneath: execution, sandboxing, credential injection, trust verification, context minimization, and discovery. The developer ships the product. SwarmSpace handles what runs it."
+
+The Unreal Engine analogy is the anchor: Unreal doesn't make games; Epic does, and so do thousands of studios. SwarmSpace doesn't make agent products; Orbital AI does (The Forge, Iterix), and so will third-party developers. The engine is the durable value.
+
+### Implementation Tasks
+
+**Homepage copy update** (tagged NOW in SMB Intelligence Layer section above):
+- Replace current positioning copy with the engine model framing
+- Add "Built on SwarmSpace" section featuring The Forge + Iterix
+- Add Block library count (23 Blocks, 12 pre-built workflow chains)
+- Add Founding Developer Programme CTA
+
+**Developer Guide update:**
+- Add the three-layer revenue model table to the economics section
+- Add engine royalty threshold table
+- Add "first-party products as proof points" section
+
+**Pricing page:**
+- Implement three-tier pricing table (Free / Pro / LUMARA Premium)
+- Add first-party product pricing (The Forge / Iterix seats)
+- Add developer tier comparison table (Community / Verified / Founding Developer)
+
+**Internal docs:**
+- `SwarmSpaceArchitecture.md` — update to reflect engine model framing
+- `DEVELOPER_GUIDE.md` — add revenue model section
+
+### Source Documents
+
+- `/Users/mymac/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Sync/Business/_coding_backlog/SwarmSpace /SwarmSpace — Business Model v6.0.md`
+- `/Users/mymac/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Sync/Business/_coding_backlog/SwarmSpace /SwarmSpace — Engine Positioning Brief v2.0.md`
+- `/Users/mymac/Library/Mobile Documents/iCloud~md~obsidian/Documents/Obsidian Sync/Business/_coding_backlog/SwarmSpace /SwarmSpace Marketing One Pager v2.0.md`
+
+### Definition of Done
+
+Complete when homepage, developer guide, and pricing page all reflect the engine model positioning and three-layer business model from v6.0.
+
+---
+
+## 23. WORKFLOW OBSERVABILITY — Priority: HIGH *(added 2026-06-01)*
+
+### Context
+
+The orchestrator is currently fire-and-forget — every workflow call returns its result over HTTP and the Worker dies with no record kept. The agent-worker's `ExecutionResult` struct already has the right shape (tools_called, tools_succeeded, tools_failed, step durations) but nothing persists it. Without call logs, there is no way to know which tools fail most often, which routes are slowest, or which plugins need attention before they become user-visible problems.
+
+This item adds two pieces: a passive log write to a KV namespace on every orchestrator call, and a daily cron Worker that reads those logs and emits a health summary. Together they give SwarmSpace the observability signal needed to drive plugin ranking, prioritise debugging, and feed a self-improvement loop for the agent layer.
+
+No query text, user IDs, or synthesis content is ever written. The log is purely operational telemetry.
+
+### Part 1 — WORKFLOW_LOGS KV write in the orchestrator
+
+**Files:** `workers/orchestrator/src/index.js`, `workers/orchestrator/wrangler.toml`
+
+**Behaviour:** After the orchestrator returns the HTTP response but before the Worker exits, fire a fire-and-forget KV write using `ctx.waitUntil()`. The write must not block the response. Entry TTL: 30 days.
+
+**Log entry shape:**
+
+```typescript
+{
+  id: crypto.randomUUID(),         // unique entry id
+  timestamp: Date.now(),           // unix ms
+  route: string,                   // e.g. "/competitor"
+  tools_called: number,
+  tools_succeeded: number,
+  tools_failed: number,
+  total_duration_ms: number,
+  step_statuses: {
+    tool: string,
+    status: string,                // "success" | "error" | "skipped"
+    duration_ms: number
+  }[],
+  query_length: number,            // character count only — NOT the query text
+  had_synthesis: boolean
+}
+```
+
+**Fields explicitly NOT logged — no exceptions:**
+- Query text or any substring of it
+- User ID, Firebase UID, or any identifier
+- Authorization token or API key
+- IP address or request headers
+- Any content from the synthesis output
+- Any content from plugin response payloads
+
+**KV key format:** `log:{timestamp}:{id}` — ordering by timestamp prefix enables range scans without a secondary index.
+
+**`wrangler.toml` change (orchestrator):**
+
+```toml
+[[kv_namespaces]]
+binding = "WORKFLOW_LOGS"
+id = "<provision with: wrangler kv:namespace create WORKFLOW_LOGS>"
+```
+
+**Implementation note:** The orchestrator's `index.js` currently has no `ctx` parameter in the `fetch(request, env)` handler signature. Add `ctx` as the third argument and use `ctx.waitUntil(writeLog(...))`. The log write fires after `return corsResponse(...)` — the response is already sent.
+
+**Acceptance tests:**
+- [ ] POST `/competitor` with valid token → KV contains exactly one new entry with `route: "/competitor"` and correct tool counts
+- [ ] KV entry contains no `query`, `uid`, `token`, or `synthesis` fields
+- [ ] Entry TTL is set to `60 * 60 * 24 * 30` seconds (30 days)
+- [ ] If WORKFLOW_LOGS binding is missing, the log write fails silently and the response is unaffected
+- [ ] `ctx.waitUntil()` is used — response latency is not increased by the KV write
+
+---
+
+### Part 2 — `registry-health` Cron Worker
+
+**New file:** `workers/registry-health/` (new Worker, own `wrangler.toml`)
+
+**Trigger:** Cron, daily at 02:00 UTC
+
+```toml
+[triggers]
+crons = ["0 2 * * *"]
+```
+
+**Bindings needed:**
+- `WORKFLOW_LOGS` KV (read) — same namespace as the orchestrator, shared binding
+- `REGISTRY_HEALTH` KV (write) — new namespace for the health summary output
+
+**Behaviour:** On each cron fire:
+1. Read all entries from `WORKFLOW_LOGS` written in the last 24 hours (key prefix scan on `log:{timestamp}` where timestamp ≥ now − 86400000)
+2. Group entries by `route`
+3. For each route, calculate:
+   - Average `total_duration_ms`
+   - Failure rate per tool: `tools_failed / tools_called` (across all entries for that route)
+   - Whether `tools_failed > 0` appeared more than 3 times in the 24-hour window (flag as `high_failure_route: true`)
+4. Write the result JSON to `REGISTRY_HEALTH` KV under the key `REGISTRY_HEALTH_LATEST`
+
+**Output shape written to `REGISTRY_HEALTH_LATEST`:**
+
+```typescript
+{
+  generated_at: number,           // unix ms
+  window_hours: 24,
+  total_calls: number,
+  routes: {
+    [route: string]: {
+      calls: number,
+      avg_duration_ms: number,
+      high_failure_route: boolean,  // true if tools_failed > 0 in > 3 calls
+      tool_failure_rates: {
+        [tool: string]: number      // 0.0–1.0
+      }
+    }
+  }
+}
+```
+
+**Acceptance tests:**
+- [ ] Cron fires at 02:00 UTC — `REGISTRY_HEALTH_LATEST` is updated
+- [ ] A route with 0 calls in the window appears in output with `calls: 0`
+- [ ] A route where `tools_failed > 0` in exactly 3 calls → `high_failure_route: false`; in 4 calls → `high_failure_route: true`
+- [ ] `tool_failure_rates` keys match the `step_statuses[].tool` values from WORKFLOW_LOGS entries, not hardcoded strings
+- [ ] Output does not contain any log entry fields that were not supposed to be logged (query text, uid, etc.)
+
+---
+
+### Definition of Done
+
+Complete when:
+1. Every orchestrator workflow call writes a WORKFLOW_LOGS entry (verified via KV list)
+2. The entry shape matches the spec exactly — no extra fields, no missing fields
+3. Response latency is unaffected (measured: p99 before and after should be within noise)
+4. `registry-health` Worker deploys, cron fires, `REGISTRY_HEALTH_LATEST` is readable from KV
+5. `dart analyze` equivalent: `wrangler deploy --dry-run` on both workers exits clean
+
+### Out of Scope
+
+- Exposing `REGISTRY_HEALTH_LATEST` via an HTTP endpoint (read it directly from KV for now)
+- Per-user call attribution or quota enforcement (that is §2.3 / swarmspaceRouter's job)
+- Alerting or PagerDuty integration (log the data first, alerting is a follow-on)
+- Backfilling historical data (TTL 30 days begins from deploy date)
