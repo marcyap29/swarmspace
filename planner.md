@@ -36,18 +36,3 @@ OAuth 2.1 + DCR + Streamable HTTP compliance is **complete and live** (`wrangler
 - [x] Dynamic AI routing pipeline (intent.js + rank.js + chain.js) — committed `c6ab31d`, deployed `4c628257` ✅
 - [ ] Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
 
----
-
-## Backlog additions — 2026-06-01
-
-Three new items added to backlog.md this session. No code yet.
-
-- **§23 Workflow Observability** — WORKFLOW_LOGS KV fire-and-forget write after every orchestrator call + `registry-health` cron Worker (daily 2am UTC). Enables self-improvement loop for agents.
-- **§24 Visual Workflow Builder** — drag-and-drop Block assembly canvas (n8n-like but agentic). SwarmSpace product #2 in build order. Specced via The Forge interview first.
-- **§25 Engine Business Model & Positioning** — three-layer revenue model (Block access / first-party products / engine royalty) + Unreal Engine positioning from Business Model v6.0 + Engine Positioning Brief v2.0. Homepage, developer guide, and pricing page updates needed.
-
-**Build order locked:**
-```
-The Forge (#1) → SwarmSpace Visual Builder (#2) → Iterix (#3)
-```
-The Forge interviews + specs the Builder. The Builder ships SwarmSpace Blocks to build Iterix.

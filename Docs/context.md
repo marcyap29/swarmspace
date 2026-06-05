@@ -1,3 +1,33 @@
+## Session: 2026-06-04 — Research Pressure Test + LUMARA Integration
+
+**SwarmSpace commit:** `6caf896` (merged from `wt/brave-expand`)
+**LUMARA commit:** pending (2 files — see below)
+
+### What was done
+- **Research Pressure Test feature** implemented per spec v2.0.
+- **8 research routes now self-verify**: `deep_research`, `competitor_analysis`, `market_scan`, `tech_scout`, `academic_research`, `news_brief`, `fact_check`, `health_research` each call `runVerificationPass()` after synthesising. Uses sources already gathered — 1 extra Gemini call per route. Returns `pressure_test: { overall_confidence, confidence_rationale, claims: [{assertion, type, confidence, notes}], claims_checked, gaps, report }`.
+- **Standalone `/pressure-test` route** added: 3-phase cross-tool verification (claim extraction → `VERIFICATION_PLUGINS` routing → synthesis). Accepts `{ topic, source_tool, research_output }`. Outputs CLAIM VERIFICATION LOG in structured JSON + pre-rendered markdown.
+- **`research_pressure_test` MCP tool** added in `tools.ts` — exposed to Claude and ChatGPT.
+- **Merged** `wt/brave-expand` → `main` (`6caf896`), pushed to GitHub. Worktree cleaned up.
+- **LUMARA integration**: DeepSeek4 Pro executed the 2-file integration spec. `swarmspace_orchestrator_service.dart` + `swarmspace_service.dart` updated — `pressureTest` field on `OrchestratorResult`, `'pressure-test'` in `v1RouteSet`, raw `pressureTest()` method mirroring `decisionSimulation()` pattern. Reviewed and graded **A (92%)**.
+
+### Files changed (SwarmSpace)
+- `workers/orchestrator/src/index.js` — 8 route modifications + new functions block + `/pressure-test` route
+- `workers/mcp-server/src/tools.ts` — `research_pressure_test` tool added
+
+### Files changed (LUMARA)
+- `lib/shared/swarmspace/swarmspace_orchestrator_service.dart` — `pressureTest` field, `v1RouteSet` entry, `_post()` extraction, `_routeDisplayName()` case, raw `pressureTest()` method
+- `lib/shared/swarmspace/swarmspace_service.dart` — `pressureTest` added to `callOrchestrator()` return map
+
+### Verification
+- SwarmSpace: `node --check` ✅, `tsc --noEmit` zero new errors ✅
+- LUMARA: `dart analyze` on both target files — no issues ✅
+
+### LUMARA dependency
+Done — `pressureTest()` method and `OrchestratorResult.pressureTest` field available in LUMARA client.
+
+---
+
 ## Session: 2026-05-22 — Orchestration: pattern-analysis-toggle (LUMARA repo)
 
 **Branch:** wt/pattern-analysis-toggle (LUMARA repo — unmerged)

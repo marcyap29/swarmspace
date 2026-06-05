@@ -96,3 +96,6 @@ export { onSubmissionStatusChange };
 
 import { generateMcpApiKey, revokeMcpApiKey } from "./functions/swarmspaceMcpKeys";
 export { generateMcpApiKey, revokeMcpApiKey };
+
+import { anonymizeActivityLogs } from "./functions/anonymizeActivityLogs";
+export { anonymizeActivityLogs };

@@ -21,75 +21,72 @@
     a { color:var(--accent2); text-decoration:none; }
     a:hover { text-decoration:underline; }
 
-```
-nav {
-  position:sticky; top:0; z-index:100;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:16px 40px;
-  background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border);
-}
-.nav-logo { font-size:17px; font-weight:700; color:var(--text); }
-.nav-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
-.btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px; font-size:13px; color:var(--muted); }
-.btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
-.btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
-.btn-primary:hover { opacity:.9; text-decoration:none; }
+    nav {
+      position:sticky; top:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 40px;
+      background:rgba(10,10,15,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { font-size:17px; font-weight:700; color:var(--text); }
+    .nav-actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; }
+    .btn-ghost { padding:8px 16px; border:1px solid var(--border2); border-radius:8px; font-size:13px; color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--text); text-decoration:none; }
+    .btn-primary { padding:8px 18px; background:var(--accent); border-radius:8px; font-size:13px; font-weight:600; color:#fff; }
+    .btn-primary:hover { opacity:.9; text-decoration:none; }
 
-.page { max-width:900px; margin:0 auto; padding:56px 40px 80px; }
-.section-label {
-  display:inline-flex; align-items:center; gap:8px;
-  font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
-  text-transform:uppercase; background:rgba(91,91,214,.08);
-  border:1px solid rgba(91,91,214,.2); border-radius:20px;
-  padding:4px 12px; margin-bottom:20px;
-}
-h1 { font-size:clamp(28px,4.5vw,44px); font-weight:800; letter-spacing:-1px; line-height:1.12; margin-bottom:14px; }
-.subtitle { font-size:17px; color:var(--muted); max-width:720px; margin-bottom:40px; line-height:1.6; }
-h2 { font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:48px 0 16px; }
-h2:first-of-type { margin-top:36px; }
-.lead { font-size:15px; color:var(--muted); margin-bottom:16px; max-width:720px; }
-p { font-size:14px; color:var(--muted); margin-bottom:14px; max-width:720px; }
-ul { margin:12px 0 18px 20px; color:var(--muted); font-size:14px; }
-li { margin-bottom:8px; }
-li strong { color:var(--text); font-weight:600; }
+    .page { max-width:900px; margin:0 auto; padding:56px 40px 80px; }
+    .section-label {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent);
+      text-transform:uppercase; background:rgba(91,91,214,.08);
+      border:1px solid rgba(91,91,214,.2); border-radius:20px;
+      padding:4px 12px; margin-bottom:20px;
+    }
+    h1 { font-size:clamp(28px,4.5vw,44px); font-weight:800; letter-spacing:-1px; line-height:1.12; margin-bottom:14px; }
+    .subtitle { font-size:17px; color:var(--muted); max-width:720px; margin-bottom:40px; line-height:1.6; }
+    h2 { font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:48px 0 16px; }
+    h2:first-of-type { margin-top:36px; }
+    .lead { font-size:15px; color:var(--muted); margin-bottom:16px; max-width:720px; }
+    p { font-size:14px; color:var(--muted); margin-bottom:14px; max-width:720px; }
+    ul { margin:12px 0 18px 20px; color:var(--muted); font-size:14px; }
+    li { margin-bottom:8px; }
+    li strong { color:var(--text); font-weight:600; }
 
-.table-wrap { overflow-x:auto; margin:20px 0 28px; border:1px solid var(--border); border-radius:12px; }
-table { width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
-th { text-align:left; font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface); }
-td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--muted); vertical-align:top; }
-tr:last-child td { border-bottom:none; }
-td:first-child { color:var(--text); font-weight:600; width:34%; }
-code { font-family:var(--mono); font-size:12px; color:var(--accent2); }
+    .table-wrap { overflow-x:auto; margin:20px 0 28px; border:1px solid var(--border); border-radius:12px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
+    th { text-align:left; font-size:11px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface); }
+    td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--muted); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    td:first-child { color:var(--text); font-weight:600; width:34%; }
+    code { font-family:var(--mono); font-size:12px; color:var(--accent2); }
 
-.limitations {
-  margin-top:24px; padding:22px 24px;
-  border:1px solid rgba(251,146,60,.35);
-  border-radius:14px;
-  background:rgba(251,146,60,.06);
-}
-.limitations h3 { font-size:15px; font-weight:700; color:var(--orange); margin-bottom:12px; }
-.limitations p, .limitations li { font-size:13px; color:var(--muted); }
-.limitations ul { margin-bottom:0; }
+    .limitations {
+      margin-top:24px; padding:22px 24px;
+      border:1px solid rgba(251,146,60,.35);
+      border-radius:14px;
+      background:rgba(251,146,60,.06);
+    }
+    .limitations h3 { font-size:15px; font-weight:700; color:var(--orange); margin-bottom:12px; }
+    .limitations p, .limitations li { font-size:13px; color:var(--muted); }
+    .limitations ul { margin-bottom:0; }
 
-.refs { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-top:28px; }
-.refs h3 { font-size:14px; font-weight:700; margin-bottom:14px; }
-.refs ul { list-style:none; margin:0; padding:0; }
-.refs li { margin-bottom:10px; font-size:13px; color:var(--muted); }
-.refs li:last-child { margin-bottom:0; }
+    .refs { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-top:28px; }
+    .refs h3 { font-size:14px; font-weight:700; margin-bottom:14px; }
+    .refs ul { list-style:none; margin:0; padding:0; }
+    .refs li { margin-bottom:10px; font-size:13px; color:var(--muted); }
+    .refs li:last-child { margin-bottom:0; }
 
-footer { border-top:1px solid var(--border); padding:36px 40px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; max-width:1100px; margin:0 auto; }
-footer p { font-size:13px; color:var(--dim); }
-.footer-links { display:flex; flex-wrap:wrap; gap:20px; }
-.footer-links a { font-size:13px; color:var(--dim); }
+    footer { border-top:1px solid var(--border); padding:36px 40px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; max-width:1100px; margin:0 auto; }
+    footer p { font-size:13px; color:var(--dim); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:20px; }
+    .footer-links a { font-size:13px; color:var(--dim); }
 
-@media(max-width:640px){
-  nav{padding:14px 20px;}
-  .page{padding:40px 20px 64px;}
-  footer{flex-direction:column;align-items:flex-start;padding:28px 20px;}
-}
-```
-
+    @media(max-width:640px){
+      nav{padding:14px 20px;}
+      .page{padding:40px 20px 64px;}
+      footer{flex-direction:column;align-items:flex-start;padding:28px 20px;}
+    }
   </style>
 </head>
 <body>
@@ -108,7 +105,7 @@ footer p { font-size:13px; color:var(--dim); }
 
   <div class="section-label">Privacy</div>
   <h1>Privacy Policy</h1>
-  <p class="subtitle">What SwarmSpace collects, what it does not collect, and how data is handled when plugins execute. Last updated April 2026.</p>
+  <p class="subtitle">What SwarmSpace collects, what it does not collect, and how data is handled when plugins execute. Last updated June 2026.</p>
 
   <h2>1. What SwarmSpace is</h2>
   <p>SwarmSpace is a plugin marketplace for personal AI agents — a discovery, trust, and execution layer between AI agents and third-party capability providers. Most users interact with SwarmSpace indirectly, through LUMARA or another AI companion, rather than directly. This policy explains data handling across both surfaces.</p>
@@ -119,24 +116,28 @@ footer p { font-size:13px; color:var(--dim); }
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Category</th><th>What we collect</th></tr>
+        <tr><th>Category</th><th>What we collect</th><th>Purpose</th></tr>
       </thead>
       <tbody>
         <tr>
           <td>Account data</td>
           <td>Email address, authentication method (email/password, Google, or GitHub OAuth), account creation timestamp, subscription tier.</td>
+          <td>Account identity, authentication, billing tier enforcement.</td>
         </tr>
         <tr>
           <td>Usage data</td>
           <td>Plugin slug and call timestamp, credits consumed per call, daily call count (reset midnight UTC), tier-level quota tracking. We log that a call happened — not what was said.</td>
+          <td>Quota enforcement, billing reconciliation, and aggregate product analytics (e.g. which tools are used most). Query content is never logged. Your user ID is stripped from activity logs after 90 days by an automated daily process; the anonymized record (tool name, tier, result, timestamp) is retained for product improvement.</td>
         </tr>
         <tr>
           <td>Developer data</td>
           <td>Submitted manifest fields (name, description, endpoint URL, trust tier, pricing, tags), submission timestamp and review status, developer UID linked to your account.</td>
+          <td>Plugin review, listing, and catalogue management.</td>
         </tr>
         <tr>
           <td>API keys</td>
           <td>Each account is issued an <code>ss_</code> prefixed API key on signup. Keys are stored as a lookup reference, not in plaintext alongside your account document. Regeneration is atomic — the old key is invalidated in the same operation that creates the new one.</td>
+          <td>Authentication for direct API and MCP access.</td>
         </tr>
       </tbody>
     </table>
@@ -146,7 +147,9 @@ footer p { font-size:13px; color:var(--dim); }
   <ul>
     <li><strong>Personal context from your AI companion.</strong> LUMARA's CHRONICLE memory never passes to SwarmSpace. Interest tags derived from CHRONICLE are hashed client-side before any network call. SwarmSpace receives tag hashes, not raw content.</li>
     <li><strong>Plugin input or output content.</strong> SwarmSpace routes calls and enforces quotas. It does not read or store what you asked or what a plugin returned.</li>
+    <li><strong>MCP query text.</strong> When an AI agent (Claude, ChatGPT, or any MCP client) calls a SwarmSpace tool, we receive your OAuth token and the tool argument — a plain-text query string. That query string is processed and returned to the caller. It is not logged or stored.</li>
     <li><strong>Behavioral profiles.</strong> We do not build advertising profiles or sell data to third parties.</li>
+    <li><strong>Tracking cookies or analytics.</strong> SwarmSpace sets no tracking cookies and runs no third-party analytics SDK (no Google Analytics, Mixpanel, Segment, or equivalent). See §8 for full detail on browser storage.</li>
   </ul>
 
   <h2>4. How plugin execution works</h2>
@@ -157,29 +160,105 @@ footer p { font-size:13px; color:var(--dim); }
     <li><strong>Network isolation.</strong> Each plugin call runs in a V8 isolate sandbox. Outbound network access is restricted to domains declared in the plugin manifest (<code>network_domains</code>). All other destinations are blocked at the platform layer.</li>
   </ul>
 
-  <h2>5. Third-party plugins</h2>
+  <h2>5. MCP tool calls (Claude, ChatGPT, and other AI agents)</h2>
+  <p>SwarmSpace exposes its research and workflow tools via the Model Context Protocol (MCP). When an AI agent calls a SwarmSpace tool:</p>
+  <ul>
+    <li><strong>What we receive:</strong> your OAuth Bearer token (used to identify your account and check your quota) and the tool argument — a single plain-text query string.</li>
+    <li><strong>What we do not receive:</strong> the AI's conversation history, system prompt, or any other context from the calling application. The MCP protocol boundary means SwarmSpace only sees the structured tool call, not the session around it.</li>
+    <li><strong>What we log:</strong> tool name, timestamp, your user ID, tier, and result status (success or error). The query text itself is not stored.</li>
+    <li><strong>How results are returned:</strong> the tool result (research synthesis, analysis output, etc.) is returned directly to the calling AI agent. SwarmSpace does not retain a copy of the result after the call completes.</li>
+  </ul>
+
+  <h2>6. Third-party plugins</h2>
   <p>SwarmSpace hosts the index and trust layer. Plugin execution calls the developer's endpoint. SwarmSpace does not audit third-party APIs or certify their upstream data handling. The Developer Agreement each plugin developer accepts covers data handling obligations, prompt injection liability, and third-party API terms compliance.</p>
   <p>If a plugin receives user context (declared via <code>privacy_data_required</code>), that context is subject to the developer's own privacy practices in addition to the constraints SwarmSpace enforces structurally. Review a plugin's manifest and Swarm page before authorizing it for sensitive use cases.</p>
 
-  <h2>6. Data retention</h2>
+  <h2>7. Data recipients</h2>
+  <p class="lead">The following third-party services process data as part of operating SwarmSpace. No data is sold or shared beyond what is described here.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Service</th><th>What they receive</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Firebase (Google)</td>
+          <td>Email address, authentication credentials, account data, usage counters, plugin activity logs.</td>
+          <td>Authentication, database, and Cloud Functions runtime.</td>
+        </tr>
+        <tr>
+          <td>Stripe</td>
+          <td>Email address, payment card details (processed directly by Stripe — never stored by SwarmSpace), subscription tier.</td>
+          <td>Payment processing and subscription management.</td>
+        </tr>
+        <tr>
+          <td>Cloudflare</td>
+          <td>Request metadata (IP, headers) for traffic routing; OAuth token data in KV storage; plugin execution workloads.</td>
+          <td>Worker runtime, MCP server, plugin sandbox execution.</td>
+        </tr>
+        <tr>
+          <td>Google Gemini API</td>
+          <td>Query content for AI processing when Gemini-powered tools or the SwarmSpace discovery agent are invoked.</td>
+          <td>LLM inference for platform-level AI features.</td>
+        </tr>
+        <tr>
+          <td>Groq</td>
+          <td>Query content for AI processing when Groq-powered tools are invoked (using a SwarmSpace project-level key, not your key).</td>
+          <td>LLM inference for platform-level AI features.</td>
+        </tr>
+        <tr>
+          <td>NewsData.io</td>
+          <td>Search query terms for news retrieval. No personal account data is sent.</td>
+          <td>News briefing content sourcing.</td>
+        </tr>
+        <tr>
+          <td>User-configured LLM providers (OpenAI, Anthropic, Cloudflare Workers AI, and others)</td>
+          <td>If you configure a bring-your-own API key, your queries are routed to the provider you selected under your own key. SwarmSpace acts as a pass-through; the provider's privacy policy governs that data.</td>
+          <td>User-selected LLM routing.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>8. Cookies and local storage</h2>
+  <p>SwarmSpace sets <strong>no tracking cookies</strong> and loads <strong>no third-party analytics scripts</strong>.</p>
+  <ul>
+    <li><strong>Firebase Auth session.</strong> Firebase Auth persists your login session in browser IndexedDB (not a cookie). This is required to keep you signed in across page loads. It contains no personal data beyond an opaque session token tied to your Firebase UID.</li>
+    <li><strong>Session storage.</strong> The site uses <code>sessionStorage</code> for a single purpose: preserving a pending workflow chain parameter during the signup redirect flow (<code>pendingChain</code>). This is cleared immediately after use and never sent to any server.</li>
+    <li><strong>No persistent cookies.</strong> SwarmSpace sets no <code>document.cookie</code> values on your browser.</li>
+  </ul>
+
+  <h2>9. Email communications</h2>
+  <p>SwarmSpace itself sends no email. You do not need to accept marketing email or transactional email from Orbital AI to use the platform.</p>
+  <ul>
+    <li><strong>Firebase Auth system emails.</strong> Firebase sends account-related system emails on its own infrastructure: email verification on signup and password reset links. These come from Firebase, not from Orbital AI servers.</li>
+    <li><strong>Stripe billing emails.</strong> Stripe sends payment receipts, subscription confirmations, and billing notices directly from their platform when you subscribe to a paid plan.</li>
+    <li><strong>Account deletion.</strong> To request account deletion, email <a href="mailto:marcyap@orbitalai.net">marcyap@orbitalai.net</a>. This is the only context in which you would email us directly.</li>
+  </ul>
+
+  <h2>10. Data retention</h2>
   <ul>
     <li><strong>Account and usage data</strong> — retained while your account is active.</li>
-    <li><strong>Call logs</strong> — retained for 90 days for quota and billing reconciliation, then deleted.</li>
+    <li><strong>Plugin activity logs</strong> — your user ID is stripped after 90 days by a daily automated process (<code>anonymizeActivityLogs</code>, runs 02:00 UTC). The anonymized record — tool name, tier, result status, and timestamp — is retained indefinitely for aggregate product analytics. Query content is never stored at any point.</li>
+    <li><strong>Daily usage counters</strong> — deleted after 90 days. These are quota-tracking records only and have no analytics value once the window closes.</li>
     <li><strong>Developer submissions</strong> — retained while the plugin is listed. Removed within 30 days of de-listing if requested.</li>
     <li><strong>API keys</strong> — the current key is retained. Previous keys are not stored after regeneration.</li>
+    <li><strong>MCP OAuth tokens</strong> — access tokens expire after 30 days. Refresh tokens are stored as hashed values in Cloudflare KV and rotated on each refresh.</li>
   </ul>
 
-  <h2>7. Your rights</h2>
+  <h2>11. Your rights</h2>
   <ul>
     <li><strong>Export</strong> your account data by contacting <a href="mailto:marcyap@orbitalai.net">marcyap@orbitalai.net</a>.</li>
-    <li><strong>Delete your account.</strong> Account deletion removes your developer profile, API key, and usage history. Submitted plugins are de-listed within 7 days.</li>
+    <li><strong>Delete your account.</strong> Email <a href="mailto:marcyap@orbitalai.net">marcyap@orbitalai.net</a> with the subject line "Account deletion request." We will complete the deletion — removing your account document, API key, usage history, and developer profile — within 14 days. Submitted plugins are de-listed as part of the same process. There is no self-service deletion UI at this time.</li>
     <li><strong>Regenerate your API key</strong> at any time from the dashboard. The previous key is immediately invalidated.</li>
+    <li><strong>Revoke MCP access.</strong> Regenerating your API key from the dashboard also invalidates any MCP OAuth tokens issued under your account.</li>
   </ul>
 
-  <h2>8. Security</h2>
+  <h2>12. Security</h2>
   <p>SwarmSpace uses Firebase Auth for authentication. Firestore stores account and usage data. Cloudflare Workers handle plugin execution with V8 isolate sandboxing. Stripe handles payment processing under Stripe's own privacy and security policies. We do not store payment card details. For the full security architecture, see the <a href="/security.html">Security &amp; Trust Architecture</a> page.</p>
 
-  <h2>9. Changes to this policy</h2>
+  <h2>13. Changes to this policy</h2>
   <p>Material changes will be noted at the top of this document with an updated date. Continued use of SwarmSpace after a material change constitutes acceptance of the revised policy.</p>
 
   <div class="refs">

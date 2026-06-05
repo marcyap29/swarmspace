@@ -139,6 +139,11 @@ PROMPT RECEIVED
 │           resolved items to Archive section.                    │
 │  Read:   DOCS/Startup Onboard/Coordinate_LUMARA.md for LUMARA's │
 │           entries — never edit that file.                       │
+│  Write: DOCS/Coding Lessons/FOR_MARC_[topic].md                 │
+│         → after any significant task (investigation, bug,       │
+│           feature, migration). 9-step teaching format.          │
+│         → coffee-chat tone, not textbook voice.                 │
+│         → README at DOCS/Coding Lessons/README.md               │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
