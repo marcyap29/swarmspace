@@ -304,6 +304,38 @@ export const MCP_TOOLS: McpTool[] = [
     orchestratorRoute: "/content-brief",
   },
   {
+    name: "research_pressure_test",
+    description:
+      "Cross-verifies a prior research output by routing its key claims to appropriate SwarmSpace verification tools. Returns VERIFIED/PLAUSIBLE/DISPUTED/UNVERIFIABLE/OVERSTATED confidence ratings per claim, an overall confidence score, and a full annotated report. Use after deep_research, competitor_analysis, market_scan, or tech_scout when the output will inform a decision, spec, or pitch.",
+    annotations: {
+      title: "Research Pressure Test",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: {
+          type: "string",
+          description: "One-line description of the original research topic",
+        },
+        source_tool: {
+          type: "string",
+          description:
+            "SwarmSpace tool that produced the research (e.g. deep_research, competitor_analysis, market_scan)",
+        },
+        research_output: {
+          type: "string",
+          description: "Full text of the research output to pressure-test",
+        },
+      },
+      required: ["topic", "research_output"],
+    },
+    orchestratorRoute: "/pressure-test",
+  },
+  {
     name: "meeting_prep",
     description:
       "Pre-meeting intelligence brief with attendee background and talking points from web research. Use before a meeting to prepare informed talking points.",

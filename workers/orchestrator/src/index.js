@@ -77,6 +77,7 @@ export default {
       '/meeting-prep':   runMeetingPrepWorkflow,
       '/decision-simulation': runDecisionSimulationWorkflow,
       '/dynamic':        runDynamicWorkflow,
+      '/pressure-test':  runPressureTestWorkflow,
     };
 
     const handler = routes[url.pathname];
@@ -128,8 +129,10 @@ async function runResearchWorkflow(ctx) {
   const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Synthesize a research brief from these sources on "${q}":\n\nWeb results: ${JSON.stringify(results['brave-search'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nAcademic papers: ${JSON.stringify(results['semantic-scholar'])}\n\nProvide a structured summary with key findings, sources cited, and gaps in available information.`,
   });
-
-  return { sources: results, synthesis: synthesisResult?.text || synthesisResult || '' };
+  const synthesis = synthesisResult?.text || synthesisResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, synthesis, results); } catch (_) {}
+  return { sources: results, synthesis, pressure_test: pressureTest };
 }
 
 // 2. /competitor — Competitive analysis: web search + news + synthesis
@@ -144,8 +147,10 @@ async function runCompetitorWorkflow(ctx) {
   const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a competitive intelligence brief for "${q}":\n\nWeb search: ${JSON.stringify(results['brave-search'])}\n\nNews: ${JSON.stringify(results['news'])}\n\nHacker News discussion: ${JSON.stringify(results['hackernews'])}\n\nStructure as: Overview, Key Players, Recent Moves, Community Sentiment, Strategic Implications.`,
   });
-
-  return { sources: results, analysis: synthesisResult?.text || synthesisResult || '' };
+  const analysis = synthesisResult?.text || synthesisResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, analysis, results); } catch (_) {}
+  return { sources: results, analysis, pressure_test: pressureTest };
 }
 
 // 3. /marketing — Content marketing brief: search + trends + draft
@@ -190,8 +195,10 @@ async function runAcademicWorkflow(ctx) {
   const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create an academic literature review on "${q}":\n\nSemantic Scholar: ${JSON.stringify(results['semantic-scholar'])}\n\narXiv preprints: ${JSON.stringify(results['arxiv'])}\n\nPubMed: ${JSON.stringify(results['pubmed'])}\n\nStructure as: Research Landscape, Key Papers, Methodological Trends, Open Questions, Suggested Reading Order.`,
   });
-
-  return { papers: results, review: synthesisResult?.text || synthesisResult || '' };
+  const review = synthesisResult?.text || synthesisResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, review, results); } catch (_) {}
+  return { papers: results, review, pressure_test: pressureTest };
 }
 
 // 6. /news-brief — Multi-source news briefing
@@ -206,8 +213,10 @@ async function runNewsBriefWorkflow(ctx) {
   const briefResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a news intelligence brief for "${q}":\n\nMainstream news: ${JSON.stringify(results['news'])}\n\nTech community: ${JSON.stringify(results['hackernews'])}\n\nWeb: ${JSON.stringify(results['brave-search'])}\n\nStructure as: Headlines Summary (3 bullets), Detailed Analysis, Community Reaction, What To Watch.`,
   });
-
-  return { sources: results, brief: briefResult?.text || briefResult || '' };
+  const brief = briefResult?.text || briefResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, brief, results); } catch (_) {}
+  return { sources: results, brief, pressure_test: pressureTest };
 }
 
 // 7. /market-scan — Financial/market overview
@@ -222,8 +231,10 @@ async function runMarketScanWorkflow(ctx) {
   const scanResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a market scan for "${q}":\n\nMarket research: ${JSON.stringify(results['brave-search'])}\n\nFinancial news: ${JSON.stringify(results['news'])}\n\nExchange rates context: ${JSON.stringify(results['currency'])}\n\nStructure as: Market Overview, Key Metrics, Recent Developments, Risk Factors, Outlook.`,
   });
-
-  return { data: results, scan: scanResult?.text || scanResult || '' };
+  const scan = scanResult?.text || scanResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, scan, results); } catch (_) {}
+  return { data: results, scan, pressure_test: pressureTest };
 }
 
 // 8. /location-brief — Geographic intelligence
@@ -255,8 +266,10 @@ async function runHealthResearchWorkflow(ctx) {
   const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a health research summary on "${q}":\n\nPubMed studies: ${JSON.stringify(results['pubmed'])}\n\nAcademic papers: ${JSON.stringify(results['semantic-scholar'])}\n\nWikipedia context: ${JSON.stringify(results['wikipedia'])}\n\nStructure as: Clinical Overview, Key Studies, Evidence Strength, Practical Implications. Add disclaimer that this is not medical advice.`,
   });
-
-  return { papers: results, summary: synthesisResult?.text || synthesisResult || '' };
+  const summary = synthesisResult?.text || synthesisResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, summary, results); } catch (_) {}
+  return { papers: results, summary, pressure_test: pressureTest };
 }
 
 // 10. /tech-scout — Technology scouting and evaluation
@@ -272,8 +285,10 @@ async function runTechScoutWorkflow(ctx) {
   const evaluationResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Create a technology evaluation for "${q}":\n\nGitHub ecosystem: ${JSON.stringify(results['github-public'])}\n\nHacker News sentiment: ${JSON.stringify(results['hackernews'])}\n\nWeb research: ${JSON.stringify(results['brave-search'])}\n\nAcademic papers: ${JSON.stringify(results['arxiv'])}\n\nStructure as: Technology Overview, Maturity Assessment, Community Adoption, Alternatives, Recommendation.`,
   });
-
-  return { sources: results, evaluation: evaluationResult?.text || evaluationResult || '' };
+  const evaluation = evaluationResult?.text || evaluationResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, evaluation, results); } catch (_) {}
+  return { sources: results, evaluation, pressure_test: pressureTest };
 }
 
 // 11. /fact-check — Multi-source fact verification
@@ -289,8 +304,10 @@ async function runFactCheckWorkflow(ctx) {
   const verdictResult = await callPlugin(ctx, 'gemini-flash', {
     prompt: `Fact-check the following claim: "${q}"\n\nWeb sources: ${JSON.stringify(results['brave-search'])}\n\nWikipedia: ${JSON.stringify(results['wikipedia'])}\n\nAcademic sources: ${JSON.stringify(results['semantic-scholar'])}\n\nProvide: 1) Verdict (Supported / Partially Supported / Unsupported / Unverifiable), 2) Evidence For, 3) Evidence Against, 4) Source Quality Assessment, 5) Confidence Level.`,
   });
-
-  return { sources: results, verdict: verdictResult?.text || verdictResult || '' };
+  const verdict = verdictResult?.text || verdictResult || '';
+  let pressureTest = null;
+  try { pressureTest = await runVerificationPass(ctx, q, verdict, results); } catch (_) {}
+  return { sources: results, verdict, pressure_test: pressureTest };
 }
 
 // 12. /content-brief — Content creation brief with research
@@ -725,6 +742,336 @@ async function runDynamicWorkflow(ctx) {
     chain,
     ranked: ranked.map((p) => ({ slug: p.slug, score: p.score })),
     results,
+  };
+}
+
+// ════════════════════════════════════════════════════════════════
+// RESEARCH PRESSURE TEST — verification layer
+// ════════════════════════════════════════════════════════════════
+
+// Maps claim type to verification plugin calls (per routing table in spec)
+const VERIFICATION_PLUGINS = {
+  market_stat:  (q) => [['brave-search', { query: `${q} market size statistics`, count: 5 }], ['news', { query: q, count: 3 }]],
+  competitive:  (q) => [['brave-search', { query: `${q} competitor analysis`, count: 5 }], ['hackernews', { query: q, count: 3 }]],
+  technology:   (q) => [['brave-search', { query: `${q} adoption production ready`, count: 4 }], ['hackernews', { query: q, count: 3 }], ['github-public', { query: q }]],
+  recent_event: (q) => [['news', { query: q, count: 5 }], ['brave-search', { query: `${q} latest`, count: 4 }]],
+  academic:     (q) => [['semantic-scholar', { query: q, limit: 3 }], ['arxiv', { query: q, limit: 3 }]],
+  factual:      (q) => [['brave-search', { query: q, count: 6 }], ['wikipedia', { query: q, mode: 'search', limit: 2 }]],
+};
+
+function buildVerificationPrompt(topic, synthesisText, sourcesStr) {
+  return `You are a research verification agent. Check a synthesis against its source data.
+
+TOPIC: "${topic}"
+
+SYNTHESIS TO VERIFY:
+${synthesisText}
+
+SOURCE DATA:
+${sourcesStr}
+
+Extract 3-5 key factual claims from the synthesis. For each, check whether the source data supports, contradicts, or cannot confirm it.
+
+Output EXACTLY this format (no other text):
+
+OVERALL_CONFIDENCE: [HIGH / MEDIUM / LOW / MIXED]
+CONFIDENCE_RATIONALE: [1 sentence — main risk in trusting this synthesis as-is]
+
+CLAIM_1
+ASSERTION: [exact quote or close paraphrase from the synthesis]
+TYPE: [market_stat / competitive / technology / recent_event / factual / academic]
+CONFIDENCE: [VERIFIED / PLAUSIBLE / DISPUTED / UNVERIFIABLE / OVERSTATED]
+NOTES: [brief qualification — what supports it, what conflicts, or what is missing]
+
+CLAIM_2
+ASSERTION: ...
+TYPE: ...
+CONFIDENCE: ...
+NOTES: ...
+
+[Continue for up to 5 claims]
+
+GAPS:
+- [Important questions this research is silent on]`;
+}
+
+function parsePressureTestFromText(text) {
+  const overall = (text.match(/OVERALL_CONFIDENCE:\s*(\w+)/i)?.[1] || 'LOW').toUpperCase();
+  const rationale = text.match(/CONFIDENCE_RATIONALE:\s*(.+)/i)?.[1]?.trim() || '';
+
+  const claims = [];
+  const claimBlocks = text.split(/\nCLAIM_\d+\s*\n/i);
+  for (let i = 1; i < claimBlocks.length; i++) {
+    const block = claimBlocks[i];
+    const assertion = block.match(/ASSERTION:\s*(.+)/i)?.[1]?.trim() || '';
+    if (!assertion) continue;
+    claims.push({
+      assertion,
+      type: (block.match(/TYPE:\s*(\w+)/i)?.[1] || 'factual').toLowerCase(),
+      confidence: (block.match(/CONFIDENCE:\s*(\w+)/i)?.[1] || 'UNVERIFIABLE').toUpperCase(),
+      notes: block.match(/NOTES:\s*(.+)/i)?.[1]?.trim() || '',
+    });
+  }
+
+  const gapsSection = text.match(/GAPS:\s*([\s\S]+)$/i)?.[1] || '';
+  const gaps = gapsSection.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.startsWith('-'))
+    .map(l => l.slice(1).trim())
+    .filter(Boolean);
+
+  return { overall_confidence: overall, confidence_rationale: rationale, claims, gaps };
+}
+
+function buildPressureTestMarkdown(overall, rationale, claims, gaps) {
+  const RATING_LABEL = {
+    VERIFIED: '[VERIFIED]', PLAUSIBLE: '[PLAUSIBLE]', DISPUTED: '[DISPUTED]',
+    UNVERIFIABLE: '[UNVERIFIABLE]', OVERSTATED: '[OVERSTATED]',
+  };
+  let md = `## Research Confidence Assessment\n\n`;
+  md += `**Overall: ${overall}**`;
+  if (rationale) md += ` — ${rationale}`;
+  md += '\n\n';
+  if (claims.length > 0) {
+    md += `### Claims (${claims.length} checked)\n\n`;
+    claims.forEach((c, i) => {
+      md += `**${i + 1}.** "${c.assertion}"\n`;
+      md += `${RATING_LABEL[c.confidence] || c.confidence} · *${c.type}*`;
+      if (c.notes) md += ` — ${c.notes}`;
+      md += '\n\n';
+    });
+  }
+  if (gaps.length > 0) {
+    md += `### Gaps\n\n`;
+    gaps.forEach(g => { md += `- ${g}\n`; });
+  }
+  return md.trim();
+}
+
+async function runVerificationPass(ctx, topic, synthesis, sources) {
+  const synthesisText = (typeof synthesis === 'string' ? synthesis : JSON.stringify(synthesis)).slice(0, 3000);
+  const sourcesStr = JSON.stringify(sources).slice(0, 8000);
+  const result = await callPlugin(ctx, 'gemini-flash', {
+    prompt: buildVerificationPrompt(topic, synthesisText, sourcesStr),
+  });
+  const parsed = parsePressureTestFromText(result?.text || result || '');
+  return {
+    overall_confidence: parsed.overall_confidence,
+    confidence_rationale: parsed.confidence_rationale,
+    claims: parsed.claims,
+    claims_checked: parsed.claims.length,
+    gaps: parsed.gaps,
+    report: buildPressureTestMarkdown(parsed.overall_confidence, parsed.confidence_rationale, parsed.claims, parsed.gaps),
+  };
+}
+
+// 15. /pressure-test — Standalone cross-tool verification
+function buildStandaloneClaimExtractionPrompt(topic, sourceTool, researchOutput) {
+  return `You are extracting verifiable claims from a research output for cross-verification.
+
+RESEARCH TOPIC: "${topic}"
+SOURCE TOOL: ${sourceTool}
+
+RESEARCH OUTPUT:
+${researchOutput.slice(0, 4000)}
+
+Extract the 5 most important claims that a decision-maker would act on. For each, provide a specific verification query.
+
+Output EXACTLY (no other text):
+
+CLAIM_1
+ASSERTION: [exact quote or close paraphrase]
+TYPE: [market_stat / competitive / technology / recent_event / factual / academic]
+VERIFICATION_QUERY: [specific search query to verify or contradict this claim]
+
+[Repeat for up to 5 claims, most important first]`;
+}
+
+function parseClaimsForVerification(text) {
+  const claims = [];
+  const blocks = text.split(/\nCLAIM_\d+\s*\n/i);
+  for (let i = 1; i < blocks.length && claims.length < 5; i++) {
+    const block = blocks[i];
+    const assertion = block.match(/ASSERTION:\s*(.+)/i)?.[1]?.trim() || '';
+    if (!assertion) continue;
+    claims.push({
+      assertion,
+      type: (block.match(/TYPE:\s*(\w+)/i)?.[1] || 'factual').toLowerCase(),
+      verification_query: block.match(/VERIFICATION_QUERY:\s*(.+)/i)?.[1]?.trim() || assertion,
+    });
+  }
+  return claims;
+}
+
+function buildStandaloneSynthesisPrompt(topic, sourceTool, claimsWithData) {
+  const claimBlocks = claimsWithData.map((c, i) => {
+    const dataStr = JSON.stringify(c.verificationData || {}).slice(0, 800);
+    return `CLAIM ${i + 1}: "${c.assertion}"
+Type: ${c.type} · Tools: ${c.toolsUsed}
+Verification query: ${c.verification_query}
+Verification data: ${dataStr}`;
+  }).join('\n\n');
+
+  return `You are a research verification agent scoring claims from a "${sourceTool}" research output.
+
+TOPIC: "${topic}"
+
+${claimBlocks}
+
+Score each claim and produce a full verification report.
+
+Output EXACTLY this format:
+
+OVERALL_CONFIDENCE: [HIGH / MEDIUM / LOW / MIXED]
+OVERALL_RATIONALE: [2-3 sentences: is this research reliable enough to act on? What is the main risk?]
+
+CLAIM_1
+ASSERTION: [original assertion]
+TYPE: [type]
+TOOL_USED: [tools queried]
+WHAT_RETURNED: [brief summary of what verification found]
+CONFIDENCE: [VERIFIED / PLAUSIBLE / DISPUTED / UNVERIFIABLE / OVERSTATED]
+NOTES: [qualification]
+
+[Repeat for each claim]
+
+DISPUTED_SUMMARY:
+- [Only DISPUTED or UNVERIFIABLE claims — one line each on why it matters to the conclusions]
+
+GAPS:
+- [Important questions this research is silent on]
+
+REVISED_CONCLUSIONS:
+[One line per major conclusion from the original research, with confidence in brackets]`;
+}
+
+function parseStandalonePressureTest(text, claims) {
+  const overall = (text.match(/OVERALL_CONFIDENCE:\s*(\w+)/i)?.[1] || 'LOW').toUpperCase();
+  const rationale = text.match(/OVERALL_RATIONALE:\s*([\s\S]+?)(?=\nCLAIM_|\nDISPUTED|\nGAPS|\nREVISED|$)/i)?.[1]?.trim() || '';
+
+  const verifiedClaims = [];
+  const claimBlocks = text.split(/\nCLAIM_\d+\s*\n/i);
+  for (let i = 1; i < claimBlocks.length; i++) {
+    const block = claimBlocks[i];
+    const assertion = block.match(/ASSERTION:\s*(.+)/i)?.[1]?.trim() || (claims[i - 1]?.assertion || '');
+    if (!assertion) continue;
+    verifiedClaims.push({
+      assertion,
+      type: (block.match(/TYPE:\s*(\w+)/i)?.[1] || 'factual').toLowerCase(),
+      tool_used: block.match(/TOOL_USED:\s*(.+)/i)?.[1]?.trim() || '',
+      what_returned: block.match(/WHAT_RETURNED:\s*(.+)/i)?.[1]?.trim() || '',
+      confidence: (block.match(/CONFIDENCE:\s*(\w+)/i)?.[1] || 'UNVERIFIABLE').toUpperCase(),
+      notes: block.match(/NOTES:\s*(.+)/i)?.[1]?.trim() || '',
+    });
+  }
+
+  const disputedSection = text.match(/DISPUTED_SUMMARY:\s*([\s\S]+?)(?=\nGAPS:|\nREVISED:|$)/i)?.[1] || '';
+  const disputed = disputedSection.split('\n').map(l => l.trim()).filter(l => l.startsWith('-')).map(l => l.slice(1).trim()).filter(Boolean);
+
+  const gapsSection = text.match(/GAPS:\s*([\s\S]+?)(?=\nREVISED:|$)/i)?.[1] || '';
+  const gaps = gapsSection.split('\n').map(l => l.trim()).filter(l => l.startsWith('-')).map(l => l.slice(1).trim()).filter(Boolean);
+
+  const revisedSection = text.match(/REVISED_CONCLUSIONS:\s*([\s\S]+)$/i)?.[1]?.trim() || '';
+
+  return { overall, rationale, claims: verifiedClaims, disputed, gaps, revised_conclusions: revisedSection };
+}
+
+function buildStandaloneMarkdownReport(topic, sourceTool, parsed, claimsExtracted, verificationCalls) {
+  let md = `---\nRESEARCH PRESSURE TEST REPORT\n`;
+  md += `Topic: ${topic}\n`;
+  md += `Source tool: ${sourceTool}\n`;
+  md += `Claims extracted: ${claimsExtracted}\n`;
+  md += `Verification calls: ${verificationCalls}\n`;
+  md += `---\n\n`;
+  md += `OVERALL CONFIDENCE: ${parsed.overall}\n`;
+  if (parsed.rationale) md += `${parsed.rationale}\n\n`;
+  md += `---\nCLAIM VERIFICATION LOG\n\n`;
+  parsed.claims.forEach((c, i) => {
+    md += `CLAIM ${i + 1}\n`;
+    md += `Original assertion: ${c.assertion}\n`;
+    md += `Claim type: ${c.type}\n`;
+    if (c.tool_used) md += `Verification tool used: ${c.tool_used}\n`;
+    if (c.what_returned) md += `What the tool returned: ${c.what_returned}\n`;
+    md += `Confidence rating: ${c.confidence}\n`;
+    if (c.notes) md += `Notes: ${c.notes}\n`;
+    md += '\n';
+  });
+  if (parsed.disputed.length > 0) {
+    md += `---\nDISPUTED AND UNVERIFIABLE CLAIMS SUMMARY\n`;
+    parsed.disputed.forEach(d => { md += `- ${d}\n`; });
+    md += '\n';
+  }
+  if (parsed.gaps.length > 0) {
+    md += `---\nGAPS IDENTIFIED\n`;
+    parsed.gaps.forEach(g => { md += `- ${g}\n`; });
+    md += '\n';
+  }
+  if (parsed.revised_conclusions) {
+    md += `---\nREVISED CONFIDENCE SUMMARY\n${parsed.revised_conclusions}\n`;
+  }
+  return md;
+}
+
+async function runPressureTestWorkflow(ctx) {
+  const topic = ctx.query || ctx.params.topic || '';
+  const sourceTool = ctx.params.source_tool || 'unknown';
+  const researchOutput = ctx.params.research_output || '';
+
+  if (!researchOutput.trim()) {
+    throw new Error('pressure-test: research_output is required');
+  }
+
+  // Phase 1: Extract claims from research output
+  const extractionResult = await callPlugin(ctx, 'gemini-flash', {
+    prompt: buildStandaloneClaimExtractionPrompt(topic, sourceTool, researchOutput),
+  });
+  const claims = parseClaimsForVerification(extractionResult?.text || extractionResult || '');
+
+  if (claims.length === 0) {
+    return { topic, source_tool: sourceTool, claims_extracted: 0, report: 'No verifiable claims extracted from the research output.' };
+  }
+
+  // Phase 2: Verify each claim with appropriate plugins
+  const verificationResults = await Promise.allSettled(
+    claims.map(async (claim) => {
+      const pluginList = VERIFICATION_PLUGINS[claim.type] || VERIFICATION_PLUGINS.factual;
+      const pluginCalls = pluginList(claim.verification_query);
+      const verificationData = {};
+      await Promise.allSettled(
+        pluginCalls.map(async ([pluginId, params]) => {
+          try { verificationData[pluginId] = await callPlugin(ctx, pluginId, params); } catch (_) {}
+        })
+      );
+      return verificationData;
+    })
+  );
+
+  const claimsWithData = claims.map((claim, i) => ({
+    ...claim,
+    verificationData: verificationResults[i].status === 'fulfilled' ? verificationResults[i].value : {},
+    toolsUsed: (VERIFICATION_PLUGINS[claim.type] || VERIFICATION_PLUGINS.factual)(claim.verification_query).map(([id]) => id).join(', '),
+  }));
+
+  // Phase 3: Synthesize full report
+  const synthesisResult = await callPlugin(ctx, 'gemini-flash', {
+    prompt: buildStandaloneSynthesisPrompt(topic, sourceTool, claimsWithData),
+  });
+
+  const parsed = parseStandalonePressureTest(synthesisResult?.text || synthesisResult || '', claims);
+  const verificationCalls = claimsWithData.reduce((n, c) => n + Object.keys(c.verificationData || {}).length, 0);
+
+  return {
+    topic,
+    source_tool: sourceTool,
+    claims_extracted: claims.length,
+    verification_calls: verificationCalls,
+    overall_confidence: parsed.overall,
+    confidence_rationale: parsed.rationale,
+    claims: parsed.claims,
+    disputed: parsed.disputed,
+    gaps: parsed.gaps,
+    revised_conclusions: parsed.revised_conclusions,
+    report: buildStandaloneMarkdownReport(topic, sourceTool, parsed, claims.length, verificationCalls),
   };
 }
 
