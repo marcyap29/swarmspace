@@ -60,14 +60,23 @@ Completed: PrivacyTier enum inlined in swarmspaceRouter, all 22 registry entries
 
 ### 2.3 Credential Isolation — In-repo audit ✅, externals open
 
-In-repo audit (verified 2026-05-01):
-- ✅ All 8 plugin workers in `workers/plugins/` (arxiv, dictionary-api, github-public, hackernews, jina-reader, nominatim, pubmed, rest-countries) reference only `env.SWARMSPACE_INTERNAL_TOKEN` — no direct API key access. Boundary injection via `swarmspaceRouter` (commit `4311c49`) is the canonical pattern.
+In-repo audit (updated 2026-06-14):
+- ✅ Plugin workers with source in `workers/plugins/`: arxiv, calendar-reader, currency, dictionary-api, gemini-flash, github-public, hackernews, jina-reader, nominatim, pubmed, rest-countries, semantic-scholar, weather — all reference only `env.SWARMSPACE_INTERNAL_TOKEN` + their own declared API key secrets. Boundary injection pattern confirmed.
 - ✅ `workers/cloudflare/media-upload` — only `SWARMSPACE_INTERNAL_TOKEN`.
-- ⚠️ `workers/cloudflare/social-publisher` — still reads `env.LATE_API_KEY` directly (`src/index.ts:67,349`). Removed from the plugin registry in `4311c49` (stateful OAuth doesn't fit the stateless plugin contract), so unrouted, but the credential is still in the worker's env. Either tighten or delete the worker.
+- ⚠️ `workers/cloudflare/social-publisher` — reads `env.LATE_API_KEY` (`src/index.ts:15,67`), `env.LINKEDIN_CLIENT_ID`, `env.LINKEDIN_CLIENT_SECRET`, `env.SOCIAL_KV` directly. Unrouted (removed from registry in `4311c49`), but multiply env-bound. Decision pending.
+
+External plugins with no source in this repo (verified live 2026-06-14):
+- ✅ `brave-search` — deployed, working, no credential issues observed. Source unknown but low-risk (public search API).
+- ✅ `wikipedia` — deployed, working (requires `X-SwarmSpace-User-Id` header which the router sends). Source unknown, low-risk.
+- ✅ `news` — Firebase function (`newsDataInvoke`), not a Cloudflare Worker. N/A for credential audit.
+- ✅ `vision-ocr` — Firebase function (`visionOcrInvoke`), not a Cloudflare Worker. N/A for credential audit.
+- ✅ `url-reader` — removed from plugin registry 2026-06-14. Paid third-party API (broken, no source in repo). `jina-reader` covers the same capability for free.
+- ✅ `tavily-search` — removed from plugin registry 2026-06-14. Paid third-party API (broken, no source in repo). `brave-search` covers equivalent capability.
+- ✅ `exa-search` — removed from plugin registry 2026-06-14. Paid third-party API (broken, no source in repo).
+- ✅ `perplexity-sonar` — removed from plugin registry 2026-06-14. Paid third-party API (broken, no source in repo).
 
 Open work:
-- [ ] Decide social-publisher: rewrite to fit boundary-injection contract, or delete the worker (currently unreachable through router but still env-bound).
-- [ ] Locate the ~10 catalogue plugins not in this repo (brave-search, gemini-flash, news, weather, currency, semantic-scholar, wikipedia, vision-ocr, url-reader, tavily-search, exa-search, perplexity-sonar). Likely deployed externally or owned by another repo. Confirm each holds no env-bound credentials.
+- [ ] Decide social-publisher: rewrite to fit boundary-injection contract, or delete the worker.
 
 ### 2.4 Developer Guide Fixes (before outreach) ✅ DONE (2026-04-13)
 

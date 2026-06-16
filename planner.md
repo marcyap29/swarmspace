@@ -36,3 +36,16 @@ OAuth 2.1 + DCR + Streamable HTTP compliance is **complete and live** (`wrangler
 - [x] Dynamic AI routing pipeline (intent.js + rank.js + chain.js) — committed `c6ab31d`, deployed `4c628257` ✅
 - [ ] Write anchor content: "How I use SwarmSpace to run Orbital AI as a solo founder"
 
+---
+
+## Pressure Test — Ship to Users
+**Updated:** 2026-06-05
+
+Orchestrator deployed to GitHub (`6caf896`). LUMARA plumbing committed (`a7abb5b7`). UI not built yet.
+
+- [ ] DeepSeek4: Pressure test UI — confidence badge + report bottom sheet (spec in session 2026-06-05)
+  - Files: `lumara_assistant_cubit.dart` (extract pressureTest, fix metadata) + `lumara_chat_redesign_screen.dart` (_PressureTestBadge widget)
+  - Verify: `dart analyze` clean → commit → push LUMARA `main`
+- [ ] Deploy orchestrator to Cloudflare: `cd workers/orchestrator && wrangler deploy`
+- [ ] Build + install LUMARA on device
+
