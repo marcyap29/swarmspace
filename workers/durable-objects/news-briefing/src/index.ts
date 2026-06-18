@@ -259,6 +259,12 @@ export default {
       return handleLatest(latestMatch[1], env, uid);
     }
 
+    // POST /durable-objects/news-briefing/{do_id}/run-now
+    const runNowMatch = path.match(/^\/durable-objects\/news-briefing\/([^/]+)\/run-now\/?$/);
+    if (request.method === "POST" && runNowMatch) {
+      return handleRunNow(runNowMatch[1], env, uid);
+    }
+
     return jsonResponse(
       {
         error: "Not Found",
@@ -266,6 +272,7 @@ export default {
           "POST /durable-objects/news-briefing/create",
           "POST /durable-objects/news-briefing/cancel",
           "GET /durable-objects/news-briefing/{do_id}/latest",
+          "POST /durable-objects/news-briefing/{do_id}/run-now",
         ],
       },
       404,
@@ -390,6 +397,27 @@ async function handleLatest(doIdStr: string, env: Env, uid: string): Promise<Res
   });
 }
 
+async function handleRunNow(doIdStr: string, env: Env, uid: string): Promise<Response> {
+  let id: DurableObjectId;
+  try {
+    id = env.NEWS_BRIEFING.idFromString(doIdStr);
+  } catch {
+    return jsonResponse({ error: "invalid_do_id" }, 400);
+  }
+  const stub = env.NEWS_BRIEFING.get(id);
+  const res = await stub.fetch(
+    new Request("https://internal/run-now", {
+      method: "POST",
+      headers: { "X-User-Uid": uid },
+    }),
+  );
+  const text = await res.text();
+  return new Response(text, {
+    status: res.status,
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+  });
+}
+
 // ── Durable Object ───────────────────────────────────────────────────────────
 
 export class NewsBriefingDO extends DurableObject<Env> {
@@ -445,6 +473,10 @@ export class NewsBriefingDO extends DurableObject<Env> {
 
     if (request.method === "GET" && path === "/latest") {
       return this.handleLatest(request);
+    }
+
+    if (request.method === "POST" && path === "/run-now") {
+      return this.handleRunNow(request);
     }
 
     return new Response(JSON.stringify({ error: "Not Found" }), {
@@ -552,31 +584,102 @@ export class NewsBriefingDO extends DurableObject<Env> {
     );
   }
 
+  private async handleRunNow(request: Request): Promise<Response> {
+    const requesterUid = request.headers.get("X-User-Uid");
+    const ownerUid = this.getState("owner_uid");
+    if (!requesterUid || !ownerUid || requesterUid !== ownerUid) {
+      return new Response(JSON.stringify({ error: "forbidden" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (this.getState("cancelled_at")) {
+      return new Response(JSON.stringify({ error: "cancelled" }), {
+        status: 410,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Rate limit manual runs: 60s minimum between invocations to avoid
+    // hammering the orchestrator from a tap-happy refresh button.
+    const lastManual = this.getState("last_manual_run_at");
+    if (lastManual) {
+      const elapsedMs = Date.now() - new Date(lastManual).getTime();
+      if (elapsedMs < 60_000) {
+        const retryAfter = Math.ceil((60_000 - elapsedMs) / 1000);
+        return new Response(
+          JSON.stringify({ error: "rate_limited", retry_after_seconds: retryAfter }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": String(retryAfter),
+            },
+          },
+        );
+      }
+    }
+
+    const ran = await this.runOnce("manual");
+    if (!ran) {
+      return new Response(JSON.stringify({ error: "run_failed" }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    this.setState("last_manual_run_at", new Date().toISOString());
+
+    const latestDeltaJson = this.getState("latest_delta_json");
+    const lastRunAt = this.getState("last_run_at");
+    const cadence = this.getState("cadence");
+
+    let latestDelta: unknown = null;
+    if (latestDeltaJson) {
+      try {
+        latestDelta = JSON.parse(latestDeltaJson);
+      } catch {
+        latestDelta = null;
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        latest_delta: latestDelta,
+        last_run_at: lastRunAt,
+        cadence,
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   async alarm(): Promise<void> {
+    this.ensureSchema();
+    if (this.getState("cancelled_at")) return;
+    await this.runOnce("scheduled");
+    this.scheduleNext(this.getState("cadence") || "daily");
+  }
+
+  // Runs the orchestrator once and stores the delta. Shared by both the
+  // scheduled alarm and the manual /run-now endpoint. Returns false on any
+  // failure so callers can surface the appropriate status code.
+  private async runOnce(_trigger: "scheduled" | "manual"): Promise<boolean> {
     this.ensureSchema();
     const topicsJson = this.getState("topics");
     const ownerUid = this.getState("owner_uid");
     const cadence = this.getState("cadence");
-    const cancelledAt = this.getState("cancelled_at");
-
-    if (cancelledAt) {
-      // Was cancelled; do nothing further.
-      return;
-    }
 
     if (!topicsJson || !ownerUid || !cadence) {
-      console.error("alarm: missing state, skipping");
-      this.scheduleNext(cadence || "daily");
-      return;
+      console.error("runOnce: missing state");
+      return false;
     }
 
     let topics: string[];
     try {
       topics = JSON.parse(topicsJson) as string[];
     } catch {
-      console.error("alarm: failed to parse topics");
-      this.scheduleNext(cadence);
-      return;
+      console.error("runOnce: failed to parse topics");
+      return false;
     }
     const query = topics.join(" ");
 
@@ -596,40 +699,37 @@ export class NewsBriefingDO extends DurableObject<Env> {
       });
       if (!orchestratorRes.ok) {
         const text = await orchestratorRes.text();
-        console.error(`alarm: orchestrator error ${orchestratorRes.status}: ${text}`);
-      } else {
-        const json = (await orchestratorRes.json()) as {
-          workflow?: string;
-          result?: unknown;
-        };
-        // Orchestrator shape: { workflow: "/news-brief", result: { ... } }
-        // The interesting payload lives at result.<some shape>.
-        newOutput = json.result ?? null;
+        console.error(`runOnce: orchestrator error ${orchestratorRes.status}: ${text}`);
+        return false;
       }
+      const json = (await orchestratorRes.json()) as {
+        workflow?: string;
+        result?: unknown;
+      };
+      newOutput = json.result ?? null;
     } catch (err) {
-      console.error("alarm: orchestrator fetch threw:", (err as Error).message);
+      console.error("runOnce: orchestrator fetch threw:", (err as Error).message);
+      return false;
     }
 
-    // Compute delta vs previous output and persist.
-    if (newOutput !== null) {
-      const previousJson = this.getState("previous_output_json");
-      let previousOutput: unknown = null;
-      if (previousJson) {
-        try {
-          previousOutput = JSON.parse(previousJson);
-        } catch {
-          previousOutput = null;
-        }
+    if (newOutput === null) return false;
+
+    const previousJson = this.getState("previous_output_json");
+    let previousOutput: unknown = null;
+    if (previousJson) {
+      try {
+        previousOutput = JSON.parse(previousJson);
+      } catch {
+        previousOutput = null;
       }
-
-      const delta = computeDelta(previousOutput, newOutput);
-
-      this.setState("previous_output_json", JSON.stringify(newOutput));
-      this.setState("latest_delta_json", JSON.stringify(delta));
-      this.setState("last_run_at", new Date().toISOString());
     }
 
-    this.scheduleNext(cadence);
+    const delta = computeDelta(previousOutput, newOutput);
+
+    this.setState("previous_output_json", JSON.stringify(newOutput));
+    this.setState("latest_delta_json", JSON.stringify(delta));
+    this.setState("last_run_at", new Date().toISOString());
+    return true;
   }
 
   private scheduleNext(cadence: string): void {

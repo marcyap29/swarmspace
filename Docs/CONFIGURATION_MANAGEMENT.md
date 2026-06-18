@@ -1,6 +1,6 @@
 # Configuration Management & Documentation Tracking
 
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-06-18
 **Status:** ✅ Synced
 
 ---
@@ -100,10 +100,65 @@ When running a doc sync or release:
 | workers/mcp-server/tsconfig.json | workers/mcp-server/ | 2026-05-15 | ✅ Synced | New file — TypeScript config for mcp-server worker |
 | oauth-consent.html | root | 2026-05-15 | ✅ Synced | OAuth consent page (Firebase email + Google sign-in); deployed via Vercel at swarmspace.app/oauth-consent.html |
 | functions/src/functions/swarmspaceMcpKeys.ts | functions/ | 2026-05-14 | ✅ Synced | generateMcpApiKey + revokeMcpApiKey (secret: MCP_KEY_SECRET) |
+| workers/plugins/semantic-scholar/src/index.ts | workers/plugins/semantic-scholar/ | 2026-06-14 | ✅ Synced | New Worker — calls Semantic Scholar v1 graph API with retry logic |
+| workers/plugins/semantic-scholar/wrangler.toml | workers/plugins/semantic-scholar/ | 2026-06-14 | ✅ Synced | Cloudflare config for semantic-scholar Worker |
+| workers/plugins/rest-countries/src/index.ts | workers/plugins/rest-countries/ | 2026-06-14 | ✅ Synced | Rewritten — uses World Bank API (restcountries.com v3.1 deprecated) |
+| workers/plugins/pubmed/src/index.ts | workers/plugins/pubmed/ | 2026-06-14 | ✅ Synced | Updated — added fetchWithRetry + NCBI_API_KEY support |
+| workers/plugins/weather/src/index.ts | workers/plugins/weather/ | 2026-06-14 | ✅ Synced | New Worker — open-meteo.com geocode + forecast; no API key required |
+| workers/plugins/weather/wrangler.toml | workers/plugins/weather/ | 2026-06-14 | ✅ Synced | Cloudflare config for weather Worker |
+| workers/plugins/currency/src/index.ts | workers/plugins/currency/ | 2026-06-14 | ✅ Synced | New Worker — Frankfurter API exchange rates; no API key required |
+| workers/plugins/currency/wrangler.toml | workers/plugins/currency/ | 2026-06-14 | ✅ Synced | Cloudflare config for currency Worker |
 
 ---
 
 ## Change Log
+
+### 2026-06-18 — v1.8.1: News briefing manual refresh (`/run-now`)
+
+**Action:** Added owner-triggered manual refresh for "Keep Watching" news topics. Bug report: saved topics stayed static between scheduled alarms (24h / 7d) because `getLatest` only reads stored deltas.
+
+**Changes:**
+- `workers/durable-objects/news-briefing/src/index.ts` — added `POST /durable-objects/news-briefing/{do_id}/run-now`. Owner-only (Firebase Bearer + `X-User-Uid` match against stored `owner_uid`). 60s rate limit between manual runs (`last_manual_run_at` state). Does NOT shift the scheduled alarm. Refactored `alarm()` to share orchestrator + delta + persistence logic via private `runOnce(trigger)` method.
+- `LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md` — added Durable Objects subsection documenting all 4 news-briefing routes.
+- `DOCS/Startup Onboard/Coordinate_SS.md` — `[SWARMSPACE 2026-06-18]` entry with LUMARA UI spec (`runNow(doId)` service method + refresh button + pull-to-refresh + 429 handling + NEW-badge wiring).
+- `DOCS/CHANGELOG.md` — v1.8.1 entry.
+- `DOCS/context.md` — session block prepended.
+
+**Deployed:** swarmspace-durable-object-news-briefing live; smoke tests confirm route registered (`401 missing` / `401 invalid_token`).
+
+**Verification:**
+- `npx tsc --noEmit` clean
+- `wrangler deploy --dry-run` clean (20.61 KiB / 5.22 KiB gzip)
+
+---
+
+### 2026-06-14 — Plugin fixes: github-public, semantic-scholar, rest-countries, pubmed, weather, currency
+
+**Action:** MCP API health audit + 6 plugin Worker fixes after end-to-end testing revealed failures.
+
+**Changes:**
+- `workers/plugins/github-public/` — Set GITHUB_TOKEN secret; GitHub API now requires auth on all search endpoints.
+- `workers/plugins/semantic-scholar/src/index.ts` (NEW) — Complete Cloudflare Worker calling Semantic Scholar graph v1 API with retry-on-429 + graceful empty fallback; set S2_API_KEY secret.
+- `workers/plugins/semantic-scholar/wrangler.toml` (NEW) — Cloudflare Worker config for semantic-scholar.
+- `workers/plugins/rest-countries/src/index.ts` — Full rewrite: restcountries.com v3.1 API deprecated; now uses World Bank API (api.worldbank.org/v2/country/{iso2}) with built-in 100-entry country name→ISO2 lookup table; added safe JSON parsing.
+- `workers/plugins/pubmed/src/index.ts` — Added `fetchWithRetry()` (3 retries, exponential backoff 1s/2s/4s); added NCBI_API_KEY env var support for higher rate limits.
+- `workers/plugins/weather/src/index.ts` — New Worker using open-meteo.com (free, no API key); two-step geocode + forecast; set SWARMSPACE_INTERNAL_TOKEN secret.
+- `workers/plugins/weather/wrangler.toml` — Cloudflare Worker config for weather.
+- `workers/plugins/currency/src/index.ts` — New Worker using Frankfurter API (api.frankfurter.app, free); set SWARMSPACE_INTERNAL_TOKEN secret.
+- `workers/plugins/currency/wrangler.toml` — Cloudflare Worker config for currency.
+- `DOCS/context.md` — Session block prepended documenting all 6 fixes and their root causes.
+
+**Deployed:**
+- swarmspace-plugin-github-public: secret set
+- swarmspace-plugin-semantic-scholar: version a882c0b4
+- swarmspace-plugin-rest-countries: version 23c22154
+- swarmspace-plugin-pubmed: version 8f656acf
+- swarmspace-plugin-weather: version d068626f
+- swarmspace-plugin-currency: version 4a36695a
+
+**Final smoke test:** All 13 MCP tools passing with auth headers (✅ github-public, semantic-scholar, rest-countries, pubmed, weather, currency plus 7 others already live).
+
+---
 
 ### 2026-05-20 — v1.7.0: OpenAI submission, hero logo, MCP quota fix, orchestrator headers bug
 

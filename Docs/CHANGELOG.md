@@ -1,7 +1,28 @@
 # SwarmSpace Changelog
 
-**Version:** 1.8.0
-**Last Updated:** 2026-05-21
+**Version:** 1.8.1
+**Last Updated:** 2026-06-18
+
+---
+
+## [1.8.1] - 2026-06-18 — News briefing manual refresh (`/run-now`)
+
+### Added
+
+- **`POST /durable-objects/news-briefing/{do_id}/run-now`** on the news-briefing Durable Object Worker. Owner-only (Firebase Bearer + `X-User-Uid` match against stored `owner_uid`). 60s rate limit between manual runs via `last_manual_run_at` state. Does NOT shift the scheduled alarm — daily/weekly cadence continues independently. Returns `200 {latest_delta, last_run_at, cadence}` / `429 {error: "rate_limited", retry_after_seconds}` + `Retry-After` header / `410 cancelled` / `502 run_failed` / `403 forbidden`.
+
+### Changed
+
+- **`alarm()` refactor** — extracted `runOnce(trigger)` private method so the scheduled alarm and the new manual `/run-now` endpoint share the orchestrator call + delta-computation + persistence logic. No behavior change on the alarm side.
+- **`LUMARA_SWARMSPACE_FUNCTIONS_INTEGRATION.md`** — added Durable Objects subsection documenting all four news-briefing routes.
+
+### Fixed
+
+- "Followed news topics stay static" bug — previously the LUMARA UI could only read the last stored delta via `getLatest`, so refreshing did nothing until the next 24h / 7d alarm fired. The new endpoint lets the client force a fresh orchestrator run on demand.
+
+### Cross-repo
+
+- LUMARA UI half (refresh button, pull-to-refresh, `runNow(doId)` service method, NEW-badge wiring) specced in `DOCS/Startup Onboard/Coordinate_SS.md` — pending in LUMARA repo.
 
 ---
 

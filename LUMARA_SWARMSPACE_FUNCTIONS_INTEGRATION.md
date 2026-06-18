@@ -99,6 +99,13 @@ These are not Firebase functions but are part of the SwarmSpace plugin ecosystem
 ### Agent Worker
 - `swarmspace-agent-worker.orbitalai.workers.dev` — Plan Agent execution
 
+### Durable Objects
+- `swarmspace-durable-object-news-briefing.orbitalai.workers.dev` — recurring news briefings (§5.2). Routes:
+  - `POST /durable-objects/news-briefing/create` — create subscription (paid tier; returns `{do_id}`)
+  - `POST /durable-objects/news-briefing/cancel` — cancel by `{do_id}` (owner-only)
+  - `GET /durable-objects/news-briefing/{do_id}/latest` — fetch last stored delta
+  - `POST /durable-objects/news-briefing/{do_id}/run-now` — owner-only manual refresh; runs orchestrator inline, 60s rate limit, returns `{latest_delta, last_run_at, cadence}` (200) / `429 {retry_after_seconds}` / `410 cancelled` / `502 run_failed`
+
 ---
 
 ## Sync Mechanism
