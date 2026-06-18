@@ -20,6 +20,14 @@ User reported a bug: saved "Keep Watching" news-briefing topics stay static betw
 ### Next
 - LUMARA UI half — spec in `Coordinate_SS.md`. LUMARA Claude picks it up on next STEP 1 ORIENT in that repo.
 
+### Session close — commits pushed
+| Commit | Scope |
+|---|---|
+| `66906c1` feat(news-briefing): add manual refresh /run-now endpoint | this session's work + docs + Coding Lesson |
+| `778e789` chore(plugins): commit prior session's plugin worker audit | bundles 2026-06-13/14 plugin Worker code (6 plugins, all already deployed live) that was left uncommitted in the working tree — pubmed, rest-countries, semantic-scholar, weather, currency, plus bug_tracker.md edits |
+
+Working tree clean except `.claude/` (local Claude Code settings, intentionally untracked).
+
 ### LUMARA dependency
 UI work in `lib/shared/swarmspace/news_briefing_service.dart` (add `runNow`) + `lib/shared/lumara/agents/screens/news_briefing_subscriptions_screen.dart` (refresh button + pull-to-refresh + 429 snackbar + last-updated label). Optional: wire `latest_delta.total_new` to existing NEW-badge plumbing. Endpoint live; no further SwarmSpace work blocks LUMARA.
 
